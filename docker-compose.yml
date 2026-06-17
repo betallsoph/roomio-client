@@ -1,0 +1,9 @@
+version: '3.8'
+services:
+  svelte-frontend:
+    build: .
+    container_name: svelte-app
+    ports:
+      # Bạn ông xài cổng nào rồi thì ông chọn số khác (ví dụ: 8081)
+      - "8081:80" 
+    restart: always
