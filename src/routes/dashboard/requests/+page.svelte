@@ -26,12 +26,19 @@
     priority: string; // 'important' | 'normal'
     createdAt: string;
     response: string | null;
+    assignedToId: string | null;
     tenant: {
       user: {
         name: string;
         phone: string;
       }
     };
+    assignedTo: {
+      user: {
+        name: string;
+        phone: string;
+      }
+    } | null;
   }
 
   let landlordId = $state<string | null>(null);
@@ -48,12 +55,18 @@
   let replyText = $state('');
   let isSubmitting = $state(false);
 
+  // Phân công nhân viên
+  let staffList = $state<{ id: string; user: { name: string } }[]>([]);
+  let assignSelection = $state('');
+  let isAssigning = $state(false);
+
   onMount(() => {
     const sessionStr = localStorage.getItem('roomio_user');
     if (!sessionStr) return;
     const session = JSON.parse(sessionStr);
     landlordId = session.landlordProfileId;
     fetchRequests(session.landlordProfileId);
+    fetchStaff(session.landlordProfileId);
   });
 
   async function fetchRequests(profileId: string) {
@@ -66,6 +79,37 @@
       toast.error('Lỗi khi tải danh sách sự cố: ' + e.message);
     } finally {
       isLoading = false;
+    }
+  }
+
+  async function fetchStaff(profileId: string) {
+    try {
+      const res = await fetch(`/api/staff?landlordId=${profileId}`);
+      const data = await res.json();
+      if (res.ok) staffList = data;
+    } catch (e) {
+      // Bỏ qua lỗi tải nhân viên — vẫn xem được sự cố
+    }
+  }
+
+  async function assignStaff(requestId: string) {
+    if (isAssigning) return;
+    isAssigning = true;
+    try {
+      const res = await fetch('/api/requests', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: requestId, assignedToId: assignSelection || null })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Lỗi khi giao việc');
+
+      toast.success(assignSelection ? 'Đã giao việc cho nhân viên' : 'Đã bỏ phân công');
+      if (landlordId) fetchRequests(landlordId);
+    } catch (err: any) {
+      toast.error(err.message);
+    } finally {
+      isAssigning = false;
     }
   }
 
@@ -187,8 +231,8 @@
         {@const statusBadge = req.status === 'completed' ? 'bg-green-200 text-green-800' : req.status === 'in_progress' ? 'bg-blue-300 text-black' : req.status === 'rejected' ? 'bg-zinc-200 text-zinc-600' : 'bg-red-200 text-red-800'}
 
         <div
-          onclick={() => { selectedRequest = req; replyText = req.response || ''; isDetailOpen = true; }}
-          onkeydown={(e) => e.key === 'Enter' && (selectedRequest = req, replyText = req.response || '', isDetailOpen = true)}
+          onclick={() => { selectedRequest = req; replyText = req.response || ''; assignSelection = req.assignedToId || ''; isDetailOpen = true; }}
+          onkeydown={(e) => e.key === 'Enter' && (selectedRequest = req, replyText = req.response || '', assignSelection = req.assignedToId || '', isDetailOpen = true)}
           role="button"
           tabindex="0"
           class="border-2 border-black bg-white p-5 rounded-lg shadow-secondary hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all cursor-pointer text-left focus:outline-none focus:ring-2 focus:ring-blue-300"
@@ -220,6 +264,10 @@
               {getCategoryLabel(req.category)}
             </span>
           </div>
+
+          {#if req.assignedTo}
+            <p class="mt-2 text-[10px] font-black text-blue-600 uppercase tracking-wider">Phụ trách: {req.assignedTo.user.name}</p>
+          {/if}
         </div>
       {/each}
     </div>
@@ -324,6 +372,34 @@
               rows="3"
               class="w-full border-2 border-black p-3 text-xs rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300 bg-white font-semibold text-black"
             ></textarea>
+          </div>
+
+          <!-- Giao việc cho nhân viên -->
+          <div class="space-y-2">
+            <label for="req-assign" class="text-xs font-black text-zinc-650 uppercase tracking-wider block">Giao cho nhân viên</label>
+            <div class="flex gap-2">
+              <select
+                id="req-assign"
+                bind:value={assignSelection}
+                class="flex-1 border-2 border-black px-3 py-2 text-xs rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300 bg-white font-semibold text-black"
+              >
+                <option value="">— Chưa giao —</option>
+                {#each staffList as s}
+                  <option value={s.id}>{s.user.name}</option>
+                {/each}
+              </select>
+              <button
+                type="button"
+                onclick={() => assignStaff(selectedRequest!.id)}
+                disabled={isAssigning}
+                class="border-2 border-black bg-blue-300 hover:bg-blue-400 text-black px-4 py-2 rounded-[6px] text-xs font-black shadow-secondary hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all cursor-pointer"
+              >
+                Lưu
+              </button>
+            </div>
+            {#if staffList.length === 0}
+              <p class="text-[10px] font-semibold text-zinc-400">Chưa có nhân viên — thêm ở mục "Nhân viên" trên menu.</p>
+            {/if}
           </div>
         </div>
 

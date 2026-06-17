@@ -19,7 +19,9 @@
 		Gauge,
 		FileText,
 		TrendingUp,
-		MessageSquare
+		MessageSquare,
+		UserCog,
+		Plug
 	} from '@lucide/svelte';
 
 	let { children } = $props();
@@ -73,11 +75,13 @@
 		{ name: 'Chốt số điện nước', path: '/dashboard/meters', icon: Gauge },
 		{ name: 'Hóa đơn', path: '/dashboard/invoices', icon: Receipt },
 		{ name: 'Khách thuê', path: '/dashboard/tenants', icon: Users },
+		{ name: 'Nhân viên', path: '/dashboard/staff', icon: UserCog },
 		{ name: 'Hợp đồng', path: '/dashboard/contracts', icon: FileText },
 		{ name: 'Sự cố', path: '/dashboard/requests', icon: Wrench },
 		{ name: 'Tin nhắn', path: '/dashboard/messages', icon: MessageSquare },
 		{ name: 'Tài chính', path: '/dashboard/finance', icon: TrendingUp },
 		{ name: 'Bảng tin & Lời nhắn', path: '/dashboard/notifications', icon: Bell },
+		{ name: 'Dịch vụ', path: '/dashboard/services', icon: Plug },
 		{ name: 'Cài đặt', path: '/dashboard/settings', icon: Settings }
 	];
 </script>

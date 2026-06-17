@@ -25,6 +25,7 @@
         const session = JSON.parse(sessionStr);
         if (session.role === 'SUPER_ADMIN') goto('/super-admin');
         else if (session.role === 'LANDLORD') goto('/dashboard');
+        else if (session.role === 'STAFF') goto('/staff');
         else if (session.role === 'TENANT') goto('/tenant');
       } catch (e) {
         localStorage.removeItem('roomio_user');
@@ -116,6 +117,8 @@
           goto('/super-admin');
         } else if (data.role === 'LANDLORD') {
           goto('/dashboard');
+        } else if (data.role === 'STAFF') {
+          goto('/staff');
         } else if (data.role === 'TENANT') {
           goto('/tenant');
         }
