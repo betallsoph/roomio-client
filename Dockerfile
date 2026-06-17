@@ -19,8 +19,8 @@
     # Copy kết quả từ Bước 1 sang Nginx
     # LƯU Ý: Nếu ông xài Svelte Vite thường thì nó là /app/dist
     # Nếu xài SvelteKit (adapter-static) thì nó là /app/build
-    COPY --from=builder /app/dist /usr/share/nginx/html
-    
+    COPY --from=builder /app/build /usr/share/nginx/html
+        
     # Cấu hình Nginx để ép nó đọc file index.html (Sửa lỗi F5 bị 404 Not Found)
     RUN echo 'server { listen 80; location / { root /usr/share/nginx/html; index index.html; try_files $uri $uri/ /index.html; } }' > /etc/nginx/conf.d/default.conf
     
