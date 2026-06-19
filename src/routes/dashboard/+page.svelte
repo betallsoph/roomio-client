@@ -56,6 +56,21 @@
     createdAt: string;
   }
 
+  interface InboxItem {
+    id: string;
+    type: string;
+    priority: string;
+    title: string;
+    description: string;
+    href: string;
+    createdAt: string;
+  }
+
+  interface InboxData {
+    counts: Record<string, number>;
+    items: InboxItem[];
+  }
+
   let today = $state('');
   let landlordId = $state<string | null>(null);
   let isLoading = $state(true);
@@ -72,6 +87,7 @@
 
   let unpaidInvoices = $state<Invoice[]>([]);
   let pendingRequests = $state<MaintenanceRequest[]>([]);
+  let inbox = $state<InboxData>({ counts: {}, items: [] });
 
   onMount(() => {
     today = new Date().toLocaleDateString('vi-VN', { 
@@ -112,6 +128,11 @@
           .filter((r: any) => r.status !== 'completed' && r.status !== 'rejected')
           .slice(0, 5);
       }
+
+      // 4. Centralized operating inbox
+      const inboxRes = await fetch('/api/inbox');
+      const inboxData = await inboxRes.json();
+      if (inboxRes.ok) inbox = inboxData;
     } catch (err: any) {
       toast.error('Không thể tải dữ liệu báo cáo: ' + err.message);
     } finally {
@@ -150,30 +171,33 @@
   }
 </script>
 
-<div class="space-y-6">
+<div class="space-y-8">
   <!-- Header -->
-  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+  <section class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
     <div>
-      <h1 class="text-xl sm:text-2xl font-black text-black">Cổng Quản Trị Roomio</h1>
-      <p class="text-zinc-600 text-xs sm:text-sm mt-1 flex items-center gap-1.5 font-bold">
+      <h1 class="mb-3 text-2xl font-bold sm:text-3xl">Cổng Quản Trị Roomio</h1>
+      <p class="flex items-center gap-1.5 text-sm font-semibold leading-relaxed text-zinc-600 sm:text-base">
         Hôm nay, {today} <Calendar class="h-4 w-4 text-zinc-500" />
       </p>
+      <p class="mt-2 max-w-2xl text-sm leading-relaxed text-zinc-600">
+        Theo dõi doanh thu, phòng trống, hóa đơn chưa thu và những việc cần xử lý trong ngày.
+      </p>
     </div>
-    <div class="flex gap-2 sm:gap-3">
+    <div class="flex gap-3">
       <a 
         href="/dashboard/rooms" 
-        class="flex-1 sm:flex-none bg-blue-300 text-black border-2 border-black px-3 sm:px-4 py-2 sm:py-2.5 rounded-[6px] shadow-secondary hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all flex items-center justify-center gap-1.5 cursor-pointer font-black text-xs sm:text-sm"
+        class="inline-flex items-center gap-1.5 text-sm font-bold text-blue-500 hover:underline"
       >
         Phòng <ArrowRight class="h-3.5 w-3.5" />
       </a>
       <a 
         href="/dashboard/invoices/bulk" 
-        class="flex-1 sm:flex-none bg-green-200 text-black border-2 border-black px-3 sm:px-4 py-2 sm:py-2.5 rounded-[6px] shadow-secondary hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all flex items-center justify-center gap-1.5 cursor-pointer font-black text-xs sm:text-sm"
+        class="inline-flex items-center gap-1.5 text-sm font-bold text-blue-500 hover:underline"
       >
         Hoá đơn loạt <Play class="h-3.5 w-3.5" />
       </a>
     </div>
-  </div>
+  </section>
 
   {#if isLoading}
     <div class="h-[60vh] w-full flex items-center justify-center">
@@ -184,7 +208,7 @@
     </div>
   {:else}
     <!-- Mobile: compact inline stats strip (no cards) -->
-    <div class="sm:hidden flex items-center gap-0 border-2 border-black rounded-lg overflow-hidden divide-x-2 divide-black text-center">
+    <section class="sm:hidden flex items-center gap-0 overflow-hidden rounded-lg border-2 border-black bg-white text-center">
       <div class="flex-1 py-3 px-2">
         <p class="text-[9px] font-bold uppercase text-zinc-400 tracking-wider">Doanh thu</p>
         <p class="text-xs font-black text-black mt-0.5 truncate">{formatCurrency(stats.totalRevenue)}</p>
@@ -201,19 +225,21 @@
         <p class="text-[9px] font-bold uppercase text-zinc-400 tracking-wider">Hết HĐ</p>
         <p class="text-xs font-black text-black mt-0.5">{stats.expiringContracts}</p>
       </div>
-    </div>
+    </section>
 
     <!-- Desktop: stat cards grid -->
-    <div class="hidden sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
+    <section class="roomio-section hidden sm:block">
+      <h2 class="mb-4 text-lg font-bold sm:text-xl">Chỉ số chính</h2>
+      <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
       <!-- Card 1: Revenue -->
-      <div class="bg-white border-2 border-black p-4 rounded-lg shadow-secondary">
+      <div class="rounded-lg border-2 border-black bg-white p-4">
         <DollarSign class="h-5 w-5 text-blue-500 mb-2" />
         <p class="text-zinc-500 text-[10px] font-bold uppercase tracking-wider">Doanh thu</p>
         <h3 class="text-base sm:text-xl font-black text-black mt-0.5 truncate">{formatCurrency(stats.totalRevenue)}</h3>
       </div>
 
       <!-- Card 2: Occupancy -->
-      <div class="bg-white border-2 border-black p-4 rounded-lg shadow-secondary">
+      <div class="rounded-lg border-2 border-black bg-white p-4">
         <Home class="h-5 w-5 text-blue-500 mb-2" />
         <p class="text-zinc-500 text-[10px] font-bold uppercase tracking-wider">Tỷ lệ trống</p>
         <h3 class="text-base sm:text-xl font-black text-black mt-0.5">
@@ -225,25 +251,70 @@
       </div>
 
       <!-- Card 3: Unpaid Bills -->
-      <div class="bg-white border-2 border-black p-4 rounded-lg shadow-secondary">
+      <div class="rounded-lg border-2 border-black bg-white p-4">
         <Receipt class="h-5 w-5 text-blue-500 mb-2" />
         <p class="text-zinc-500 text-[10px] font-bold uppercase tracking-wider">Chưa đóng</p>
         <h3 class="text-base sm:text-xl font-black text-black mt-0.5">{stats.unpaidInvoices} HĐ</h3>
       </div>
 
       <!-- Card 4: Expiring Contracts -->
-      <div class="bg-white border-2 border-black p-4 rounded-lg shadow-secondary">
+      <div class="rounded-lg border-2 border-black bg-white p-4">
         <Calendar class="h-5 w-5 text-blue-500 mb-2" />
         <p class="text-zinc-500 text-[10px] font-bold uppercase tracking-wider">Sắp hết HĐ</p>
         <h3 class="text-base sm:text-xl font-black text-black mt-0.5">{stats.expiringContracts}</h3>
       </div>
-    </div>
+      </div>
+    </section>
 
     <!-- Main Lists Section -->
-    <div class="grid gap-6 lg:grid-cols-3">
+    <section class="roomio-section grid gap-6 lg:grid-cols-3">
+      <div class="roomio-window lg:col-span-3">
+        <div class="roomio-window-bar">
+          <div class="roomio-window-dots">
+            <div class="roomio-window-dot bg-red-500"></div>
+            <div class="roomio-window-dot bg-yellow-500"></div>
+            <div class="roomio-window-dot bg-green-500"></div>
+          </div>
+          <h2 class="font-black text-black text-base flex items-center gap-2">
+            Việc cần xử lý <Wrench class="h-5 w-5" />
+          </h2>
+          <a href="/dashboard/automation" class="text-xs font-black text-blue-500 hover:underline flex items-center gap-1">
+            Tự động hoá <ArrowRight class="h-3.5 w-3.5" />
+          </a>
+        </div>
+        {#if inbox.items.length === 0}
+          <div class="p-8 text-center">
+            <CheckCircle2 class="h-10 w-10 text-green-500 mx-auto mb-2" />
+            <p class="font-black text-black">Không có việc tồn đọng</p>
+            <p class="text-xs font-bold text-zinc-500 mt-1">Hệ thống chưa phát hiện hóa đơn, chỉ số, hợp đồng hay sự cố cần xử lý.</p>
+          </div>
+        {:else}
+          <div class="grid divide-y-2 divide-black md:grid-cols-2 md:divide-x-2 md:divide-y-0">
+            {#each inbox.items.slice(0, 8) as item}
+              <a href={item.href} class="block p-4 hover:bg-zinc-50 transition-colors">
+                <div class="flex items-start justify-between gap-3">
+                  <div class="min-w-0">
+                    <p class="text-sm font-black text-black truncate">{item.title}</p>
+                    <p class="text-xs font-bold text-zinc-600 mt-1 line-clamp-2">{item.description}</p>
+                  </div>
+                  <span class="shrink-0 rounded-full border border-black px-2 py-0.5 text-[9px] font-black uppercase {item.priority === 'high' ? 'bg-red-200 text-red-800' : 'bg-blue-100 text-blue-800'}">
+                    {item.type}
+                  </span>
+                </div>
+              </a>
+            {/each}
+          </div>
+        {/if}
+      </div>
+
       <!-- Left 2 Columns: Unpaid Invoices -->
-      <div class="lg:col-span-2 bg-white border-2 border-black rounded-lg shadow-secondary flex flex-col overflow-hidden">
-        <div class="p-4 border-b-2 border-black bg-zinc-50 flex items-center justify-between shrink-0">
+      <div class="roomio-window flex flex-col lg:col-span-2">
+        <div class="roomio-window-bar shrink-0">
+          <div class="roomio-window-dots">
+            <div class="roomio-window-dot bg-red-500"></div>
+            <div class="roomio-window-dot bg-yellow-500"></div>
+            <div class="roomio-window-dot bg-green-500"></div>
+          </div>
           <h2 class="font-black text-black text-base flex items-center gap-2">
             Hoá đơn cần thu tiền <Receipt class="h-5 w-5" />
           </h2>
@@ -344,8 +415,13 @@
       </div>
 
       <!-- Right Column: Pending Incidents -->
-      <div class="bg-white border-2 border-black rounded-lg shadow-secondary flex flex-col overflow-hidden">
-        <div class="p-4 border-b-2 border-black bg-zinc-50 flex items-center justify-between shrink-0">
+      <div class="roomio-window flex flex-col">
+        <div class="roomio-window-bar shrink-0">
+          <div class="roomio-window-dots">
+            <div class="roomio-window-dot bg-red-500"></div>
+            <div class="roomio-window-dot bg-yellow-500"></div>
+            <div class="roomio-window-dot bg-green-500"></div>
+          </div>
           <h2 class="font-black text-black text-base flex items-center gap-2">
             Sự cố cần xử lý <Wrench class="h-5 w-5" />
           </h2>
@@ -393,6 +469,6 @@
           </div>
         {/if}
       </div>
-    </div>
+    </section>
   {/if}
 </div>

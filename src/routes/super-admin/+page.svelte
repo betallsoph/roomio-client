@@ -158,59 +158,64 @@
   });
 </script>
 
-<div class="min-h-screen bg-slate-50 font-sans">
+<div class="relative min-h-screen overflow-hidden bg-white font-sans text-black">
+  <div class="roomio-grid-bg fixed inset-0 -z-10 opacity-60"></div>
+  <div class="fixed inset-0 -z-10 bg-gradient-to-b from-white/90 via-white/70 to-white/95"></div>
   <!-- Top bar -->
-  <header class="bg-slate-900 text-white h-16 px-6 flex items-center justify-between shadow-md">
+  <header class="mx-auto flex max-w-7xl items-center justify-between px-5 py-6 sm:px-6">
     <div class="flex items-center gap-3">
-      <div class="bg-indigo-600 p-2 rounded-xl">
-        <ShieldCheck class="h-5 w-5 text-white" />
+      <div class="rounded-full border-[3px] border-black bg-blue-200 p-2.5 shadow-secondary">
+        <ShieldCheck class="h-6 w-6 text-black" />
       </div>
-      <span class="text-xl font-bold tracking-tight">Roomio SuperAdmin</span>
+      <div>
+        <p class="text-[10px] font-bold uppercase tracking-wider text-blue-500">Roomio Control</p>
+        <h1 class="mt-1 text-2xl font-black tracking-tight text-black">SuperAdmin</h1>
+      </div>
     </div>
     
     <div class="flex items-center gap-4">
-      <span class="text-slate-300 text-sm font-semibold">Chào Admin, {adminName}</span>
+      <span class="hidden text-sm font-semibold text-zinc-600 sm:inline">Chào Admin, {adminName}</span>
       <button 
         onclick={handleLogout}
-        class="flex items-center gap-1.5 text-red-400 hover:text-red-300 text-sm font-semibold cursor-pointer"
+        class="roomio-button-white px-3 py-2 text-xs"
       >
-        <LogOut class="h-4.5 w-4.5" />
         Đăng xuất
+        <LogOut class="h-4.5 w-4.5" />
       </button>
     </div>
   </header>
 
   <!-- Main panel wrapper -->
-  <main class="max-w-7xl mx-auto p-6 space-y-6">
+  <main class="relative z-10 mx-auto max-w-7xl space-y-6 px-5 pb-10 sm:px-6">
     <!-- Quick stats grid -->
     <div class="grid gap-4 sm:grid-cols-3">
-      <div class="bg-white border p-5 rounded-2xl shadow-sm flex items-center gap-4">
-        <div class="p-3 bg-indigo-50 rounded-xl text-indigo-600">
+      <div class="roomio-card flex items-center gap-4 p-5">
+        <div class="rounded-lg border-2 border-black bg-blue-100 p-3 text-black">
           <Users class="h-6 w-6" />
         </div>
         <div>
-          <p class="text-slate-400 text-xs font-bold uppercase tracking-wider">Tổng chủ trọ vận hành</p>
-          <h3 class="text-2xl font-extrabold text-slate-800 mt-1">{landlords.length} chủ trọ</h3>
+          <p class="text-xs font-bold uppercase tracking-wider text-zinc-500">Tổng chủ trọ vận hành</p>
+          <h3 class="mt-1 text-2xl font-black text-black">{landlords.length} chủ trọ</h3>
         </div>
       </div>
-      <div class="bg-white border p-5 rounded-2xl shadow-sm flex items-center gap-4">
-        <div class="p-3 bg-emerald-50 rounded-xl text-emerald-600">
+      <div class="roomio-card flex items-center gap-4 p-5">
+        <div class="rounded-lg border-2 border-black bg-green-100 p-3 text-green-800">
           <Award class="h-6 w-6" />
         </div>
         <div>
-          <p class="text-slate-400 text-xs font-bold uppercase tracking-wider">Đối tác Premium</p>
-          <h3 class="text-2xl font-extrabold text-slate-800 mt-1">
+          <p class="text-xs font-bold uppercase tracking-wider text-zinc-500">Đối tác Premium</p>
+          <h3 class="mt-1 text-2xl font-black text-black">
             {landlords.filter(l => l.subscriptionType !== 'FREE').length} đối tác
           </h3>
         </div>
       </div>
-      <div class="bg-white border p-5 rounded-2xl shadow-sm flex items-center gap-4">
-        <div class="p-3 bg-amber-50 rounded-xl text-amber-600">
+      <div class="roomio-card flex items-center gap-4 p-5">
+        <div class="rounded-lg border-2 border-black bg-yellow-100 p-3 text-yellow-800">
           <Building2 class="h-6 w-6" />
         </div>
         <div>
-          <p class="text-slate-400 text-xs font-bold uppercase tracking-wider">Tổng số phòng quản lý</p>
-          <h3 class="text-2xl font-extrabold text-slate-800 mt-1">
+          <p class="text-xs font-bold uppercase tracking-wider text-zinc-500">Tổng số phòng quản lý</p>
+          <h3 class="mt-1 text-2xl font-black text-black">
             {landlords.reduce((sum, l) => sum + l.properties.reduce((s, p) => s + p._count.rooms, 0), 0)} phòng
           </h3>
         </div>
@@ -218,31 +223,31 @@
     </div>
 
     <!-- Search and controls -->
-    <div class="bg-white border p-4 rounded-2xl shadow-sm flex items-center gap-3">
-      <Search class="h-5 w-5 text-slate-400 shrink-0" />
+    <div class="roomio-card flex items-center gap-3 p-4">
+      <Search class="h-5 w-5 shrink-0 text-black" />
       <input 
         type="text" 
         bind:value={searchQuery}
         placeholder="Tìm kiếm chủ trọ theo tên, công ty, email hoặc số điện thoại..."
-        class="w-full text-sm outline-none bg-transparent text-slate-700"
+        class="w-full bg-transparent text-sm font-semibold text-black outline-none"
       />
     </div>
 
     {#if isLoading}
       <div class="h-[40vh] w-full flex items-center justify-center">
-        <Loader2 class="h-10 w-10 text-indigo-600 animate-spin" />
+        <Loader2 class="h-10 w-10 animate-spin text-black" />
       </div>
     {:else if filteredLandlords().length === 0}
-      <div class="bg-white border p-12 rounded-2xl text-center shadow-sm">
-        <p class="text-slate-400 text-sm">Không tìm thấy chủ trọ nào khớp với từ khóa tìm kiếm.</p>
+      <div class="roomio-blue-card p-12 text-center">
+        <p class="text-sm font-semibold text-zinc-600">Không tìm thấy chủ trọ nào khớp với từ khóa tìm kiếm.</p>
       </div>
     {:else}
       <!-- Landlords registry list -->
-      <div class="bg-white border rounded-2xl shadow-sm overflow-hidden">
+      <div class="roomio-card overflow-hidden">
         <div class="overflow-x-auto">
           <table class="w-full text-left border-collapse text-sm">
             <thead>
-              <tr class="bg-slate-50 border-b text-slate-500 font-bold uppercase text-xs">
+              <tr class="border-b-2 border-black bg-blue-300 text-xs font-black uppercase text-black">
                 <th class="px-6 py-4">Họ và tên</th>
                 <th class="px-6 py-4">Thương hiệu</th>
                 <th class="px-6 py-4">Tài khoản liên hệ</th>
@@ -256,15 +261,15 @@
             <tbody>
               {#each filteredLandlords() as landlord}
                 {@const totalRooms = landlord.properties.reduce((sum, p) => sum + p._count.rooms, 0)}
-                <tr class="border-b hover:bg-slate-50/50 transition-colors text-slate-600">
-                  <td class="px-6 py-4 font-bold text-slate-800">{landlord.user.name}</td>
+                <tr class="border-b border-black/15 text-black transition-colors hover:bg-blue-50">
+                  <td class="px-6 py-4 font-black text-black">{landlord.user.name}</td>
                   <td class="px-6 py-4 font-medium">{landlord.companyName || '--'}</td>
                   <td class="px-6 py-4">
-                    <p class="font-medium text-slate-700">{landlord.user.phone}</p>
+                    <p class="font-bold text-black">{landlord.user.phone}</p>
                     <p class="text-xs text-slate-400">{landlord.user.email}</p>
                   </td>
                   <td class="px-6 py-4">
-                    <span class="font-bold text-slate-700">{landlord.properties.length}</span> tòa nhà 
+                    <span class="font-black text-black">{landlord.properties.length}</span> tòa nhà
                     <span class="text-xs text-slate-400 font-medium block">({totalRooms} phòng trọ)</span>
                   </td>
                   <td class="px-6 py-4">
@@ -283,7 +288,7 @@
                   <td class="px-6 py-4 text-right flex items-center justify-end gap-2">
                     <button
                       onclick={() => handleToggleStatus(landlord.userId, landlord.user.isActive)}
-                      class="p-1.5 border border-slate-200 hover:bg-slate-50 rounded-lg text-slate-600 transition-colors cursor-pointer"
+                    class="cursor-pointer rounded-lg border-2 border-black bg-white p-1.5 text-black shadow-secondary transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none"
                       title={landlord.user.isActive ? 'Khóa tài khoản' : 'Mở khóa'}
                     >
                       {#if landlord.user.isActive}
@@ -299,7 +304,7 @@
                         subValid = landlord.subValidUntil ? landlord.subValidUntil.split('T')[0] : '';
                         isEditOpen = true; 
                       }}
-                      class="p-1.5 border border-slate-200 hover:bg-slate-50 rounded-lg text-slate-600 transition-colors cursor-pointer"
+                      class="cursor-pointer rounded-lg border-2 border-black bg-white p-1.5 text-black shadow-secondary transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none"
                       title="Nâng cấp gói"
                     >
                       <Sliders class="h-4 w-4 text-indigo-500" />
@@ -324,31 +329,31 @@
       tabindex="0"
     >
       <div 
-        class="bg-white rounded-2xl w-full max-w-md border border-slate-200 shadow-2xl p-6 relative flex flex-col gap-4 animate-[scale-up_0.2s_ease-out]"
+        class="roomio-card relative flex w-full max-w-md animate-[scale-up_0.2s_ease-out] flex-col gap-4 p-6"
         onclick={(e) => e.stopPropagation()}
         onkeydown={(e) => e.stopPropagation()}
         role="dialog"
       >
-        <div class="flex justify-between items-center border-b pb-3">
-          <h2 class="font-bold text-slate-800 text-lg">Cấp gói dịch vụ Roomio</h2>
-          <button onclick={() => isEditOpen = false} class="text-slate-400 hover:bg-slate-100 p-1.5 rounded-lg">
+        <div class="flex items-center justify-between border-b-2 border-black pb-3">
+          <h2 class="text-lg font-black text-black">Cấp gói dịch vụ Roomio</h2>
+          <button onclick={() => isEditOpen = false} class="rounded-lg border-2 border-black bg-white p-1.5 text-black shadow-secondary transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none">
             <X class="h-5 w-5" />
           </button>
         </div>
 
         <form onsubmit={handleUpdateSubscription} class="space-y-4">
-          <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 text-xs text-slate-500">
-            <p class="font-bold text-slate-700">Khách hàng: {selectedLandlord.user.name}</p>
+          <div class="rounded-lg border-2 border-black bg-blue-100 p-3 text-xs font-semibold text-zinc-700">
+            <p class="font-black text-black">Khách hàng: {selectedLandlord.user.name}</p>
             <p class="mt-1">Thương hiệu: {selectedLandlord.companyName || '--'}</p>
           </div>
 
           <div class="space-y-1">
-            <label for="sub-level" class="text-xs font-bold text-slate-500 uppercase tracking-wider block">Chọn gói đăng ký</label>
+            <label for="sub-level" class="block text-xs font-bold uppercase tracking-wider text-zinc-600">Chọn gói đăng ký</label>
             <select 
               id="sub-level"
               bind:value={subType}
               required
-              class="w-full border border-slate-200 px-3 py-2 text-sm rounded-xl focus:outline-none bg-slate-50 font-medium text-slate-700"
+              class="w-full rounded-lg border-2 border-black bg-white px-3 py-2 text-sm font-semibold text-black focus:outline-none focus:ring-2 focus:ring-blue-300"
             >
               <option value="FREE">Gói miễn phí (FREE)</option>
               <option value="PREMIUM">Gói nâng cao (PREMIUM)</option>
@@ -357,28 +362,28 @@
           </div>
 
           <div class="space-y-1">
-            <label for="sub-valid" class="text-xs font-bold text-slate-500 uppercase tracking-wider block">Hạn gói dịch vụ</label>
+            <label for="sub-valid" class="block text-xs font-bold uppercase tracking-wider text-zinc-600">Hạn gói dịch vụ</label>
             <input 
               id="sub-valid"
               type="date" 
               bind:value={subValid}
-              class="w-full border border-slate-200 px-3 py-2.5 text-sm rounded-xl focus:outline-none bg-slate-50 text-slate-700"
+              class="w-full rounded-lg border-2 border-black bg-white px-3 py-2.5 text-sm font-semibold text-black focus:outline-none focus:ring-2 focus:ring-blue-300"
             />
             <span class="text-[10px] text-slate-400 block mt-1">Để trống nếu muốn đặt hạn vĩnh viễn cho gói FREE.</span>
           </div>
 
-          <div class="flex justify-end gap-3 pt-3 border-t">
+          <div class="flex justify-end gap-3 border-t-2 border-black pt-3">
             <button 
               type="button" 
               onclick={() => isEditOpen = false}
-              class="border border-slate-200 hover:bg-slate-50 text-slate-700 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer"
+              class="cursor-pointer rounded-[6px] border-2 border-black bg-white px-4 py-2 text-xs font-bold text-black shadow-secondary transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none"
             >
               Hủy
             </button>
             <button 
               type="submit"
               disabled={isSaving}
-              class="bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-600/50 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-md shadow-indigo-600/10 transition-all flex items-center gap-1 cursor-pointer"
+              class="flex cursor-pointer items-center gap-1 rounded-[6px] border-2 border-black bg-blue-300 px-4 py-2 text-xs font-black text-black shadow-secondary transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none disabled:opacity-50"
             >
               {#if isSaving}
                 <Loader2 class="h-4.5 w-4.5 animate-spin" />

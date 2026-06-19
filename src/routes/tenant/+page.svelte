@@ -45,6 +45,9 @@
 		paidDate: string | null;
 		status: string; // 'paid' | 'pending'
 		paymentProofImage: string | null;
+		payosCheckoutUrl?: string | null;
+		payosQrCode?: string | null;
+		payosStatus?: string | null;
 		notes: string | null;
 		items: InvoiceItem[];
 		room: {
@@ -159,11 +162,13 @@
 	let notes = $state<SpecialNote[]>([]);
 	let announcements = $state<Announcement[]>([]);
 
-	// Selected invoice for payment / VietQR modal
+	// Selected invoice for payment / PayOS modal
 	let payingInvoice = $state<Invoice | null>(null);
 	let proofImageUrl = $state('');
 	let isSubmittingProof = $state(false);
 	let isUploadingProofImage = $state(false);
+	let isCreatingPaymentLink = $state(false);
+	let paymentLinkError = $state('');
 
 	// Request form state
 	let reqCategory = $state('maintenance');
@@ -523,12 +528,31 @@
 	// Mở modal thanh toán: lấy chi tiết hóa đơn (kèm thông tin nhận tiền của chủ nhà)
 	async function openPayment(invoice: Invoice) {
 		proofImageUrl = '';
+		paymentLinkError = '';
+		isCreatingPaymentLink = true;
 		try {
 			const res = await fetch(`/api/invoices/${invoice.id}`);
 			const data = await res.json();
 			payingInvoice = res.ok ? data : invoice;
+
+			const linkRes = await fetch(`/api/invoices/${invoice.id}/payment-link`, {
+				method: 'POST'
+			});
+			const linkData = await linkRes.json();
+			if (!linkRes.ok) {
+				throw new Error(linkData.error || 'Không tạo được link thanh toán PayOS');
+			}
+			payingInvoice = {
+				...(payingInvoice || invoice),
+				payosCheckoutUrl: linkData.checkoutUrl,
+				payosQrCode: linkData.qrCode,
+				payosStatus: linkData.status
+			};
 		} catch (e) {
-			payingInvoice = invoice;
+			payingInvoice = payingInvoice || invoice;
+			paymentLinkError = e instanceof Error ? e.message : 'Không tạo được link thanh toán PayOS';
+		} finally {
+			isCreatingPaymentLink = false;
 		}
 	}
 
@@ -671,15 +695,6 @@
 		return new Intl.NumberFormat('vi-VN').format(amount) + 'đ';
 	}
 
-	// Generate dynamic VietQR image url
-	function getVietQRUrl(invoice: Invoice) {
-		const ll = invoice.room.property.landlord;
-		if (!ll) return '';
-		const amount = invoice.totalAmount;
-		const info = `ROOMIO ${invoice.roomNumber} T${invoice.month.replace('-', '')}`;
-		return `https://img.vietqr.io/image/${ll.bankCode}-${ll.accountNumber}-compact.png?amount=${amount}&addInfo=${encodeURIComponent(info)}&accountName=${encodeURIComponent(ll.accountName)}`;
-	}
-
 	const pendingInvoice = $derived(() => {
 		return invoices.find((inv) => inv.status !== 'paid');
 	});
@@ -733,26 +748,28 @@
 	}
 </script>
 
-<div class="relative flex min-h-screen flex-col bg-slate-50 font-sans">
+<div class="relative flex min-h-screen flex-col overflow-hidden bg-white font-sans text-black">
+	<div class="roomio-grid-bg fixed inset-0 -z-10 opacity-60"></div>
+	<div class="fixed inset-0 -z-10 bg-gradient-to-b from-white/90 via-white/70 to-white/95"></div>
 	<!-- Interactive Grid Background Overlay -->
 	<div
-		class="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,black_1px,transparent_0)] bg-[size:16px_16px] opacity-[0.03]"
+		class="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,black_1px,transparent_0)] bg-[size:16px_16px] opacity-[0.02]"
 	></div>
 
-	<!-- Top header: Brutalist header with black border-b-2 -->
+	<!-- Top header -->
 	<header
-		class="sticky top-0 z-40 flex h-16 shrink-0 items-center justify-between border-b-2 border-black bg-blue-300 px-6 text-black shadow-sm"
+		class="sticky top-0 z-40 mx-auto flex w-full max-w-4xl shrink-0 items-center justify-between bg-transparent px-5 py-5 text-black sm:px-6"
 	>
 		<div class="flex items-center gap-2">
-			<div class="rounded-lg border-2 border-black bg-white p-1.5 shadow-secondary">
+			<div class="rounded-full border-[3px] border-black bg-blue-200 p-2 shadow-secondary">
 				<Home class="h-5 w-5 text-black" />
 			</div>
-			<span class="text-lg font-black">Roomio Cư Dân</span>
+			<span class="text-xl font-black">Roomio Cư Dân</span>
 		</div>
 
 		<button
 			onclick={handleLogout}
-			class="flex cursor-pointer items-center gap-1.5 rounded-[6px] border-2 border-black bg-white px-3 py-1.5 text-xs font-bold shadow-secondary transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none"
+			class="roomio-button-white px-3 py-1.5 text-xs"
 		>
 			Đăng xuất
 			<LogOut class="h-4 w-4" />
@@ -770,19 +787,17 @@
 		</div>
 	{:else}
 		<!-- Shell Wrapper -->
-		<main class="relative z-10 mx-auto w-full max-w-4xl flex-grow space-y-6 p-4 pb-24">
+		<main class="relative z-10 mx-auto w-full max-w-4xl flex-grow space-y-6 px-5 pb-24 sm:px-6">
 			<!-- Welcome Header Profile Card - Styled as Brutallist Card -->
 			<div
-				class="relative flex flex-col justify-between gap-4 overflow-hidden rounded-lg border-2 border-black bg-white p-6 text-black shadow-secondary sm:flex-row sm:items-center"
+				class="relative flex flex-col justify-between gap-4 overflow-hidden rounded-lg border-2 border-black bg-blue-100 p-6 text-black shadow-secondary sm:flex-row sm:items-center"
 			>
 				<div
 					class="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,#00000005_1px,transparent_1px),linear-gradient(to_bottom,#00000005_1px,transparent_1px)] bg-[size:16px_16px]"
 				></div>
 
 				<div class="relative z-10 flex items-center gap-4">
-					<div
-						class="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg border-2 border-black bg-blue-300 text-lg font-black text-black"
-					>
+					<div class="flex h-14 w-14 shrink-0 items-center justify-center rounded-full border-[3px] border-black bg-white text-xl font-black text-black shadow-secondary">
 						{tenantName.slice(0, 1).toUpperCase()}
 					</div>
 					<div>
@@ -1012,7 +1027,7 @@
 				{:else if activeTab === 'bills'}
 					<div class="space-y-4">
 						{#if payingInvoice}
-							<!-- VietQR Payment Modal Detail -->
+							<!-- PayOS Payment Detail -->
 							<div
 								class="animate-[scale-up_0.2s_ease-out] space-y-4 rounded-lg border-2 border-black bg-white p-5 shadow-secondary"
 							>
@@ -1029,55 +1044,52 @@
 									</button>
 								</div>
 
-								<!-- VietQR image dynamically generated -->
 								<div class="flex flex-col items-center gap-6 md:flex-row">
 									<div
-										class="flex flex-col items-center rounded-lg border-2 border-black bg-white p-3 shadow-secondary"
+										class="flex h-64 w-full flex-col items-center justify-center rounded-lg border-2 border-black bg-blue-50 p-4 text-center shadow-secondary md:w-64"
 									>
-										{#if payingInvoice.room.property.landlord}
-											<img
-												src={getVietQRUrl(payingInvoice)}
-												alt="VietQR thanh toan"
-												class="h-56 w-56 object-contain"
-											/>
+										{#if isCreatingPaymentLink}
+											<Loader2 class="mb-3 h-10 w-10 animate-spin text-black" />
+											<p class="text-xs font-black text-zinc-600">Đang tạo link PayOS...</p>
+										{:else if payingInvoice.payosCheckoutUrl}
+											<QrCode class="mb-3 h-12 w-12 text-black" />
+											<p class="text-sm font-black text-black">Thanh toán qua PayOS</p>
+											<p class="mt-1 text-xs font-bold text-zinc-600">
+												Mở trang PayOS để quét QR ngân hàng hoặc hoàn tất thanh toán.
+											</p>
+											<a
+												href={payingInvoice.payosCheckoutUrl}
+												target="_blank"
+												rel="noreferrer"
+												class="mt-4 rounded-[6px] border-2 border-black bg-blue-300 px-4 py-2 text-xs font-black text-black shadow-secondary transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none"
+											>
+												Mở PayOS
+											</a>
 										{:else}
-											<div class="flex h-56 w-56 items-center justify-center">
-												<Loader2 class="h-8 w-8 animate-spin text-zinc-400" />
-											</div>
+											<AlertCircle class="mb-3 h-10 w-10 text-red-500" />
+											<p class="text-sm font-black text-black">Chưa tạo được link PayOS</p>
+											<p class="mt-1 text-xs font-bold text-red-700">{paymentLinkError}</p>
 										{/if}
-										<p class="mt-2 text-[10px] font-black tracking-wider text-zinc-500 uppercase">
-											Mở app ngân hàng quét mã
-										</p>
 									</div>
 
 									<!-- Bank Info and Proof Upload -->
 									<div class="w-full flex-1 space-y-3">
 										<div class="space-y-2 border-b-2 border-black pb-3 text-xs">
 											<p class="font-black tracking-wider text-zinc-500 uppercase">
-												Thông tin tài khoản nhận
+												Thông tin thanh toán
 											</p>
-											{#if payingInvoice.room.property.landlord}
-												{@const ll = payingInvoice.room.property.landlord}
-												<p class="text-sm font-black text-black">{ll.bankName} ({ll.bankCode})</p>
-												<p class="font-black text-black">STK: {ll.accountNumber}</p>
-												<p class="font-black text-black">Tên: {ll.accountName}</p>
-												{#if ll.momoNumber}
-													<p class="font-black text-pink-600">Momo: {ll.momoNumber}</p>
-												{/if}
-											{:else}
-												<p class="font-bold text-zinc-400">Đang tải thông tin tài khoản...</p>
-											{/if}
+											<p class="text-sm font-black text-black">Cổng thanh toán PayOS</p>
 											<p class="font-black text-indigo-600">
 												Số tiền: {formatCurrency(payingInvoice.totalAmount)}
 											</p>
 											<p
 												class="mt-1 w-fit rounded border-2 border-black bg-white px-2 py-1 font-mono font-black text-black"
 											>
-												Nội dung: ROOMIO {payingInvoice.roomNumber} T{payingInvoice.month.replace(
-													'-',
-													''
-												)}
+												Mã hóa đơn: {payingInvoice.id}
 											</p>
+											{#if payingInvoice.payosStatus}
+												<p class="font-bold text-zinc-600">Trạng thái PayOS: {payingInvoice.payosStatus}</p>
+											{/if}
 										</div>
 
 										<!-- Upload payment proof image form -->

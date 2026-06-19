@@ -232,16 +232,18 @@
   <title>Roomio — Cổng Nhân Viên</title>
 </svelte:head>
 
-<div class="min-h-screen bg-slate-50 font-sans">
+<div class="relative min-h-screen overflow-hidden bg-white font-sans text-black">
+  <div class="roomio-grid-bg fixed inset-0 -z-10 opacity-60"></div>
+  <div class="fixed inset-0 -z-10 bg-gradient-to-b from-white/90 via-white/70 to-white/95"></div>
   <!-- Header -->
-  <header class="sticky top-0 z-30 flex items-center justify-between border-b-2 border-black bg-white px-4 py-3 sm:px-6">
-    <div class="flex items-center gap-2">
-      <div class="rounded-lg border-2 border-black bg-blue-300 p-1.5 shadow-secondary">
-        <Building2 class="h-4 w-4 text-black" />
+  <header class="sticky top-0 z-30 mx-auto flex max-w-5xl items-center justify-between px-4 py-5 sm:px-6">
+    <div class="flex items-center gap-3">
+      <div class="rounded-full border-[3px] border-black bg-blue-200 p-2 shadow-secondary">
+        <Building2 class="h-5 w-5 text-black" />
       </div>
       <div class="leading-none">
-        <span class="text-base font-black tracking-tight text-black">Roomio</span>
-        <span class="ml-1 text-[10px] font-bold uppercase tracking-wider text-zinc-500">Nhân viên</span>
+        <p class="text-[10px] font-bold uppercase tracking-wider text-blue-500">Roomio Staff</p>
+        <h1 class="mt-1 text-xl font-black tracking-tight text-black">Cổng nhân viên</h1>
       </div>
     </div>
     <div class="flex items-center gap-3">
@@ -251,7 +253,7 @@
       </div>
       <button
         onclick={handleLogout}
-        class="flex items-center gap-1.5 rounded-[6px] border-2 border-black bg-red-200 px-3 py-2 text-xs font-black text-red-800 shadow-secondary transition-all hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none"
+        class="roomio-button-white px-3 py-2 text-xs"
       >
         Đăng xuất <LogOut class="h-4 w-4" />
       </button>
@@ -259,10 +261,10 @@
   </header>
 
   <!-- Tabs -->
-  <div class="sticky top-[57px] z-20 flex gap-2 overflow-x-auto border-b-2 border-black bg-white px-4 py-2 sm:px-6">
+  <div class="sticky top-[76px] z-20 mx-auto flex max-w-5xl gap-2 overflow-x-auto border-y-2 border-black bg-white/95 px-4 py-2 backdrop-blur sm:px-6">
     <button
       onclick={() => (activeTab = 'requests')}
-      class="flex shrink-0 items-center gap-1.5 rounded-[6px] border-2 px-3 py-2 text-xs font-black transition-all {activeTab === 'requests' ? 'border-black bg-blue-300 text-black shadow-secondary' : 'border-transparent text-zinc-500 hover:text-black'}"
+      class="flex shrink-0 items-center gap-1.5 rounded-[6px] border-2 px-3 py-2 text-xs font-black transition-all {activeTab === 'requests' ? 'border-black bg-blue-300 text-black shadow-secondary' : 'border-black bg-white text-zinc-600 hover:bg-blue-100 hover:text-black'}"
     >
       <Wrench class="h-4 w-4" /> Sự cố được giao
       {#if openRequestCount > 0}
@@ -271,7 +273,7 @@
     </button>
     <button
       onclick={() => (activeTab = 'meters')}
-      class="flex shrink-0 items-center gap-1.5 rounded-[6px] border-2 px-3 py-2 text-xs font-black transition-all {activeTab === 'meters' ? 'border-black bg-blue-300 text-black shadow-secondary' : 'border-transparent text-zinc-500 hover:text-black'}"
+      class="flex shrink-0 items-center gap-1.5 rounded-[6px] border-2 px-3 py-2 text-xs font-black transition-all {activeTab === 'meters' ? 'border-black bg-blue-300 text-black shadow-secondary' : 'border-black bg-white text-zinc-600 hover:bg-blue-100 hover:text-black'}"
     >
       <Gauge class="h-4 w-4" /> Chốt số điện nước
       {#if meters.length > 0}
@@ -280,7 +282,7 @@
     </button>
     <button
       onclick={() => (activeTab = 'rooms')}
-      class="flex shrink-0 items-center gap-1.5 rounded-[6px] border-2 px-3 py-2 text-xs font-black transition-all {activeTab === 'rooms' ? 'border-black bg-blue-300 text-black shadow-secondary' : 'border-transparent text-zinc-500 hover:text-black'}"
+      class="flex shrink-0 items-center gap-1.5 rounded-[6px] border-2 px-3 py-2 text-xs font-black transition-all {activeTab === 'rooms' ? 'border-black bg-blue-300 text-black shadow-secondary' : 'border-black bg-white text-zinc-600 hover:bg-blue-100 hover:text-black'}"
     >
       <Home class="h-4 w-4" /> Phòng & Khách
     </button>
@@ -294,7 +296,7 @@
     {:else if activeTab === 'requests'}
       <!-- TAB: Sự cố được giao -->
       {#if requests.length === 0}
-        <div class="mx-auto max-w-md rounded-lg border-2 border-black bg-white p-12 text-center shadow-secondary">
+        <div class="roomio-blue-card mx-auto max-w-md p-12 text-center">
           <Wrench class="mx-auto h-7 w-7" />
           <h3 class="mt-2 text-lg font-black text-black">Chưa có sự cố nào được giao</h3>
           <p class="mt-2 text-sm font-semibold text-zinc-600">Khi chủ trọ giao việc, sự cố sẽ xuất hiện ở đây.</p>
@@ -304,7 +306,7 @@
           {#each requests as req}
             <button
               onclick={() => openRequest(req)}
-              class="cursor-pointer rounded-lg border-2 border-black bg-white p-5 text-left shadow-secondary transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none"
+              class="roomio-card cursor-pointer p-5 text-left transition-all hover:translate-x-[3px] hover:translate-y-[3px] hover:shadow-none"
             >
               <div class="mb-3 flex items-start justify-between gap-2">
                 <span class="rounded-full border border-black px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wider {statusBadgeClass(req.status)}">
@@ -328,7 +330,7 @@
     {:else if activeTab === 'meters'}
       <!-- TAB: Chốt số điện nước -->
       {#if meters.length === 0}
-        <div class="mx-auto max-w-md rounded-lg border-2 border-black bg-white p-12 text-center shadow-secondary">
+        <div class="roomio-blue-card mx-auto max-w-md p-12 text-center">
           <Gauge class="mx-auto h-7 w-7" />
           <h3 class="mt-2 text-lg font-black text-black">Không có chỉ số chờ duyệt</h3>
           <p class="mt-2 text-sm font-semibold text-zinc-600">Các chỉ số khách gửi đang chờ sẽ hiện ở đây để bạn chốt.</p>
@@ -336,7 +338,7 @@
       {:else}
         <div class="space-y-3">
           {#each meters as m}
-            <div class="rounded-lg border-2 border-black bg-white p-4 shadow-secondary">
+            <div class="roomio-card p-4">
               <div class="flex flex-wrap items-center justify-between gap-2">
                 <div>
                   <p class="text-sm font-black text-black">
@@ -386,12 +388,12 @@
     {:else if activeTab === 'rooms'}
       <!-- TAB: Phòng & Khách (chỉ đọc) -->
       {#if rooms.length === 0}
-        <div class="mx-auto max-w-md rounded-lg border-2 border-black bg-white p-12 text-center shadow-secondary">
+        <div class="roomio-blue-card mx-auto max-w-md p-12 text-center">
           <Home class="mx-auto h-7 w-7" />
           <h3 class="mt-2 text-lg font-black text-black">Chưa có phòng nào</h3>
         </div>
       {:else}
-        <div class="overflow-hidden rounded-lg border-2 border-black bg-white shadow-secondary">
+        <div class="roomio-card overflow-hidden">
           <div class="overflow-x-auto">
             <table class="w-full border-collapse text-left text-sm">
               <thead>

@@ -59,6 +59,7 @@
 
   let isConfirming = $state(false);
   let isDeleting = $state(false);
+  let selectedInvoiceIds = $state<string[]>([]);
 
   onMount(() => {
     const sessionStr = localStorage.getItem('roomio_user');
@@ -130,6 +131,37 @@
     }
   }
 
+  async function deleteSelectedInvoices() {
+    if (selectedInvoiceIds.length === 0 || isDeleting) return;
+    if (!confirm(`Bạn có chắc muốn xóa ${selectedInvoiceIds.length} hóa đơn đã chọn? Công nợ phòng sẽ được cập nhật lại.`)) return;
+    isDeleting = true;
+
+    try {
+      const res = await fetch('/api/invoices', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids: selectedInvoiceIds })
+      });
+      const data = await res.json();
+
+      if (!res.ok) throw new Error(data.error || 'Lỗi khi xóa hóa đơn hàng loạt');
+
+      toast.success(`Đã xóa ${data.count} hóa đơn`);
+      selectedInvoiceIds = [];
+      if (landlordId) fetchInvoices(landlordId);
+    } catch (err: any) {
+      toast.error(err.message);
+    } finally {
+      isDeleting = false;
+    }
+  }
+
+  function toggleInvoiceSelection(invoiceId: string) {
+    selectedInvoiceIds = selectedInvoiceIds.includes(invoiceId)
+      ? selectedInvoiceIds.filter(id => id !== invoiceId)
+      : [...selectedInvoiceIds, invoiceId];
+  }
+
   function formatCurrency(amount: number) {
     return new Intl.NumberFormat('vi-VN').format(amount) + 'đ';
   }
@@ -159,6 +191,27 @@
       Tạo hóa đơn loạt <ArrowRight class="h-4 w-4" />
     </a>
   </div>
+
+  {#if selectedInvoiceIds.length > 0}
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-2 border-black bg-red-50 rounded-lg p-3 shadow-secondary">
+      <p class="text-sm font-black text-black">Đã chọn {selectedInvoiceIds.length} hóa đơn</p>
+      <div class="flex gap-2">
+        <button
+          onclick={() => selectedInvoiceIds = []}
+          class="border-2 border-black bg-white px-3 py-2 rounded-[6px] text-xs font-black text-black"
+        >
+          Bỏ chọn
+        </button>
+        <button
+          onclick={deleteSelectedInvoices}
+          disabled={isDeleting}
+          class="border-2 border-black bg-red-200 px-3 py-2 rounded-[6px] text-xs font-black text-red-800 shadow-secondary disabled:opacity-50"
+        >
+          Xóa đã chọn
+        </button>
+      </div>
+    </div>
+  {/if}
 
   <!-- Filters -->
   <div class="bg-white border-2 border-black p-4 rounded-lg shadow-secondary grid gap-4 sm:grid-cols-3 items-end">
@@ -220,6 +273,10 @@
               <span class="text-sm font-black text-black shrink-0">{formatCurrency(invoice.totalAmount)}</span>
             </div>
             <div class="flex items-center justify-between gap-2">
+              <label class="flex items-center gap-2 text-[10px] font-black text-zinc-600">
+                <input type="checkbox" checked={selectedInvoiceIds.includes(invoice.id)} onchange={() => toggleInvoiceSelection(invoice.id)} />
+                Chọn
+              </label>
               <span class="text-[10px] px-2 py-0.5 rounded-full font-black uppercase border border-black shrink-0 {invoice.status === 'paid' ? 'bg-green-200 text-green-800' : 'bg-red-200 text-red-800'}">
                 {invoice.status === 'paid' ? 'Đã đóng' : 'Chưa đóng'}
               </span>
@@ -238,6 +295,9 @@
         <table class="w-full text-left border-collapse text-sm">
           <thead>
             <tr class="bg-blue-300 border-b-2 border-black text-black font-black uppercase text-xs">
+              <th class="px-4 py-3 w-10">
+                <span class="sr-only">Chọn</span>
+              </th>
               <th class="px-4 py-3">Mã Hóa Đơn</th>
               <th class="px-4 py-3">Nhà / Phòng</th>
               <th class="px-4 py-3">Khách thuê</th>
@@ -251,6 +311,14 @@
           <tbody>
             {#each filteredInvoices() as invoice}
               <tr class="border-b border-zinc-200 hover:bg-slate-50 transition-colors text-zinc-600 font-semibold">
+                <td class="px-4 py-4">
+                  <input
+                    type="checkbox"
+                    checked={selectedInvoiceIds.includes(invoice.id)}
+                    onchange={() => toggleInvoiceSelection(invoice.id)}
+                    class="h-4 w-4"
+                  />
+                </td>
                 <td class="px-4 py-4 font-mono font-black text-blue-600">{invoice.id}</td>
                 <td class="px-4 py-4 font-black text-black">
                   {invoice.room.property.shortName} - {invoice.roomNumber}

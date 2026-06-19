@@ -15,21 +15,19 @@
 		LogOut,
 		Menu,
 		X,
-		User,
 		Gauge,
 		FileText,
 		TrendingUp,
 		MessageSquare,
 		UserCog,
-		Plug
+		Plug,
+		Bot
 	} from '@lucide/svelte';
 
 	let { children } = $props();
 
 	let user = $state<{ name: string; role: string; landlordProfileId: string } | null>(null);
 	let isMobileMenuOpen = $state(false);
-
-	// Active route checking
 	const activeRoute = $derived(page.url.pathname);
 
 	onMount(() => {
@@ -47,7 +45,7 @@
 				return;
 			}
 			user = session;
-		} catch (e) {
+		} catch {
 			localStorage.removeItem('roomio_user');
 			goto('/login');
 		}
@@ -68,247 +66,181 @@
 		goto('/login');
 	}
 
-	const menuItems = [
-		{ name: 'Tổng quan', path: '/dashboard', icon: LayoutDashboard },
-		{ name: 'Tòa nhà', path: '/dashboard/buildings', icon: Building2 },
-		{ name: 'Phòng trọ', path: '/dashboard/rooms', icon: Home },
-		{ name: 'Chốt số điện nước', path: '/dashboard/meters', icon: Gauge },
-		{ name: 'Hóa đơn', path: '/dashboard/invoices', icon: Receipt },
-		{ name: 'Khách thuê', path: '/dashboard/tenants', icon: Users },
-		{ name: 'Nhân viên', path: '/dashboard/staff', icon: UserCog },
-		{ name: 'Hợp đồng', path: '/dashboard/contracts', icon: FileText },
-		{ name: 'Sự cố', path: '/dashboard/requests', icon: Wrench },
-		{ name: 'Tin nhắn', path: '/dashboard/messages', icon: MessageSquare },
-		{ name: 'Tài chính', path: '/dashboard/finance', icon: TrendingUp },
-		{ name: 'Bảng tin & Lời nhắn', path: '/dashboard/notifications', icon: Bell },
-		{ name: 'Dịch vụ', path: '/dashboard/services', icon: Plug },
-		{ name: 'Cài đặt', path: '/dashboard/settings', icon: Settings }
+	const menuGroups = [
+		{
+			label: 'Vận hành chính',
+			items: [
+				{ name: 'Tổng quan', path: '/dashboard', icon: LayoutDashboard },
+				{ name: 'Phòng trọ', path: '/dashboard/rooms', icon: Home },
+				{ name: 'Hóa đơn', path: '/dashboard/invoices', icon: Receipt },
+				{ name: 'Khách thuê', path: '/dashboard/tenants', icon: Users }
+			]
+		},
+		{
+			label: 'Công việc hằng ngày',
+			items: [
+				{ name: 'Chốt số', path: '/dashboard/meters', icon: Gauge },
+				{ name: 'Sự cố', path: '/dashboard/requests', icon: Wrench },
+				{ name: 'Hợp đồng', path: '/dashboard/contracts', icon: FileText },
+				{ name: 'Tin nhắn', path: '/dashboard/messages', icon: MessageSquare },
+				{ name: 'Bảng tin', path: '/dashboard/notifications', icon: Bell }
+			]
+		},
+		{
+			label: 'Thiết lập & quản trị',
+			items: [
+				{ name: 'Tòa nhà', path: '/dashboard/buildings', icon: Building2 },
+				{ name: 'Nhân viên', path: '/dashboard/staff', icon: UserCog },
+				{ name: 'Tài chính', path: '/dashboard/finance', icon: TrendingUp },
+				{ name: 'Dịch vụ', path: '/dashboard/services', icon: Plug },
+				{ name: 'Tự động', path: '/dashboard/automation', icon: Bot },
+				{ name: 'Cài đặt', path: '/dashboard/settings', icon: Settings }
+			]
+		}
 	];
+
+	function isActive(path: string) {
+		return activeRoute === path;
+	}
 </script>
 
 {#if user}
-	<div class="relative flex min-h-screen flex-col bg-white font-sans">
-		<!-- Top header for mobile -->
-		<header
-			class="sticky top-0 z-40 flex h-14 shrink-0 items-center justify-between border-b-2 border-black bg-white px-4 md:hidden"
-		>
-			<div class="flex items-center gap-2">
-				<div class="rounded-lg border-2 border-black bg-blue-300 p-1.5 shadow-secondary">
-					<Building2 class="h-4 w-4 text-black" />
-				</div>
-				<span class="text-base font-black tracking-tight text-black">Roomio</span>
-			</div>
-			<button
-				onclick={() => (isMobileMenuOpen = !isMobileMenuOpen)}
-				class="rounded-[6px] border-2 border-black bg-white p-2 text-black shadow-secondary transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none"
-			>
-				{#if isMobileMenuOpen}
-					<X class="h-5 w-5" />
-				{:else}
-					<Menu class="h-5 w-5" />
-				{/if}
-			</button>
-		</header>
+	<div class="relative min-h-screen overflow-hidden bg-white font-sans text-black">
+		<div class="roomio-grid-bg fixed inset-0 -z-10 opacity-50"></div>
+		<div class="pointer-events-none fixed inset-0 -z-10 bg-gradient-to-b from-white/80 via-white/60 to-white/80"></div>
 
-		<!-- Shell Wrapper -->
-		<div class="relative flex min-h-0 flex-1">
-			<!-- Sidebar (Desktop only) - Brutalist Style -->
-			<aside
-				class="sticky top-0 hidden h-screen shrink-0 flex-col justify-between border-r-2 border-black bg-white text-black select-none md:flex md:w-64"
-			>
-				<div class="space-y-6 p-6">
-					<!-- Logo -->
-					<div class="flex items-center gap-3">
-						<div class="rounded-lg border-2 border-black bg-blue-300 p-2 shadow-secondary">
-							<Building2 class="h-5 w-5 text-black" />
-						</div>
-						<span class="text-xl font-black tracking-tight text-black">Roomio</span>
+		<div class="flex min-h-screen">
+			<aside class="sticky top-0 hidden h-screen w-68 shrink-0 overflow-y-auto border-r-2 border-black bg-white/92 px-5 py-6 backdrop-blur lg:block">
+				<div class="mb-7 flex items-center gap-3">
+					<div class="flex h-12 w-12 items-center justify-center rounded-full border-[3px] border-black bg-blue-200">
+						<Building2 class="h-6 w-6" />
 					</div>
-
-					<!-- Navigation Links: Icon placed AFTER text -->
-					<nav class="space-y-1.5">
-						{#each menuItems as item}
-							{@const Icon = item.icon}
-							<a
-								href={item.path}
-								class="flex items-center justify-between rounded-[6px] border-2 px-4 py-2.5 text-sm font-black transition-all {activeRoute ===
-								item.path
-									? 'border-black bg-blue-300 text-black shadow-secondary'
-									: 'border-transparent text-zinc-600 hover:border-black hover:bg-white/50 hover:text-black'}"
-							>
-								<span>{item.name}</span>
-								<Icon class="h-4.5 w-4.5 shrink-0" />
-							</a>
-						{/each}
-					</nav>
+					<div>
+						<h1 class="text-2xl font-black leading-none">Roomio</h1>
+						<p class="mt-1 text-xs font-semibold text-zinc-500">Cổng chủ trọ</p>
+					</div>
 				</div>
 
-				<!-- User footer profile -->
-				<div class="flex flex-col gap-3 border-t-2 border-black bg-white p-4">
-					<div class="flex items-center gap-3 px-2 py-1">
-						<div
-							class="flex h-9 w-9 items-center justify-center rounded-lg border-2 border-black bg-blue-300 font-black text-black"
-						>
-							<User class="h-5 w-5" />
+				<nav class="space-y-6">
+					{#each menuGroups as group}
+						<div>
+							<p class="mb-2 px-2 text-[10px] font-bold uppercase tracking-wider text-zinc-400">
+								{group.label}
+							</p>
+							<div class="space-y-1">
+								{#each group.items as item}
+									{@const Icon = item.icon}
+									<a
+										href={item.path}
+										class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-bold transition-colors {isActive(
+											item.path
+										)
+											? 'bg-blue-100 text-black'
+											: 'text-zinc-600 hover:bg-zinc-100 hover:text-black'}"
+									>
+										<Icon class="h-4 w-4 shrink-0" />
+										<span>{item.name}</span>
+									</a>
+								{/each}
+							</div>
 						</div>
-						<div class="min-w-0">
-							<p class="truncate text-sm leading-none font-black text-black">{user.name}</p>
-							<p class="mt-1 truncate text-xs font-bold text-zinc-500">Chủ trọ</p>
-						</div>
-					</div>
-					<button
-						onclick={handleLogout}
-						class="flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-[6px] border-2 border-black bg-red-200 py-2 text-xs font-black text-red-800 shadow-secondary transition-all hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none"
-					>
-						Đăng xuất
-						<LogOut class="h-4 w-4 shrink-0" />
+					{/each}
+				</nav>
+
+				<div class="mt-8 border-t border-zinc-200 pt-5">
+					<p class="truncate text-sm font-bold text-black">{user.name}</p>
+					<p class="mt-1 text-xs font-semibold text-zinc-500">{user.role === 'SUPER_ADMIN' ? 'Super Admin' : 'Chủ trọ'}</p>
+					<button onclick={handleLogout} class="mt-3 inline-flex items-center gap-1 text-sm font-bold text-blue-500 hover:underline">
+						Đăng xuất <LogOut class="h-3.5 w-3.5" />
 					</button>
 				</div>
 			</aside>
 
-			<!-- Mobile Drawer Navigation - Brutalist Style -->
-			{#if isMobileMenuOpen}
-				<!-- Overlay -->
-				<div
-					class="fixed inset-0 z-40 bg-slate-900/50 backdrop-blur-sm md:hidden"
-					onclick={() => (isMobileMenuOpen = false)}
-					onkeydown={(e) => e.key === 'Escape' && (isMobileMenuOpen = false)}
-					role="button"
-					tabindex="0"
-				></div>
-
-				<!-- Drawer menu -->
-				<aside
-					class="fixed inset-y-0 left-0 z-50 flex w-64 animate-[slide-in_0.2s_ease-out] flex-col justify-between border-r-2 border-black bg-white text-black shadow-2xl md:hidden"
-				>
-					<div class="space-y-6 p-6">
-						<div class="flex items-center justify-between">
-							<div class="flex items-center gap-2">
-								<div class="rounded-lg border-2 border-black bg-blue-300 p-1.5">
-									<Building2 class="h-5 w-5 text-black" />
-								</div>
-								<span class="font-black tracking-tight text-black">Roomio</span>
-							</div>
-							<button
-								onclick={() => (isMobileMenuOpen = false)}
-								class="rounded-[6px] border-2 border-black bg-white p-1.5 text-black hover:bg-slate-50"
-							>
-								<X class="h-5 w-5" />
-							</button>
+			<div class="flex min-w-0 flex-1 flex-col">
+				<header class="sticky top-0 z-30 flex items-center justify-between border-b-2 border-black bg-white/95 px-5 py-3 backdrop-blur lg:hidden">
+					<div class="flex items-center gap-3">
+						<div class="flex h-10 w-10 items-center justify-center rounded-full border-2 border-black bg-blue-200">
+							<Building2 class="h-5 w-5" />
 						</div>
-
-						<nav class="space-y-1.5">
-							{#each menuItems as item}
-								{@const Icon = item.icon}
-								<a
-									href={item.path}
-									onclick={() => (isMobileMenuOpen = false)}
-									class="flex items-center justify-between rounded-[6px] border-2 px-4 py-2.5 text-sm font-black transition-all {activeRoute ===
-									item.path
-										? 'border-black bg-blue-300 text-black shadow-secondary'
-										: 'border-transparent text-zinc-600 hover:border-black hover:bg-white/50 hover:text-black'}"
-								>
-									<span>{item.name}</span>
-									<Icon class="h-4.5 w-4.5 shrink-0" />
-								</a>
-							{/each}
-						</nav>
-					</div>
-
-					<div class="flex flex-col gap-3 border-t-2 border-black bg-white p-4">
-						<div class="flex items-center gap-3 px-2">
-							<div
-								class="flex h-9 w-9 items-center justify-center rounded-lg border-2 border-black bg-blue-300 font-black text-black"
-							>
-								<User class="h-5 w-5" />
-							</div>
-							<div class="min-w-0">
-								<p class="truncate text-sm leading-none font-black text-black">{user.name}</p>
-								<p class="mt-1 truncate text-xs font-bold text-zinc-500">Chủ trọ</p>
-							</div>
+						<div>
+							<p class="text-lg font-black leading-none">Roomio</p>
+							<p class="mt-0.5 text-[11px] font-semibold text-zinc-500">Cổng chủ trọ</p>
 						</div>
-						<button
-							onclick={handleLogout}
-							class="flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-[6px] border-2 border-black bg-red-200 py-2 text-xs font-black text-red-800 shadow-secondary transition-all hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none"
-						>
-							Đăng xuất
-							<LogOut class="h-4 w-4 shrink-0" />
-						</button>
 					</div>
-				</aside>
-			{/if}
+					<button
+						onclick={() => (isMobileMenuOpen = true)}
+						class="rounded-lg border-2 border-black bg-white p-2 text-black shadow-secondary transition-all active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
+						aria-label="Mở menu"
+					>
+						<Menu class="h-5 w-5" />
+					</button>
+				</header>
 
-			<!-- Main Content Area -->
-			<main class="relative z-10 min-w-0 flex-1 overflow-y-auto p-4 pb-24 md:p-8 md:pb-8">
+				<main class="mx-auto w-full max-w-7xl flex-1 px-5 py-6 sm:px-6 sm:py-8">
 				{@render children()}
-			</main>
-
-			<!-- Mobile Bottom Navigation -->
-			<nav
-				class="fixed inset-x-0 bottom-0 z-30 flex h-16 items-center justify-around border-t-2 border-black bg-white px-1 select-none md:hidden"
-			>
-				<a
-					href="/dashboard"
-					class="flex h-full flex-1 flex-col items-center justify-center gap-0.5 transition-colors {activeRoute ===
-					'/dashboard'
-						? 'text-blue-500'
-						: 'text-zinc-400'}"
-				>
-					<LayoutDashboard class="h-5 w-5" />
-					<span class="text-[9px] font-black tracking-wider uppercase">Tổng quan</span>
-				</a>
-				<a
-					href="/dashboard/rooms"
-					class="flex h-full flex-1 flex-col items-center justify-center gap-0.5 transition-colors {activeRoute ===
-					'/dashboard/rooms'
-						? 'text-blue-500'
-						: 'text-zinc-400'}"
-				>
-					<Home class="h-5 w-5" />
-					<span class="text-[9px] font-black tracking-wider uppercase">Phòng</span>
-				</a>
-				<a
-					href="/dashboard/invoices"
-					class="flex h-full flex-1 flex-col items-center justify-center gap-0.5 transition-colors {activeRoute ===
-					'/dashboard/invoices'
-						? 'text-blue-500'
-						: 'text-zinc-400'}"
-				>
-					<Receipt class="h-5 w-5" />
-					<span class="text-[9px] font-black tracking-wider uppercase">Hóa đơn</span>
-				</a>
-				<a
-					href="/dashboard/tenants"
-					class="flex h-full flex-1 flex-col items-center justify-center gap-0.5 transition-colors {activeRoute ===
-					'/dashboard/tenants'
-						? 'text-blue-500'
-						: 'text-zinc-400'}"
-				>
-					<Users class="h-5 w-5" />
-					<span class="text-[9px] font-black tracking-wider uppercase">Khách</span>
-				</a>
-				<a
-					href="/dashboard/requests"
-					class="flex h-full flex-1 flex-col items-center justify-center gap-0.5 transition-colors {activeRoute ===
-					'/dashboard/requests'
-						? 'text-blue-500'
-						: 'text-zinc-400'}"
-				>
-					<Wrench class="h-5 w-5" />
-					<span class="text-[9px] font-black tracking-wider uppercase">Sự cố</span>
-				</a>
-			</nav>
+				</main>
+			</div>
 		</div>
-	</div>
-{/if}
 
-<style>
-	@keyframes slide-in {
-		from {
-			transform: translateX(-100%);
-		}
-		to {
-			transform: translateX(0);
-		}
-	}
-</style>
+		{#if isMobileMenuOpen}
+			<div
+				class="fixed inset-0 z-40 bg-black/35 backdrop-blur-sm lg:hidden"
+				onclick={() => (isMobileMenuOpen = false)}
+				onkeydown={(e) => e.key === 'Escape' && (isMobileMenuOpen = false)}
+				role="button"
+				tabindex="0"
+			></div>
+			<aside class="fixed inset-y-0 left-0 z-50 w-[84vw] max-w-xs overflow-y-auto border-r-2 border-black bg-white px-5 py-5 shadow-primary lg:hidden">
+				<div class="mb-6 flex items-center justify-between gap-3">
+					<div class="flex items-center gap-3">
+						<div class="flex h-11 w-11 items-center justify-center rounded-full border-2 border-black bg-blue-200">
+							<Building2 class="h-5 w-5" />
+						</div>
+						<div>
+							<p class="text-xl font-black leading-none">Roomio</p>
+							<p class="mt-1 text-xs font-semibold text-zinc-500">{user.name}</p>
+						</div>
+					</div>
+					<button
+						onclick={() => (isMobileMenuOpen = false)}
+						class="rounded-lg border-2 border-black bg-white p-2"
+						aria-label="Đóng menu"
+					>
+						<X class="h-5 w-5" />
+					</button>
+				</div>
+
+				<nav class="space-y-6">
+					{#each menuGroups as group}
+						<div>
+							<p class="mb-2 px-2 text-[10px] font-bold uppercase tracking-wider text-zinc-400">
+								{group.label}
+							</p>
+							<div class="space-y-1">
+								{#each group.items as item}
+									{@const Icon = item.icon}
+									<a
+										href={item.path}
+										onclick={() => (isMobileMenuOpen = false)}
+										class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-bold transition-colors {isActive(
+											item.path
+										)
+											? 'bg-blue-100 text-black'
+											: 'text-zinc-600 hover:bg-zinc-100 hover:text-black'}"
+									>
+										<Icon class="h-4 w-4 shrink-0" />
+										<span>{item.name}</span>
+									</a>
+								{/each}
+							</div>
+						</div>
+					{/each}
+				</nav>
+
+				<button onclick={handleLogout} class="mt-8 inline-flex items-center gap-1 text-sm font-bold text-blue-500 hover:underline">
+					Đăng xuất <LogOut class="h-3.5 w-3.5" />
+				</button>
+			</aside>
+		{/if}
+		</div>
+{/if}

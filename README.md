@@ -2,6 +2,12 @@
 
 Giao diện người dùng cho hệ thống quản lý nhà trọ Roomio. Build thành **SPA tĩnh** (HTML/CSS/JS), serve bằng nginx, không cần Node runtime. Mọi dữ liệu gọi qua REST API của `roomio-api`.
 
+## Phạm vi sản phẩm hiện tại
+
+MVP đang theo hướng **landlord-first**: ưu tiên dashboard chủ trọ để quản lý tòa nhà, phòng, khách thuê, hợp đồng, hóa đơn, thu tiền, sự cố, nhân viên và tự động hóa vận hành.
+
+Route `/tenant` hiện chỉ xem như prototype/Phase 2 cho khách thuê tự phục vụ. Không ưu tiên phát triển thêm tenant portal cho tới khi luồng chủ trọ ổn định.
+
 ## Công nghệ
 
 - SvelteKit 2 (Svelte 5, runes) → `@sveltejs/adapter-static` (SPA, `ssr=false`)

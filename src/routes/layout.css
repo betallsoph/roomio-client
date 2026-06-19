@@ -1,23 +1,26 @@
+@import "tailwindcss";
+
 @font-face {
   font-family: 'Google Sans';
   src: url('/fonts/GoogleSansOTF/GoogleSans-Regular.otf') format('opentype');
   font-weight: 400;
   font-style: normal;
+  font-display: swap;
 }
 @font-face {
   font-family: 'Google Sans';
   src: url('/fonts/GoogleSansOTF/GoogleSans-Medium.otf') format('opentype');
   font-weight: 500;
   font-style: normal;
+  font-display: swap;
 }
 @font-face {
   font-family: 'Google Sans';
   src: url('/fonts/GoogleSansOTF/GoogleSans-Bold.otf') format('opentype');
   font-weight: 700;
   font-style: normal;
+  font-display: swap;
 }
-
-@import "tailwindcss";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -25,10 +28,10 @@
   --font-sans: "Google Sans", system-ui, sans-serif;
   --font-mono: "Google Sans", system-ui, sans-serif;
 
-  /* Neobrutalism Shadows (Very Thin) */
-  --shadow-primary: 2px 2px 0px 0px #000000;
-  --shadow-secondary: 1px 1px 0px 0px #000000;
-  --shadow-secondary-opposite: -1px 1px 0px 0px #000000;
+  /* anttxqt-style offset shadows */
+  --shadow-primary: 5px 6px 0px -1px #000000;
+  --shadow-secondary: 3px 3px 0px -1px #000000;
+  --shadow-secondary-opposite: -3px 3px 0px -1px #000000;
 
   /* Neobrutalism Colors */
   --color-primary-blue: rgb(147, 197, 253);
@@ -68,6 +71,57 @@
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
   }
+}
+
+.roomio-grid-bg {
+  background-image:
+    linear-gradient(to right, rgba(156, 163, 175, 0.22) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(156, 163, 175, 0.22) 1px, transparent 1px);
+  background-size: 50px 50px;
+}
+
+.roomio-card {
+  @apply rounded-lg border-2 border-black bg-white shadow-secondary;
+}
+
+.roomio-blue-card {
+  @apply rounded-lg border-2 border-black bg-blue-100 shadow-secondary;
+}
+
+.roomio-button {
+  @apply inline-flex cursor-pointer items-center justify-center gap-2 rounded-[6px] border-2 border-black bg-blue-300 px-4 py-2 text-sm font-bold text-black shadow-primary transition-all hover:translate-x-[5px] hover:translate-y-[5px] hover:shadow-none disabled:pointer-events-none disabled:opacity-50;
+}
+
+.roomio-button-white {
+  @apply inline-flex cursor-pointer items-center justify-center gap-2 rounded-[6px] border-2 border-black bg-white px-4 py-2 text-sm font-bold text-black shadow-primary transition-all hover:translate-x-[5px] hover:translate-y-[5px] hover:shadow-none disabled:pointer-events-none disabled:opacity-50;
+}
+
+.roomio-display-link {
+  @apply text-sm font-medium text-zinc-500 transition-colors duration-200 hover:text-black;
+}
+
+.roomio-display-link-active {
+  @apply font-semibold text-black;
+}
+
+.roomio-section {
+  @apply border-t-2 border-black/20 pt-6 sm:pt-8;
+}
+
+.roomio-window {
+  @apply overflow-hidden rounded-lg border-2 border-black bg-white shadow-secondary;
+}
+
+.roomio-window-bar {
+  @apply flex items-center justify-between border-b-2 border-black bg-zinc-100 px-3 py-2 sm:px-4 sm:py-3;
+}
+
+.roomio-window-dots {
+  @apply flex items-center gap-1.5 sm:gap-2;
+}
+
+.roomio-window-dot {
+  @apply h-2.5 w-2.5 rounded-full border border-black sm:h-3 sm:w-3;
 }
 
 /* Hide number input spinners */

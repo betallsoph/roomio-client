@@ -129,6 +129,7 @@
   let assetCode = $state('');
   let assetStatus = $state('good');
   let assetNotes = $state('');
+  let editingAssetId = $state<string | null>(null);
   let isAddingAsset = $state(false);
 
   onMount(() => {
@@ -341,6 +342,7 @@
         body: JSON.stringify({
           id: selectedRoom.id,
           action: 'updateAsset',
+          assetId: editingAssetId,
           name: assetName,
           code: assetCode || null,
           status: assetStatus,
@@ -351,17 +353,31 @@
 
       if (!res.ok) throw new Error(data.error || 'Lỗi thêm thiết bị');
 
-      toast.success('Đã thêm thiết bị bàn giao phòng');
+      toast.success(editingAssetId ? 'Đã cập nhật thiết bị bàn giao phòng' : 'Đã thêm thiết bị bàn giao phòng');
       selectedRoom = data;
-      assetName = '';
-      assetCode = '';
-      assetNotes = '';
+      resetAssetForm();
       fetchRooms(selectedPropertyId);
     } catch (err: any) {
       toast.error(err.message);
     } finally {
       isAddingAsset = false;
     }
+  }
+
+  function editAsset(asset: RoomAsset) {
+    editingAssetId = asset.id;
+    assetName = asset.name;
+    assetCode = asset.code || '';
+    assetStatus = asset.status;
+    assetNotes = asset.notes || '';
+  }
+
+  function resetAssetForm() {
+    editingAssetId = null;
+    assetName = '';
+    assetCode = '';
+    assetStatus = 'good';
+    assetNotes = '';
   }
 
   async function handleDeleteAsset(assetId: string) {
@@ -986,7 +1002,9 @@
                 <div class="space-y-4">
                   <!-- Add Asset Form -->
                   <div class="bg-white border-2 border-black rounded-lg p-4 space-y-3 shadow-secondary">
-                    <h4 class="text-xs font-black text-zinc-500 uppercase tracking-wider border-b pb-1.5">Thêm thiết bị bàn giao mới</h4>
+                    <h4 class="text-xs font-black text-zinc-500 uppercase tracking-wider border-b pb-1.5">
+                      {editingAssetId ? 'Sửa thiết bị bàn giao' : 'Thêm thiết bị bàn giao mới'}
+                    </h4>
                     <form onsubmit={handleAddAsset} class="space-y-3">
                       <div class="grid grid-cols-2 gap-3">
                         <div class="space-y-1">
@@ -1037,13 +1055,22 @@
                         </div>
                       </div>
 
-                      <div class="flex justify-end pt-2">
+                      <div class="flex justify-end gap-2 pt-2">
+                        {#if editingAssetId}
+                          <button
+                            type="button"
+                            onclick={resetAssetForm}
+                            class="border-2 border-black bg-white text-black rounded-[6px] px-4 py-2 text-xs font-black cursor-pointer"
+                          >
+                            Hủy sửa
+                          </button>
+                        {/if}
                         <button
                           type="submit"
                           disabled={isAddingAsset}
                           class="bg-blue-300 text-black border-2 border-black rounded-[6px] shadow-secondary hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all px-4 py-2 text-xs font-black cursor-pointer flex items-center gap-1.5"
                         >
-                          Bàn giao thiết bị
+                          {editingAssetId ? 'Lưu thiết bị' : 'Bàn giao thiết bị'}
                           {#if isAddingAsset}
                             <Loader2 class="h-3 w-3 animate-spin" />
                           {/if}
@@ -1069,6 +1096,12 @@
                               <span class="text-[9px] px-2 py-0.5 rounded-full font-black uppercase border border-black {asset.status === 'good' ? 'bg-green-200 text-green-800' : asset.status === 'broken' ? 'bg-red-200 text-red-800' : 'bg-amber-200 text-amber-800'}">
                                 {asset.status === 'good' ? 'Tốt' : asset.status === 'broken' ? 'Hỏng' : 'Bảo trì'}
                               </span>
+                              <button
+                                onclick={() => editAsset(asset)}
+                                class="border border-black bg-white text-black px-2 py-1 rounded-[6px] text-[10px] font-black transition-colors cursor-pointer"
+                              >
+                                Sửa
+                              </button>
                               <button
                                 onclick={() => handleDeleteAsset(asset.id)}
                                 class="text-red-500 hover:bg-red-50 p-1.5 rounded-lg border border-transparent transition-colors cursor-pointer"
