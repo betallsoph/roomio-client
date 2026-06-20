@@ -113,7 +113,7 @@
 			<aside class="sticky top-0 hidden h-screen w-68 shrink-0 overflow-y-auto border-r-2 border-black bg-white/92 px-5 py-6 backdrop-blur lg:block">
 				<div class="mb-7">
 					<img
-						src="/brand/roomio-wordmark-sniglet-blue600.png"
+						src="/brand/roomio-wordmark-blue600.png"
 						alt="Roomio"
 						class="h-auto w-36"
 					/>
@@ -160,7 +160,7 @@
 					<div class="flex items-center gap-3">
 						<div>
 							<img
-								src="/brand/roomio-wordmark-sniglet-blue600.png"
+								src="/brand/roomio-wordmark-blue600.png"
 								alt="Roomio"
 								class="h-auto w-28"
 							/>
@@ -195,7 +195,7 @@
 					<div class="flex items-center gap-3">
 						<div>
 							<img
-								src="/brand/roomio-wordmark-sniglet-blue600.png"
+								src="/brand/roomio-wordmark-blue600.png"
 								alt="Roomio"
 								class="h-auto w-32"
 							/>

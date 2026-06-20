@@ -97,7 +97,7 @@
 	<main class="mx-auto grid min-h-screen w-full max-w-6xl gap-8 px-5 py-8 sm:px-6 lg:grid-cols-[1fr_430px] lg:items-center lg:py-12">
 		<section class="max-w-2xl self-start lg:self-center">
 			<img
-				src="/brand/roomio-wordmark-sniglet-blue600.png"
+				src="/brand/roomio-wordmark-blue600.png"
 				alt="Roomio"
 				class="h-auto w-48 sm:w-64"
 			/>

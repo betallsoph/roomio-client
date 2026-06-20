@@ -239,7 +239,7 @@
     <div class="flex items-center gap-3">
       <div class="leading-none">
         <img
-          src="/brand/roomio-wordmark-sniglet-blue600.png"
+          src="/brand/roomio-wordmark-blue600.png"
           alt="Roomio"
           class="h-auto w-32"
         />
