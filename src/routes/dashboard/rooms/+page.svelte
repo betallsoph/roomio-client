@@ -134,6 +134,7 @@
   let assetNotes = $state('');
   let editingAssetId = $state<string | null>(null);
   let isAddingAsset = $state(false);
+  const TAP_ACTION_DELAY = 200;
 
   onMount(() => {
     const sessionStr = localStorage.getItem('roomio_user');
@@ -149,6 +150,31 @@
 
     loadInitialData(session.landlordProfileId);
   });
+
+  function tapBounce(event: MouseEvent, callback?: () => void) {
+    const element = event.currentTarget as HTMLElement;
+    element.classList.remove('tap-bounce');
+    void element.offsetWidth;
+    element.classList.add('tap-bounce');
+    window.setTimeout(() => element.classList.remove('tap-bounce'), 260);
+
+    if (callback) {
+      window.setTimeout(callback, TAP_ACTION_DELAY);
+    }
+  }
+
+  function openRoomDetail(room: Room) {
+    selectedRoom = room;
+    activeTab = 'general';
+    isDetailOpen = true;
+  }
+
+  function goToTenants(event: MouseEvent) {
+    event.preventDefault();
+    tapBounce(event, () => {
+      window.location.href = '/dashboard/tenants';
+    });
+  }
 
   async function loadInitialData(profileId: string) {
     isLoading = true;
@@ -435,7 +461,7 @@
     </div>
     
     <button 
-      onclick={() => isAddDialogOpen = true}
+      onclick={(e) => tapBounce(e, () => (isAddDialogOpen = true))}
       class="w-full sm:w-auto bg-blue-300 hover:bg-blue-400 text-black border-2 border-black px-4 py-2.5 rounded-[6px] shadow-secondary active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all flex items-center justify-center gap-1.5 cursor-pointer font-bold text-sm"
     >
       Thêm phòng <Plus class="h-4.5 w-4.5" />
@@ -477,7 +503,7 @@
         <div class="grid grid-cols-2 rounded-lg border-2 border-black bg-white p-1 shadow-secondary lg:min-w-56">
           <button
             type="button"
-            onclick={() => (viewMode = 'grid')}
+            onclick={(e) => tapBounce(e, () => (viewMode = 'grid'))}
             class="flex items-center justify-center gap-1.5 rounded-[6px] px-3 py-2 text-xs font-black transition-colors {viewMode === 'grid' ? 'bg-blue-100 text-black' : 'text-zinc-500 hover:bg-zinc-100 hover:text-black'}"
             aria-pressed={viewMode === 'grid'}
           >
@@ -486,7 +512,7 @@
           </button>
           <button
             type="button"
-            onclick={() => (viewMode = 'list')}
+            onclick={(e) => tapBounce(e, () => (viewMode = 'list'))}
             class="flex items-center justify-center gap-1.5 rounded-[6px] px-3 py-2 text-xs font-black transition-colors {viewMode === 'list' ? 'bg-blue-100 text-black' : 'text-zinc-500 hover:bg-zinc-100 hover:text-black'}"
             aria-pressed={viewMode === 'list'}
           >
@@ -532,7 +558,7 @@
           {@const statusBadge = room.status === 'empty' ? 'text-zinc-500' : room.status === 'paid' ? 'text-green-800' : 'text-red-800'}
           
           <button
-            onclick={() => { selectedRoom = room; activeTab = 'general'; isDetailOpen = true; }}
+            onclick={(e) => tapBounce(e, () => openRoomDetail(room))}
             class="room-card border-2 rounded-lg p-4 flex flex-col justify-between items-start text-left shadow-secondary active:translate-x-[3px] active:translate-y-[3px] active:shadow-none transition-[transform,box-shadow] cursor-pointer h-32 focus:outline-none focus:ring-2 focus:ring-blue-300 {statusColor}"
           >
             <div>
@@ -591,7 +617,7 @@
               <p class="{room.debtAmount > 0 ? 'text-red-700' : 'text-zinc-500'}">{formatCurrency(room.debtAmount)}</p>
 
               <button
-                onclick={() => { selectedRoom = room; activeTab = 'general'; isDetailOpen = true; }}
+                onclick={(e) => tapBounce(e, () => openRoomDetail(room))}
                 class="w-full rounded-[6px] border-2 border-black bg-blue-300 px-3 py-2 text-xs font-black text-black shadow-secondary transition-[background-color,transform,box-shadow] hover:bg-blue-400 active:translate-x-[2px] active:translate-y-[2px] active:shadow-none md:w-auto"
               >
                 Chi tiết
@@ -626,7 +652,7 @@
           <div class="w-2.5 h-2.5 rounded-full bg-yellow-500 border border-black"></div>
           <div class="w-2.5 h-2.5 rounded-full bg-green-500 border border-black"></div>
           <span class="text-xs font-bold text-zinc-500 ml-2">Tạo phòng trọ mới</span>
-          <button onclick={() => isAddDialogOpen = false} class="ml-auto text-black hover:bg-zinc-200 p-1 border border-transparent rounded-[6px]">
+          <button onclick={(e) => tapBounce(e, () => (isAddDialogOpen = false))} class="ml-auto text-black hover:bg-zinc-200 p-1 border border-transparent rounded-[6px]">
             <X class="h-4 w-4" />
           </button>
         </div>
@@ -724,7 +750,7 @@
           <div class="flex justify-end gap-3 pt-3 border-t-2 border-black">
             <button 
               type="button" 
-              onclick={() => isAddDialogOpen = false}
+              onclick={(e) => tapBounce(e, () => (isAddDialogOpen = false))}
               class="border-2 border-black bg-white hover:bg-zinc-150 text-black px-4 py-2 rounded-[6px] text-xs font-bold transition-all cursor-pointer"
             >
               Hủy
@@ -768,7 +794,7 @@
           <div class="w-2.5 h-2.5 rounded-full bg-yellow-500 border border-black"></div>
           <div class="w-2.5 h-2.5 rounded-full bg-green-500 border border-black"></div>
           <span class="text-xs font-bold text-zinc-500 ml-2">Quản lý Phòng {selectedRoom.roomNumber}</span>
-          <button onclick={() => isDetailOpen = false} class="ml-auto text-black hover:bg-zinc-200 p-1 border border-transparent rounded-[6px]">
+          <button onclick={(e) => tapBounce(e, () => (isDetailOpen = false))} class="ml-auto text-black hover:bg-zinc-200 p-1 border border-transparent rounded-[6px]">
             <X class="h-4 w-4" />
           </button>
         </div>
@@ -789,25 +815,25 @@
             <!-- Tab Selector inside Drawer -->
             <div class="flex border-b border-black/15 mt-4 shrink-0 gap-1 bg-white/50 p-1 rounded-lg border-2 border-black select-none">
               <button 
-                onclick={() => activeTab = 'general'}
+                onclick={(e) => tapBounce(e, () => (activeTab = 'general'))}
                 class="flex-1 py-1.5 text-xs font-black uppercase tracking-wider rounded-[6px] transition-all cursor-pointer {activeTab === 'general' ? 'bg-blue-300 text-black border border-black' : 'text-zinc-500 hover:text-black border border-transparent'}"
               >
                 Chung
               </button>
               <button 
-                onclick={() => activeTab = 'services'}
+                onclick={(e) => tapBounce(e, () => (activeTab = 'services'))}
                 class="flex-1 py-1.5 text-xs font-black uppercase tracking-wider rounded-[6px] transition-all cursor-pointer {activeTab === 'services' ? 'bg-blue-300 text-black border border-black' : 'text-zinc-500 hover:text-black border border-transparent'}"
               >
                 Dịch vụ
               </button>
               <button 
-                onclick={() => activeTab = 'meters'}
+                onclick={(e) => tapBounce(e, () => (activeTab = 'meters'))}
                 class="flex-1 py-1.5 text-xs font-black uppercase tracking-wider rounded-[6px] transition-all cursor-pointer {activeTab === 'meters' ? 'bg-blue-300 text-black border border-black' : 'text-zinc-500 hover:text-black border border-transparent'}"
               >
                 Ghi số
               </button>
               <button 
-                onclick={() => activeTab = 'assets'}
+                onclick={(e) => tapBounce(e, () => (activeTab = 'assets'))}
                 class="flex-1 py-1.5 text-xs font-black uppercase tracking-wider rounded-[6px] transition-all cursor-pointer {activeTab === 'assets' ? 'bg-blue-300 text-black border border-black' : 'text-zinc-500 hover:text-black border border-transparent'}"
               >
                 Tài sản
@@ -862,6 +888,7 @@
                         <p class="text-sm text-zinc-500 font-semibold">Chưa có thông tin khách thuê phòng này.</p>
                         <a 
                           href="/dashboard/tenants"
+                          onclick={goToTenants}
                           class="inline-flex bg-blue-300 text-black border-2 border-black px-4 py-2 rounded-[6px] shadow-secondary active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all text-xs font-black"
                         >
                           Đến trang Thêm khách thuê <ArrowRight class="h-3.5 w-3.5" />
@@ -922,11 +949,11 @@
 
                     <div class="flex justify-end pt-3 border-t">
                       <button
-                        onclick={() => saveServiceConfig(selectedRoom!.id, selectedRoom!.services.map(s => ({
+                        onclick={(e) => tapBounce(e, () => saveServiceConfig(selectedRoom!.id, selectedRoom!.services.map(s => ({
                           serviceId: s.serviceId,
                           customRate: s.customRate === null ? null : s.customRate.toString(),
                           quantity: s.quantity
-                        })))}
+                        }))))}
                         class="bg-blue-300 text-black border-2 border-black rounded-[6px] shadow-secondary active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all px-4 py-2 text-xs font-black cursor-pointer"
                       >
                         Lưu cấu hình dịch vụ
@@ -1106,7 +1133,7 @@
                         {#if editingAssetId}
                           <button
                             type="button"
-                            onclick={resetAssetForm}
+                            onclick={(e) => tapBounce(e, resetAssetForm)}
                             class="border-2 border-black bg-white text-black rounded-[6px] px-4 py-2 text-xs font-black cursor-pointer"
                           >
                             Hủy sửa
@@ -1144,13 +1171,13 @@
                                 {asset.status === 'good' ? 'Tốt' : asset.status === 'broken' ? 'Hỏng' : 'Bảo trì'}
                               </span>
                               <button
-                                onclick={() => editAsset(asset)}
+                                onclick={(e) => tapBounce(e, () => editAsset(asset))}
                                 class="border border-black bg-white text-black px-2 py-1 rounded-[6px] text-[10px] font-black transition-colors cursor-pointer"
                               >
                                 Sửa
                               </button>
                               <button
-                                onclick={() => handleDeleteAsset(asset.id)}
+                                onclick={(e) => tapBounce(e, () => handleDeleteAsset(asset.id))}
                                 class="text-red-500 hover:bg-red-50 p-1.5 rounded-lg border border-transparent transition-colors cursor-pointer"
                               >
                                 <Trash2 class="h-4 w-4" />
@@ -1170,7 +1197,7 @@
           <div class="pt-4 border-t-2 border-black flex gap-3 shrink-0">
             {#if selectedRoom.tenantId}
               <button
-                onclick={() => handleCheckout(selectedRoom!.id)}
+                onclick={(e) => tapBounce(e, () => handleCheckout(selectedRoom!.id))}
                 class="flex-1 bg-red-200 hover:bg-red-300 text-red-800 border-2 border-black py-2.5 rounded-[6px] text-center text-xs font-black shadow-secondary active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all flex items-center justify-center gap-1.5 cursor-pointer"
               >
                 Khách trả phòng (Checkout)
@@ -1178,7 +1205,7 @@
               </button>
             {/if}
             <button
-              onclick={() => isDetailOpen = false}
+              onclick={(e) => tapBounce(e, () => (isDetailOpen = false))}
               class="flex-1 bg-white hover:bg-zinc-150 text-black border-2 border-black py-2.5 rounded-[6px] text-center text-xs font-black shadow-secondary active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all cursor-pointer"
             >
               Đóng
@@ -1203,6 +1230,10 @@
     animation: room-number-pop 320ms ease-out;
   }
 
+  .tap-bounce {
+    animation: tap-bounce 240ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
   @keyframes room-number-pop {
     0% {
       transform: scale(1);
@@ -1212,6 +1243,18 @@
     }
     72% {
       transform: scale(0.98);
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
+
+  @keyframes tap-bounce {
+    0% {
+      transform: scale(0.96);
+    }
+    55% {
+      transform: scale(1.03);
     }
     100% {
       transform: scale(1);
