@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite dev --port 5173",
     "build": "vite build",
+    "brand:logos": "node scripts/generate-roomio-logos.mjs",
     "preview": "vite preview",
     "prepare": "svelte-kit sync || echo ''",
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
@@ -27,6 +28,7 @@
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-svelte": "^3.17.0",
     "globals": "^17.4.0",
+    "opentype.js": "^2.0.0",
     "postcss": "^8.4.38",
     "prettier": "^3.8.1",
     "prettier-plugin-svelte": "^3.5.1",

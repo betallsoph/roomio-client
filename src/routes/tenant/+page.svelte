@@ -761,10 +761,12 @@
 		class="sticky top-0 z-40 mx-auto flex w-full max-w-4xl shrink-0 items-center justify-between bg-transparent px-5 py-5 text-black sm:px-6"
 	>
 		<div class="flex items-center gap-2">
-			<div class="rounded-full border-[3px] border-black bg-blue-200 p-2 shadow-secondary">
-				<Home class="h-5 w-5 text-black" />
-			</div>
-			<span class="text-xl font-black">Roomio Cư Dân</span>
+			<img
+				src="/brand/roomio-wordmark-sniglet-blue600.png"
+				alt="Roomio"
+				class="h-auto w-32"
+			/>
+			<span class="text-xs font-bold uppercase tracking-wider text-zinc-500">Cư Dân</span>
 		</div>
 
 		<button

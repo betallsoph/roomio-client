@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { toast } from 'svelte-sonner';
-	import { Building2, Loader2, ArrowRight } from '@lucide/svelte';
+	import { Loader2, ArrowRight } from '@lucide/svelte';
 
 	let isRegister = $state(false);
 	let email = $state('');
@@ -94,22 +94,22 @@
 	<div class="roomio-grid-bg fixed inset-0 -z-10 opacity-50"></div>
 	<div class="pointer-events-none fixed inset-0 -z-10 bg-gradient-to-b from-white/80 via-white/60 to-white/80"></div>
 
-	<main class="mx-auto flex min-h-screen w-full max-w-3xl flex-col px-5 py-6 sm:px-6 sm:py-8">
-		<header class="pb-6 text-center sm:pb-8">
-			<div class="mb-4 flex justify-center sm:mb-6">
-				<div
-					class="flex h-24 w-24 items-center justify-center overflow-hidden rounded-full border-[3px] border-black bg-blue-200 text-black sm:h-32 sm:w-32 sm:border-[4px]"
-				>
-					<Building2 class="h-12 w-12 sm:h-16 sm:w-16" />
-				</div>
-			</div>
-			<h1 class="text-3xl font-black leading-none sm:text-4xl">Roomio</h1>
-			<p class="mx-auto mt-3 max-w-xl text-base leading-relaxed font-semibold text-zinc-700 sm:text-lg">
-				Tự động hoá hóa đơn, điện nước, sự cố và thanh toán PayOS cho nhà trọ.
+	<main class="mx-auto grid min-h-screen w-full max-w-6xl gap-8 px-5 py-8 sm:px-6 lg:grid-cols-[1fr_430px] lg:items-center lg:py-12">
+		<section class="max-w-2xl self-start lg:self-center">
+			<img
+				src="/brand/roomio-wordmark-sniglet-blue600.png"
+				alt="Roomio"
+				class="h-auto w-48 sm:w-64"
+			/>
+			<h1 class="mt-8 max-w-xl text-3xl font-black leading-tight sm:text-5xl">
+				Một chỗ để chủ trọ chạy hết việc vận hành.
+			</h1>
+			<p class="mt-4 max-w-xl text-base font-semibold leading-relaxed text-zinc-700 sm:text-lg">
+				Quản lý phòng, khách thuê, hóa đơn, sự cố, nhân viên và thanh toán PayOS trong cùng một dashboard.
 			</p>
-		</header>
+		</section>
 
-		<section class="mx-auto w-full max-w-md">
+		<section class="w-full max-w-md lg:justify-self-end">
 			<div class="roomio-window">
 				<div class="roomio-window-bar">
 					<div class="roomio-window-dots">

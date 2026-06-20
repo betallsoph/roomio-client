@@ -12,7 +12,6 @@
     X,
     User,
     AlertTriangle,
-    Building2,
     Image as ImageIcon
   } from '@lucide/svelte';
 
@@ -238,11 +237,12 @@
   <!-- Header -->
   <header class="sticky top-0 z-30 mx-auto flex max-w-5xl items-center justify-between px-4 py-5 sm:px-6">
     <div class="flex items-center gap-3">
-      <div class="rounded-full border-[3px] border-black bg-blue-200 p-2 shadow-secondary">
-        <Building2 class="h-5 w-5 text-black" />
-      </div>
       <div class="leading-none">
-        <p class="text-[10px] font-bold uppercase tracking-wider text-blue-500">Roomio Staff</p>
+        <img
+          src="/brand/roomio-wordmark-sniglet-blue600.png"
+          alt="Roomio"
+          class="h-auto w-32"
+        />
         <h1 class="mt-1 text-xl font-black tracking-tight text-black">Cổng nhân viên</h1>
       </div>
     </div>

@@ -111,14 +111,13 @@
 
 		<div class="flex min-h-screen">
 			<aside class="sticky top-0 hidden h-screen w-68 shrink-0 overflow-y-auto border-r-2 border-black bg-white/92 px-5 py-6 backdrop-blur lg:block">
-				<div class="mb-7 flex items-center gap-3">
-					<div class="flex h-12 w-12 items-center justify-center rounded-full border-[3px] border-black bg-blue-200">
-						<Building2 class="h-6 w-6" />
-					</div>
-					<div>
-						<h1 class="text-2xl font-black leading-none">Roomio</h1>
-						<p class="mt-1 text-xs font-semibold text-zinc-500">Cổng chủ trọ</p>
-					</div>
+				<div class="mb-7">
+					<img
+						src="/brand/roomio-wordmark-sniglet-blue600.png"
+						alt="Roomio"
+						class="h-auto w-36"
+					/>
+					<p class="mt-2 text-xs font-semibold text-zinc-500">Cổng chủ trọ</p>
 				</div>
 
 				<nav class="space-y-6">
@@ -159,11 +158,12 @@
 			<div class="flex min-w-0 flex-1 flex-col">
 				<header class="sticky top-0 z-30 flex items-center justify-between border-b-2 border-black bg-white/95 px-5 py-3 backdrop-blur lg:hidden">
 					<div class="flex items-center gap-3">
-						<div class="flex h-10 w-10 items-center justify-center rounded-full border-2 border-black bg-blue-200">
-							<Building2 class="h-5 w-5" />
-						</div>
 						<div>
-							<p class="text-lg font-black leading-none">Roomio</p>
+							<img
+								src="/brand/roomio-wordmark-sniglet-blue600.png"
+								alt="Roomio"
+								class="h-auto w-28"
+							/>
 							<p class="mt-0.5 text-[11px] font-semibold text-zinc-500">Cổng chủ trọ</p>
 						</div>
 					</div>
@@ -193,11 +193,12 @@
 			<aside class="fixed inset-y-0 left-0 z-50 w-[84vw] max-w-xs overflow-y-auto border-r-2 border-black bg-white px-5 py-5 shadow-primary lg:hidden">
 				<div class="mb-6 flex items-center justify-between gap-3">
 					<div class="flex items-center gap-3">
-						<div class="flex h-11 w-11 items-center justify-center rounded-full border-2 border-black bg-blue-200">
-							<Building2 class="h-5 w-5" />
-						</div>
 						<div>
-							<p class="text-xl font-black leading-none">Roomio</p>
+							<img
+								src="/brand/roomio-wordmark-sniglet-blue600.png"
+								alt="Roomio"
+								class="h-auto w-32"
+							/>
 							<p class="mt-1 text-xs font-semibold text-zinc-500">{user.name}</p>
 						</div>
 					</div>

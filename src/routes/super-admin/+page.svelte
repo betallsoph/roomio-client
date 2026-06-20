@@ -3,7 +3,6 @@
   import { goto } from '$app/navigation';
   import { toast } from 'svelte-sonner';
   import { 
-    ShieldCheck, 
     X, 
     Check, 
     Users, 
@@ -164,11 +163,12 @@
   <!-- Top bar -->
   <header class="mx-auto flex max-w-7xl items-center justify-between px-5 py-6 sm:px-6">
     <div class="flex items-center gap-3">
-      <div class="rounded-full border-[3px] border-black bg-blue-200 p-2.5 shadow-secondary">
-        <ShieldCheck class="h-6 w-6 text-black" />
-      </div>
       <div>
-        <p class="text-[10px] font-bold uppercase tracking-wider text-blue-500">Roomio Control</p>
+        <img
+          src="/brand/roomio-wordmark-sniglet-blue600.png"
+          alt="Roomio"
+          class="h-auto w-36"
+        />
         <h1 class="mt-1 text-2xl font-black tracking-tight text-black">SuperAdmin</h1>
       </div>
     </div>
