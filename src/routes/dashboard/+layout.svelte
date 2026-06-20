@@ -117,7 +117,6 @@
 						alt="Roomio"
 						class="h-auto w-36"
 					/>
-					<p class="mt-2 text-xs font-semibold text-zinc-500">Cổng chủ trọ</p>
 				</div>
 
 				<nav class="space-y-6">
@@ -164,7 +163,6 @@
 								alt="Roomio"
 								class="h-auto w-28"
 							/>
-							<p class="mt-0.5 text-[11px] font-semibold text-zinc-500">Cổng chủ trọ</p>
 						</div>
 					</div>
 					<button
