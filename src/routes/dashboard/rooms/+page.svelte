@@ -19,7 +19,9 @@
     Loader2,
     LogOut,
     CheckCircle2,
-    ArrowRight
+    ArrowRight,
+    LayoutGrid,
+    List
   } from '@lucide/svelte';
 
   interface Service {
@@ -100,6 +102,7 @@
   // Filtering states
   let selectedPropertyId = $state('');
   let selectedBlockId = $state('all');
+  let viewMode = $state<'grid' | 'list'>('grid');
 
   // Detail Modal / Drawer states
   let selectedRoom = $state<Room | null>(null);
@@ -431,12 +434,35 @@
       <p class="text-zinc-500 text-sm mt-1.5 font-bold uppercase tracking-wider">Quản lý trạng thái, chỉ số và thiết bị bàn giao</p>
     </div>
     
-    <button 
-      onclick={() => isAddDialogOpen = true}
-      class="w-full sm:w-auto bg-blue-300 hover:bg-blue-400 text-black border-2 border-black px-4 py-2.5 rounded-[6px] shadow-secondary hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all flex items-center justify-center gap-1.5 cursor-pointer font-bold text-sm"
-    >
-      Thêm phòng <Plus class="h-4.5 w-4.5" />
-    </button>
+    <div class="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
+      <div class="grid grid-cols-2 rounded-lg border-2 border-black bg-white p-1 shadow-secondary">
+        <button
+          type="button"
+          onclick={() => (viewMode = 'grid')}
+          class="flex items-center justify-center gap-1.5 rounded-[6px] px-3 py-2 text-xs font-black transition-colors {viewMode === 'grid' ? 'bg-blue-100 text-black' : 'text-zinc-500 hover:bg-zinc-100 hover:text-black'}"
+          aria-pressed={viewMode === 'grid'}
+        >
+          <LayoutGrid class="h-4 w-4" />
+          Lưới
+        </button>
+        <button
+          type="button"
+          onclick={() => (viewMode = 'list')}
+          class="flex items-center justify-center gap-1.5 rounded-[6px] px-3 py-2 text-xs font-black transition-colors {viewMode === 'list' ? 'bg-blue-100 text-black' : 'text-zinc-500 hover:bg-zinc-100 hover:text-black'}"
+          aria-pressed={viewMode === 'list'}
+        >
+          <List class="h-4 w-4" />
+          Danh sách
+        </button>
+      </div>
+
+      <button 
+        onclick={() => isAddDialogOpen = true}
+        class="w-full sm:w-auto bg-blue-300 hover:bg-blue-400 text-black border-2 border-black px-4 py-2.5 rounded-[6px] shadow-secondary hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all flex items-center justify-center gap-1.5 cursor-pointer font-bold text-sm"
+      >
+        Thêm phòng <Plus class="h-4.5 w-4.5" />
+      </button>
+    </div>
   </div>
 
   <!-- Filter bar -->
@@ -498,39 +524,8 @@
       <p class="text-zinc-600 text-sm mt-2 font-semibold">Bắt đầu bằng cách tạo các phòng trọ để thêm thông tin khách thuê.</p>
     </div>
   {:else}
-    <!-- Mobile card list (hidden on sm+) -->
-    <div class="sm:hidden border-2 border-black rounded-lg overflow-hidden divide-y-2 divide-black">
-      {#each rooms as room}
-        {@const statusBg = room.status === 'empty' ? 'bg-white' : room.status === 'paid' ? 'bg-green-100' : 'bg-red-100'}
-        {@const statusText = room.status === 'empty' ? 'text-zinc-500' : room.status === 'paid' ? 'text-green-800' : 'text-red-800'}
-        {@const statusLabel = room.status === 'empty' ? 'Trống' : room.status === 'paid' ? 'Đã đóng' : 'Còn nợ'}
-        <div class="p-4 space-y-2 {statusBg}">
-          <div class="flex justify-between items-start gap-2">
-            <div>
-              <h3 class="font-black text-black text-base leading-none">Phòng {room.roomNumber}</h3>
-              <p class="text-zinc-500 text-xs mt-0.5 font-semibold">{getRoomTypeLabel(room.roomType)}</p>
-            </div>
-            <span class="text-[10px] px-2 py-1 rounded-md border-2 border-black font-black uppercase {statusText} {statusBg}">{statusLabel}</span>
-          </div>
-          <div class="flex items-center justify-between">
-            <div>
-              <p class="text-xs text-zinc-500 font-bold">{room.tenant ? room.tenant.user.name : 'Trống'}</p>
-              <p class="text-sm font-black text-black">{formatCurrency(room.monthlyRent)}/tháng</p>
-            </div>
-            <button
-              onclick={() => { selectedRoom = room; activeTab = 'general'; isDetailOpen = true; }}
-              class="bg-blue-300 text-black border-2 border-black px-3 py-1.5 rounded-[6px] text-xs font-black shadow-secondary hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all cursor-pointer"
-            >
-              Chi tiết
-            </button>
-          </div>
-        </div>
-      {/each}
-    </div>
-
-    <!-- Desktop grid (hidden on mobile) -->
-    <div class="hidden sm:block">
-      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+    {#if viewMode === 'grid'}
+      <div class="grid grid-cols-1 min-[430px]:grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
         {#each rooms as room}
           {@const statusColor = room.status === 'empty' ? 'border-black bg-white' : room.status === 'paid' ? 'border-black bg-green-200' : 'border-black bg-red-200'}
           {@const statusBadge = room.status === 'empty' ? 'text-zinc-500' : room.status === 'paid' ? 'text-green-800' : 'text-red-800'}
@@ -553,7 +548,58 @@
           </button>
         {/each}
       </div>
-    </div>
+    {:else}
+      <div class="overflow-hidden rounded-lg border-2 border-black bg-white shadow-secondary">
+        <div class="hidden grid-cols-[1fr_1.2fr_1.5fr_1fr_1fr_1fr_90px] gap-3 border-b-2 border-black bg-zinc-50 px-4 py-3 text-[10px] font-black uppercase tracking-wider text-zinc-500 md:grid">
+          <span>Phòng</span>
+          <span>Loại</span>
+          <span>Khách thuê</span>
+          <span>Trạng thái</span>
+          <span>Giá thuê</span>
+          <span>Công nợ</span>
+          <span class="text-right">Thao tác</span>
+        </div>
+
+        <div class="divide-y-2 divide-black">
+          {#each rooms as room}
+            {@const statusBg = room.status === 'empty' ? 'bg-white' : room.status === 'paid' ? 'bg-green-50' : 'bg-red-50'}
+            {@const statusPill = room.status === 'empty' ? 'bg-white text-zinc-600' : room.status === 'paid' ? 'bg-green-200 text-green-900' : 'bg-red-200 text-red-900'}
+            {@const statusLabel = room.status === 'empty' ? 'Trống' : room.status === 'paid' ? 'Đã đóng' : 'Còn nợ'}
+            <div class="grid gap-3 px-4 py-3 text-sm font-bold md:grid-cols-[1fr_1.2fr_1.5fr_1fr_1fr_1fr_90px] md:items-center {statusBg}">
+              <div>
+                <p class="text-lg font-black leading-none text-black">Phòng {room.roomNumber}</p>
+                {#if room.floor}
+                  <p class="mt-1 text-[10px] font-black uppercase tracking-wider text-zinc-500">Tầng {room.floor}</p>
+                {/if}
+              </div>
+
+              <p class="text-zinc-700">{getRoomTypeLabel(room.roomType)}</p>
+
+              <div class="min-w-0">
+                <p class="truncate text-black">{room.tenant ? room.tenant.user.name : 'Chưa có khách'}</p>
+                {#if room.tenant}
+                  <p class="mt-0.5 truncate text-xs font-semibold text-zinc-500">{room.tenant.user.phone}</p>
+                {/if}
+              </div>
+
+              <span class="w-fit rounded-md border-2 border-black px-2 py-1 text-[10px] font-black uppercase tracking-wider {statusPill}">
+                {statusLabel}
+              </span>
+
+              <p class="text-black">{formatCurrency(room.monthlyRent)}</p>
+              <p class="{room.debtAmount > 0 ? 'text-red-700' : 'text-zinc-500'}">{formatCurrency(room.debtAmount)}</p>
+
+              <button
+                onclick={() => { selectedRoom = room; activeTab = 'general'; isDetailOpen = true; }}
+                class="w-full rounded-[6px] border-2 border-black bg-blue-300 px-3 py-2 text-xs font-black text-black shadow-secondary transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none md:w-auto"
+              >
+                Chi tiết
+              </button>
+            </div>
+          {/each}
+        </div>
+      </div>
+    {/if}
   {/if}
 
   <!-- Add Room Dialog -->
