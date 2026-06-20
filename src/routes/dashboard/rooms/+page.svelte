@@ -756,7 +756,7 @@
     >
       <!-- Drawer Content: Brutallist Panel border-l-2 -->
       <div 
-        class="bg-white w-full max-w-xl h-full border-l-2 border-black shadow-primary flex flex-col justify-between animate-[slide-left_0.2s_ease-out] overflow-hidden"
+        class="bg-white h-full w-full max-w-[920px] border-l-2 border-black shadow-primary flex flex-col justify-between animate-[slide-left_0.2s_ease-out] overflow-hidden sm:w-[85vw] lg:w-[52vw]"
         onclick={(e) => e.stopPropagation()}
         onkeydown={(e) => e.stopPropagation()}
         role="dialog"
