@@ -434,40 +434,17 @@
       <p class="text-zinc-500 text-sm mt-1.5 font-bold uppercase tracking-wider">Quản lý trạng thái, chỉ số và thiết bị bàn giao</p>
     </div>
     
-    <div class="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
-      <div class="grid grid-cols-2 rounded-lg border-2 border-black bg-white p-1 shadow-secondary">
-        <button
-          type="button"
-          onclick={() => (viewMode = 'grid')}
-          class="flex items-center justify-center gap-1.5 rounded-[6px] px-3 py-2 text-xs font-black transition-colors {viewMode === 'grid' ? 'bg-blue-100 text-black' : 'text-zinc-500 hover:bg-zinc-100 hover:text-black'}"
-          aria-pressed={viewMode === 'grid'}
-        >
-          <LayoutGrid class="h-4 w-4" />
-          Lưới
-        </button>
-        <button
-          type="button"
-          onclick={() => (viewMode = 'list')}
-          class="flex items-center justify-center gap-1.5 rounded-[6px] px-3 py-2 text-xs font-black transition-colors {viewMode === 'list' ? 'bg-blue-100 text-black' : 'text-zinc-500 hover:bg-zinc-100 hover:text-black'}"
-          aria-pressed={viewMode === 'list'}
-        >
-          <List class="h-4 w-4" />
-          Danh sách
-        </button>
-      </div>
-
-      <button 
-        onclick={() => isAddDialogOpen = true}
-        class="w-full sm:w-auto bg-blue-300 hover:bg-blue-400 text-black border-2 border-black px-4 py-2.5 rounded-[6px] shadow-secondary hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all flex items-center justify-center gap-1.5 cursor-pointer font-bold text-sm"
-      >
-        Thêm phòng <Plus class="h-4.5 w-4.5" />
-      </button>
-    </div>
+    <button 
+      onclick={() => isAddDialogOpen = true}
+      class="w-full sm:w-auto bg-blue-300 hover:bg-blue-400 text-black border-2 border-black px-4 py-2.5 rounded-[6px] shadow-secondary hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all flex items-center justify-center gap-1.5 cursor-pointer font-bold text-sm"
+    >
+      Thêm phòng <Plus class="h-4.5 w-4.5" />
+    </button>
   </div>
 
   <!-- Filter bar -->
-  <div class="bg-white border-2 border-black p-4 rounded-lg shadow-secondary">
-    <div class="grid gap-3 sm:grid-cols-2">
+  <div class="space-y-3">
+    <div class="grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]">
       <div class="space-y-1">
         <span class="text-[10px] font-black text-zinc-500 uppercase tracking-wider block">Chọn tòa nhà</span>
         <select 
@@ -494,10 +471,34 @@
           </select>
         </div>
       {/if}
+
+      <div class="space-y-1">
+        <span class="text-[10px] font-black text-zinc-500 uppercase tracking-wider block">Kiểu xem</span>
+        <div class="grid grid-cols-2 rounded-lg border-2 border-black bg-white p-1 shadow-secondary lg:min-w-56">
+          <button
+            type="button"
+            onclick={() => (viewMode = 'grid')}
+            class="flex items-center justify-center gap-1.5 rounded-[6px] px-3 py-2 text-xs font-black transition-colors {viewMode === 'grid' ? 'bg-blue-100 text-black' : 'text-zinc-500 hover:bg-zinc-100 hover:text-black'}"
+            aria-pressed={viewMode === 'grid'}
+          >
+            <LayoutGrid class="h-4 w-4" />
+            Lưới
+          </button>
+          <button
+            type="button"
+            onclick={() => (viewMode = 'list')}
+            class="flex items-center justify-center gap-1.5 rounded-[6px] px-3 py-2 text-xs font-black transition-colors {viewMode === 'list' ? 'bg-blue-100 text-black' : 'text-zinc-500 hover:bg-zinc-100 hover:text-black'}"
+            aria-pressed={viewMode === 'list'}
+          >
+            <List class="h-4 w-4" />
+            Danh sách
+          </button>
+        </div>
+      </div>
     </div>
 
     <!-- Quick Legend -->
-    <div class="flex flex-wrap gap-4 text-xs font-bold text-zinc-600 mt-3 select-none">
+    <div class="flex flex-wrap gap-4 px-1 text-xs font-bold text-zinc-600 select-none">
       <div class="flex items-center gap-1.5">
         <span class="w-3.5 h-3.5 rounded-md border-2 border-black bg-white"></span>
         <span>Phòng trống</span>
