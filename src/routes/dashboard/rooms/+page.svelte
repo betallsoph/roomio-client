@@ -169,13 +169,6 @@
     isDetailOpen = true;
   }
 
-  function goToTenants(event: MouseEvent) {
-    event.preventDefault();
-    tapBounce(event, () => {
-      window.location.href = '/dashboard/tenants';
-    });
-  }
-
   async function loadInitialData(profileId: string) {
     isLoading = true;
     try {
@@ -888,7 +881,6 @@
                         <p class="text-sm text-zinc-500 font-semibold">Chưa có thông tin khách thuê phòng này.</p>
                         <a 
                           href="/dashboard/tenants"
-                          onclick={goToTenants}
                           class="inline-flex bg-blue-300 text-black border-2 border-black px-4 py-2 rounded-[6px] shadow-secondary active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all text-xs font-black"
                         >
                           Đến trang Thêm khách thuê <ArrowRight class="h-3.5 w-3.5" />
@@ -1230,10 +1222,6 @@
     animation: room-number-pop 320ms ease-out;
   }
 
-  .tap-bounce {
-    animation: tap-bounce 240ms cubic-bezier(0.34, 1.56, 0.64, 1);
-  }
-
   @keyframes room-number-pop {
     0% {
       transform: scale(1);
@@ -1243,18 +1231,6 @@
     }
     72% {
       transform: scale(0.98);
-    }
-    100% {
-      transform: scale(1);
-    }
-  }
-
-  @keyframes tap-bounce {
-    0% {
-      transform: scale(0.96);
-    }
-    55% {
-      transform: scale(1.03);
     }
     100% {
       transform: scale(1);

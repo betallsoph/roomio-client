@@ -156,7 +156,7 @@
 		</div>
 		<button
 			onclick={() => (showAddModal = true)}
-			class="flex items-center gap-1.5 rounded-[6px] border-2 border-black bg-blue-300 px-4 py-2 text-sm font-black shadow-secondary transition-all hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none"
+			class="flex items-center gap-1.5 rounded-[6px] border-2 border-black bg-blue-300 px-4 py-2 text-sm font-black shadow-secondary transition-all active:translate-x-[1px] active:translate-y-[1px] active:shadow-none"
 		>
 			<Plus class="h-4 w-4" /> Ghi chi phí
 		</button>
@@ -241,7 +241,7 @@
 					>
 					<button
 						onclick={() => deleteExpense(expense)}
-						class="shrink-0 rounded-[6px] border-2 border-black bg-red-200 p-1.5 transition-all hover:translate-x-[1px] hover:translate-y-[1px]"
+						class="shrink-0 rounded-[6px] border-2 border-black bg-red-200 p-1.5 transition-all active:translate-x-[1px] active:translate-y-[1px]"
 						title="Xóa khoản chi"
 					>
 						<Trash2 class="h-3.5 w-3.5" />
@@ -322,7 +322,7 @@
 				<button
 					onclick={addExpense}
 					disabled={isSaving}
-					class="w-full rounded-[6px] border-2 border-black bg-blue-300 py-2.5 text-sm font-black shadow-secondary transition-all hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none disabled:opacity-50"
+					class="w-full rounded-[6px] border-2 border-black bg-blue-300 py-2.5 text-sm font-black shadow-secondary transition-all active:translate-x-[1px] active:translate-y-[1px] active:shadow-none disabled:opacity-50"
 				>
 					{isSaving ? 'Đang lưu...' : 'Lưu chi phí'}
 				</button>

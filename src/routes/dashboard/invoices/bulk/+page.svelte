@@ -251,7 +251,7 @@
   <div class="flex items-center gap-3">
     <a 
       href="/dashboard/invoices" 
-      class="p-2 border-2 border-black bg-white hover:bg-zinc-100 rounded-[6px] text-black shadow-secondary hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all shrink-0 cursor-pointer"
+      class="p-2 border-2 border-black bg-white hover:bg-zinc-100 rounded-[6px] text-black shadow-secondary active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all shrink-0 cursor-pointer"
     >
       <ArrowLeft class="h-5 w-5" />
     </a>
@@ -401,7 +401,7 @@
             <button
               type="submit"
               disabled={isSubmitting}
-              class="bg-green-200 hover:bg-green-300 disabled:opacity-50 text-black border-2 border-black px-6 py-3 rounded-[6px] text-sm font-black shadow-primary hover:translate-x-[3px] hover:translate-y-[3px] hover:shadow-none transition-all flex items-center gap-1.5 cursor-pointer"
+              class="bg-green-200 hover:bg-green-300 disabled:opacity-50 text-black border-2 border-black px-6 py-3 rounded-[6px] text-sm font-black shadow-primary active:translate-x-[3px] active:translate-y-[3px] active:shadow-none transition-all flex items-center gap-1.5 cursor-pointer"
             >
               {#if isSubmitting}
                 Đang tạo hóa đơn...

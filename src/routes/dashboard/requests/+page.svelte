@@ -235,7 +235,7 @@
           onkeydown={(e) => e.key === 'Enter' && (selectedRequest = req, replyText = req.response || '', assignSelection = req.assignedToId || '', isDetailOpen = true)}
           role="button"
           tabindex="0"
-          class="border-2 border-black bg-white p-5 rounded-lg shadow-secondary hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all cursor-pointer text-left focus:outline-none focus:ring-2 focus:ring-blue-300"
+          class="border-2 border-black bg-white p-5 rounded-lg shadow-secondary active:shadow-none active:translate-x-[2px] active:translate-y-[2px] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all cursor-pointer text-left focus:outline-none focus:ring-2 focus:ring-blue-300"
         >
           <div class="flex justify-between items-start gap-2 mb-3">
             <div>
@@ -392,7 +392,7 @@
                 type="button"
                 onclick={() => assignStaff(selectedRequest!.id)}
                 disabled={isAssigning}
-                class="border-2 border-black bg-blue-300 hover:bg-blue-400 text-black px-4 py-2 rounded-[6px] text-xs font-black shadow-secondary hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all cursor-pointer"
+                class="border-2 border-black bg-blue-300 hover:bg-blue-400 text-black px-4 py-2 rounded-[6px] text-xs font-black shadow-secondary active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all cursor-pointer"
               >
                 Lưu
               </button>
@@ -408,7 +408,7 @@
           <button
             onclick={() => updateRequestStatus(selectedRequest!.id, 'in_progress')}
             disabled={isSubmitting}
-            class="flex-1 min-w-[100px] border-2 border-black bg-blue-300 hover:bg-blue-400 text-black py-2.5 rounded-[6px] text-xs font-black shadow-secondary hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all cursor-pointer"
+            class="flex-1 min-w-[100px] border-2 border-black bg-blue-300 hover:bg-blue-400 text-black py-2.5 rounded-[6px] text-xs font-black shadow-secondary active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all cursor-pointer"
           >
             Đang sửa
           </button>
@@ -416,7 +416,7 @@
           <button
             onclick={() => updateRequestStatus(selectedRequest!.id, 'completed')}
             disabled={isSubmitting}
-            class="flex-grow min-w-[100px] bg-green-200 hover:bg-green-300 text-black border-2 border-black py-2.5 rounded-[6px] text-xs font-black shadow-secondary hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+            class="flex-grow min-w-[100px] bg-green-200 hover:bg-green-300 text-black border-2 border-black py-2.5 rounded-[6px] text-xs font-black shadow-secondary active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all flex items-center justify-center gap-1.5 cursor-pointer"
           >
             Đã xong <Check class="h-4 w-4" />
           </button>
@@ -424,7 +424,7 @@
           <button
             onclick={() => updateRequestStatus(selectedRequest!.id, 'rejected')}
             disabled={isSubmitting}
-            class="border-2 border-black bg-red-200 hover:bg-red-300 text-red-800 py-2.5 px-4 rounded-[6px] text-xs font-black shadow-secondary hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all cursor-pointer"
+            class="border-2 border-black bg-red-200 hover:bg-red-300 text-red-800 py-2.5 px-4 rounded-[6px] text-xs font-black shadow-secondary active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all cursor-pointer"
           >
             Từ chối
           </button>

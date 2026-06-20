@@ -288,7 +288,7 @@
                   <td class="px-6 py-4 text-right flex items-center justify-end gap-2">
                     <button
                       onclick={() => handleToggleStatus(landlord.userId, landlord.user.isActive)}
-                    class="cursor-pointer rounded-lg border-2 border-black bg-white p-1.5 text-black shadow-secondary transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none"
+                    class="cursor-pointer rounded-lg border-2 border-black bg-white p-1.5 text-black shadow-secondary transition-all active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
                       title={landlord.user.isActive ? 'Khóa tài khoản' : 'Mở khóa'}
                     >
                       {#if landlord.user.isActive}
@@ -304,7 +304,7 @@
                         subValid = landlord.subValidUntil ? landlord.subValidUntil.split('T')[0] : '';
                         isEditOpen = true; 
                       }}
-                      class="cursor-pointer rounded-lg border-2 border-black bg-white p-1.5 text-black shadow-secondary transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none"
+                      class="cursor-pointer rounded-lg border-2 border-black bg-white p-1.5 text-black shadow-secondary transition-all active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
                       title="Nâng cấp gói"
                     >
                       <Sliders class="h-4 w-4 text-indigo-500" />
@@ -336,7 +336,7 @@
       >
         <div class="flex items-center justify-between border-b-2 border-black pb-3">
           <h2 class="text-lg font-black text-black">Cấp gói dịch vụ Roomio</h2>
-          <button onclick={() => isEditOpen = false} class="rounded-lg border-2 border-black bg-white p-1.5 text-black shadow-secondary transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none">
+          <button onclick={() => isEditOpen = false} class="rounded-lg border-2 border-black bg-white p-1.5 text-black shadow-secondary transition-all active:translate-x-[2px] active:translate-y-[2px] active:shadow-none">
             <X class="h-5 w-5" />
           </button>
         </div>
@@ -376,14 +376,14 @@
             <button 
               type="button" 
               onclick={() => isEditOpen = false}
-              class="cursor-pointer rounded-[6px] border-2 border-black bg-white px-4 py-2 text-xs font-bold text-black shadow-secondary transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none"
+              class="cursor-pointer rounded-[6px] border-2 border-black bg-white px-4 py-2 text-xs font-bold text-black shadow-secondary transition-all active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
             >
               Hủy
             </button>
             <button 
               type="submit"
               disabled={isSaving}
-              class="flex cursor-pointer items-center gap-1 rounded-[6px] border-2 border-black bg-blue-300 px-4 py-2 text-xs font-black text-black shadow-secondary transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none disabled:opacity-50"
+              class="flex cursor-pointer items-center gap-1 rounded-[6px] border-2 border-black bg-blue-300 px-4 py-2 text-xs font-black text-black shadow-secondary transition-all active:translate-x-[2px] active:translate-y-[2px] active:shadow-none disabled:opacity-50"
             >
               {#if isSaving}
                 <Loader2 class="h-4.5 w-4.5 animate-spin" />

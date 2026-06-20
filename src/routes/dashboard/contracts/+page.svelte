@@ -194,7 +194,7 @@
 		</div>
 		<button
 			onclick={openCreate}
-			class="flex items-center gap-1.5 rounded-[6px] border-2 border-black bg-blue-300 px-4 py-2 text-sm font-black shadow-secondary transition-all hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none"
+			class="flex items-center gap-1.5 rounded-[6px] border-2 border-black bg-blue-300 px-4 py-2 text-sm font-black shadow-secondary transition-all active:translate-x-[1px] active:translate-y-[1px] active:shadow-none"
 		>
 			<Plus class="h-4 w-4" /> Tạo hợp đồng
 		</button>
@@ -253,14 +253,14 @@
 						{#if c.status === 'active'}
 							<button
 								onclick={() => terminateContract(c)}
-								class="flex items-center gap-1 rounded-[6px] border-2 border-black bg-yellow-200 px-3 py-2 text-xs font-black shadow-secondary transition-all hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none"
+								class="flex items-center gap-1 rounded-[6px] border-2 border-black bg-yellow-200 px-3 py-2 text-xs font-black shadow-secondary transition-all active:translate-x-[1px] active:translate-y-[1px] active:shadow-none"
 							>
 								<Ban class="h-4 w-4" /> Chấm dứt
 							</button>
 						{/if}
 						<button
 							onclick={() => deleteContract(c)}
-							class="flex items-center gap-1 rounded-[6px] border-2 border-black bg-red-200 px-3 py-2 text-xs font-black shadow-secondary transition-all hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none"
+							class="flex items-center gap-1 rounded-[6px] border-2 border-black bg-red-200 px-3 py-2 text-xs font-black shadow-secondary transition-all active:translate-x-[1px] active:translate-y-[1px] active:shadow-none"
 						>
 							<Trash2 class="h-4 w-4" />
 						</button>
@@ -369,7 +369,7 @@
 				<button
 					onclick={createContract}
 					disabled={isSaving || isUploadingFile}
-					class="w-full rounded-[6px] border-2 border-black bg-blue-300 py-2.5 text-sm font-black shadow-secondary transition-all hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none disabled:opacity-50"
+					class="w-full rounded-[6px] border-2 border-black bg-blue-300 py-2.5 text-sm font-black shadow-secondary transition-all active:translate-x-[1px] active:translate-y-[1px] active:shadow-none disabled:opacity-50"
 				>
 					{isSaving ? 'Đang lưu...' : 'Tạo hợp đồng'}
 				</button>

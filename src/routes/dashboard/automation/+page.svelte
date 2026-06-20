@@ -102,7 +102,7 @@
 			<button
 				onclick={() => runAutomation('run_all')}
 				disabled={!!isRunning}
-				class="flex items-center gap-1.5 rounded-[6px] border-2 border-black bg-blue-300 px-4 py-2 text-sm font-black text-black shadow-secondary transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none disabled:opacity-50"
+				class="flex items-center gap-1.5 rounded-[6px] border-2 border-black bg-blue-300 px-4 py-2 text-sm font-black text-black shadow-secondary transition-all active:translate-x-[2px] active:translate-y-[2px] active:shadow-none disabled:opacity-50"
 			>
 				{#if isRunning === 'run_all'}
 					<Loader2 class="h-4 w-4 animate-spin" />
@@ -120,7 +120,7 @@
 			<button
 				onclick={() => runAutomation(action.id)}
 				disabled={!!isRunning}
-				class="min-h-36 rounded-lg border-2 border-black bg-white p-4 text-left shadow-secondary transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none disabled:opacity-50"
+				class="min-h-36 rounded-lg border-2 border-black bg-white p-4 text-left shadow-secondary transition-all active:translate-x-[2px] active:translate-y-[2px] active:shadow-none disabled:opacity-50"
 			>
 				<div class="flex items-center justify-between">
 					<Icon class="h-5 w-5 text-blue-500" />

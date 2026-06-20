@@ -166,7 +166,7 @@
 						</div>
 					</div>
 					<button
-						onclick={() => (isMobileMenuOpen = true)}
+						onclick={() => window.setTimeout(() => (isMobileMenuOpen = true), 200)}
 						class="rounded-lg border-2 border-black bg-white p-2 text-black shadow-secondary transition-all active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
 						aria-label="Mở menu"
 					>
@@ -183,7 +183,7 @@
 		{#if isMobileMenuOpen}
 			<div
 				class="fixed inset-0 z-40 bg-black/35 backdrop-blur-sm lg:hidden"
-				onclick={() => (isMobileMenuOpen = false)}
+				onclick={() => window.setTimeout(() => (isMobileMenuOpen = false), 200)}
 				onkeydown={(e) => e.key === 'Escape' && (isMobileMenuOpen = false)}
 				role="button"
 				tabindex="0"
@@ -201,7 +201,7 @@
 						</div>
 					</div>
 					<button
-						onclick={() => (isMobileMenuOpen = false)}
+						onclick={() => window.setTimeout(() => (isMobileMenuOpen = false), 200)}
 						class="rounded-lg border-2 border-black bg-white p-2"
 						aria-label="Đóng menu"
 					>
@@ -220,7 +220,7 @@
 									{@const Icon = item.icon}
 									<a
 										href={item.path}
-										onclick={() => (isMobileMenuOpen = false)}
+										onclick={() => window.setTimeout(() => (isMobileMenuOpen = false), 200)}
 										class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-bold transition-colors {isActive(
 											item.path
 										)

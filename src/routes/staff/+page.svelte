@@ -305,8 +305,8 @@
         <div class="grid gap-4 sm:grid-cols-2">
           {#each requests as req}
             <button
-              onclick={() => openRequest(req)}
-              class="roomio-card cursor-pointer p-5 text-left transition-all hover:translate-x-[3px] hover:translate-y-[3px] hover:shadow-none"
+              onclick={() => window.setTimeout(() => openRequest(req), 200)}
+              class="roomio-card cursor-pointer p-5 text-left transition-all active:translate-x-[3px] active:translate-y-[3px] active:shadow-none"
             >
               <div class="mb-3 flex items-start justify-between gap-2">
                 <span class="rounded-full border border-black px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wider {statusBadgeClass(req.status)}">
@@ -368,15 +368,15 @@
                   <p class="py-1.5 text-sm font-black text-blue-600">{m.currValue - m.prevValue}</p>
                 </div>
                 {#if m.photoUrl}
-                  <a href={m.photoUrl} target="_blank" rel="noreferrer" class="flex items-center gap-1 rounded-[6px] border-2 border-black bg-white px-2.5 py-1.5 text-xs font-bold text-black shadow-secondary transition-all hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none">
+                  <a href={m.photoUrl} target="_blank" rel="noreferrer" class="flex items-center gap-1 rounded-[6px] border-2 border-black bg-white px-2.5 py-1.5 text-xs font-bold text-black shadow-secondary transition-all active:translate-x-[1px] active:translate-y-[1px] active:shadow-none">
                     <ImageIcon class="h-3.5 w-3.5" /> Ảnh
                   </a>
                 {/if}
                 <div class="ml-auto flex gap-2">
-                  <button onclick={() => reviewMeter(m, 'reject')} class="flex items-center gap-1 rounded-[6px] border-2 border-black bg-red-200 px-3 py-1.5 text-xs font-black text-red-800 shadow-secondary transition-all hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none">
+                  <button onclick={() => reviewMeter(m, 'reject')} class="flex items-center gap-1 rounded-[6px] border-2 border-black bg-red-200 px-3 py-1.5 text-xs font-black text-red-800 shadow-secondary transition-all active:translate-x-[1px] active:translate-y-[1px] active:shadow-none">
                     <X class="h-4 w-4" /> Từ chối
                   </button>
-                  <button onclick={() => reviewMeter(m, 'approve')} class="flex items-center gap-1 rounded-[6px] border-2 border-black bg-green-200 px-3 py-1.5 text-xs font-black text-green-800 shadow-secondary transition-all hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none">
+                  <button onclick={() => reviewMeter(m, 'approve')} class="flex items-center gap-1 rounded-[6px] border-2 border-black bg-green-200 px-3 py-1.5 text-xs font-black text-green-800 shadow-secondary transition-all active:translate-x-[1px] active:translate-y-[1px] active:shadow-none">
                     <Check class="h-4 w-4" /> Chốt số
                   </button>
                 </div>
@@ -492,10 +492,10 @@
       </div>
 
       <div class="flex shrink-0 flex-wrap gap-3 border-t-2 border-black bg-zinc-100 p-4">
-        <button onclick={() => updateRequest('in_progress')} disabled={isSubmitting} class="min-w-[100px] flex-1 cursor-pointer rounded-[6px] border-2 border-black bg-blue-300 py-2.5 text-xs font-black text-black shadow-secondary transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none">
+        <button onclick={() => updateRequest('in_progress')} disabled={isSubmitting} class="min-w-[100px] flex-1 cursor-pointer rounded-[6px] border-2 border-black bg-blue-300 py-2.5 text-xs font-black text-black shadow-secondary transition-all active:translate-x-[2px] active:translate-y-[2px] active:shadow-none">
           Đang sửa
         </button>
-        <button onclick={() => updateRequest('completed')} disabled={isSubmitting} class="flex min-w-[100px] flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-[6px] border-2 border-black bg-green-200 py-2.5 text-xs font-black text-green-800 shadow-secondary transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none">
+        <button onclick={() => updateRequest('completed')} disabled={isSubmitting} class="flex min-w-[100px] flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-[6px] border-2 border-black bg-green-200 py-2.5 text-xs font-black text-green-800 shadow-secondary transition-all active:translate-x-[2px] active:translate-y-[2px] active:shadow-none">
           Đã xong <Check class="h-4 w-4" />
         </button>
       </div>

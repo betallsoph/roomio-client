@@ -165,7 +165,7 @@
     </div>
     <button 
       onclick={() => isAddDialogOpen = true}
-      class="w-full sm:w-auto bg-blue-300 text-black border-2 border-black px-4 py-2.5 rounded-[6px] shadow-secondary hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all flex items-center justify-center gap-1.5 cursor-pointer font-black text-sm"
+      class="w-full sm:w-auto bg-blue-300 text-black border-2 border-black px-4 py-2.5 rounded-[6px] shadow-secondary active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all flex items-center justify-center gap-1.5 cursor-pointer font-black text-sm"
     >
       Thêm tòa nhà <Plus class="h-4.5 w-4.5" />
     </button>
@@ -187,7 +187,7 @@
       </p>
       <button 
         onclick={() => isAddDialogOpen = true}
-        class="mt-5 bg-blue-300 text-black border-2 border-black px-5 py-2.5 rounded-[6px] text-sm font-black shadow-secondary hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all cursor-pointer"
+        class="mt-5 bg-blue-300 text-black border-2 border-black px-5 py-2.5 rounded-[6px] text-sm font-black shadow-secondary active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all cursor-pointer"
       >
         Tạo tòa nhà mới
       </button>
@@ -227,8 +227,8 @@
           <div class="flex items-center justify-between">
             <span class="text-xs text-zinc-500 font-bold">Lấp đầy: {stats.total > 0 ? Math.round(((stats.total - stats.empty) / stats.total) * 100) : 0}%</span>
             <button
-              onclick={() => { selectedProperty = prop; isDetailDrawerOpen = true; }}
-              class="bg-blue-300 text-black border-2 border-black px-3 py-1.5 rounded-[6px] text-xs font-black shadow-secondary hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all cursor-pointer"
+              onclick={() => window.setTimeout(() => { selectedProperty = prop; isDetailDrawerOpen = true; }, 200)}
+              class="bg-blue-300 text-black border-2 border-black px-3 py-1.5 rounded-[6px] text-xs font-black shadow-secondary active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all cursor-pointer"
             >
               Chi tiết
             </button>
@@ -242,11 +242,11 @@
       {#each properties as prop}
         {@const stats = calculatePropertyStats(prop.rooms)}
         <div
-          onclick={() => { selectedProperty = prop; isDetailDrawerOpen = true; }}
+          onclick={() => window.setTimeout(() => { selectedProperty = prop; isDetailDrawerOpen = true; }, 200)}
           onkeydown={(e) => e.key === 'Enter' && (selectedProperty = prop, isDetailDrawerOpen = true)}
           role="button"
           tabindex="0"
-          class="bg-white border-2 border-black rounded-lg p-5 shadow-secondary hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all cursor-pointer text-left focus:outline-none focus:ring-2 focus:ring-blue-300"
+          class="bg-white border-2 border-black rounded-lg p-5 shadow-secondary active:shadow-none active:translate-x-[2px] active:translate-y-[2px] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all cursor-pointer text-left focus:outline-none focus:ring-2 focus:ring-blue-300"
         >
           <div class="flex justify-between items-start mb-4">
             <div class="flex items-center gap-3 min-w-0">
@@ -380,7 +380,7 @@
             <button 
               type="submit"
               disabled={isSubmitting}
-              class="bg-blue-300 hover:bg-blue-400 disabled:opacity-50 text-black border-2 border-black px-4 py-2 rounded-[6px] text-sm font-bold shadow-secondary hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all flex items-center gap-1.5 cursor-pointer font-black"
+              class="bg-blue-300 hover:bg-blue-400 disabled:opacity-50 text-black border-2 border-black px-4 py-2 rounded-[6px] text-sm font-bold shadow-secondary active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all flex items-center gap-1.5 cursor-pointer font-black"
             >
               Thêm tòa nhà
               {#if isSubmitting}
@@ -501,14 +501,14 @@
         <div class="p-6 border-t-2 border-black bg-zinc-150 flex gap-3 shrink-0">
           <button
             onclick={() => handleDeleteProperty(selectedProperty!.id)}
-            class="border-2 border-black bg-red-200 hover:bg-red-300 text-red-800 p-2.5 rounded-[6px] shadow-secondary hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all cursor-pointer"
+            class="border-2 border-black bg-red-200 hover:bg-red-300 text-red-800 p-2.5 rounded-[6px] shadow-secondary active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all cursor-pointer"
             title="Xóa tòa nhà"
           >
             <Trash2 class="h-5 w-5" />
           </button>
           <a 
             href="/dashboard/rooms?propertyId={selectedProperty.id}" 
-            class="flex-grow bg-blue-300 hover:bg-blue-400 text-black border-2 border-black py-2.5 rounded-[6px] text-center text-sm font-black shadow-secondary hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+            class="flex-grow bg-blue-300 hover:bg-blue-400 text-black border-2 border-black py-2.5 rounded-[6px] text-center text-sm font-black shadow-secondary active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all flex items-center justify-center gap-1.5 cursor-pointer"
           >
             Xem & Quản lý phòng <Home class="h-4.5 w-4.5" />
           </a>
