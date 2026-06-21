@@ -273,8 +273,8 @@
     </div>
   {:else}
     <form onsubmit={handleSubmitBulkInvoices} class="space-y-6">
-      <!-- Top selectors card -->
-      <div class="bg-white border-2 border-black p-5 rounded-lg shadow-secondary grid gap-4 sm:grid-cols-3">
+      <!-- Top selectors -->
+      <div class="grid gap-4 sm:grid-cols-3">
         <div class="space-y-1">
           <label for="b-prop" class="text-xs font-bold text-zinc-600 uppercase tracking-wider block">Chọn tòa nhà</label>
           <select 

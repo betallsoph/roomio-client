@@ -184,33 +184,31 @@
   </div>
 
   <!-- Filters -->
-  <div class="bg-white border-2 border-black p-4 rounded-lg shadow-secondary">
-    <div class="flex gap-4 overflow-x-auto pb-1">
-      <div class="space-y-1 shrink-0">
-        <span class="text-[10px] font-bold text-zinc-650 uppercase tracking-wider block">Trạng thái sự cố</span>
-        <select 
-          bind:value={statusFilter}
-          class="border-2 border-black px-3 py-2 text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300 bg-white font-semibold text-black w-44"
-        >
-          <option value="">Tất cả trạng thái</option>
-          <option value="pending">Đang chờ (Pending)</option>
-          <option value="in_progress">Đang sửa (In Progress)</option>
-          <option value="completed">Đã xong (Completed)</option>
-          <option value="rejected">Từ chối (Rejected)</option>
-        </select>
-      </div>
+  <div class="flex gap-4 overflow-x-auto pb-1">
+    <div class="space-y-1 shrink-0">
+      <span class="text-[10px] font-bold text-zinc-650 uppercase tracking-wider block">Trạng thái sự cố</span>
+      <select 
+        bind:value={statusFilter}
+        class="border-2 border-black px-3 py-2 text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300 bg-white font-semibold text-black w-44"
+      >
+        <option value="">Tất cả trạng thái</option>
+        <option value="pending">Đang chờ (Pending)</option>
+        <option value="in_progress">Đang sửa (In Progress)</option>
+        <option value="completed">Đã xong (Completed)</option>
+        <option value="rejected">Từ chối (Rejected)</option>
+      </select>
+    </div>
 
-      <div class="space-y-1 shrink-0">
-        <span class="text-[10px] font-bold text-zinc-650 uppercase tracking-wider block">Mức độ khẩn cấp</span>
-        <select 
-          bind:value={priorityFilter}
-          class="border-2 border-black px-3 py-2 text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300 bg-white font-semibold text-black w-44"
-        >
-          <option value="">Tất cả</option>
-          <option value="important">Khẩn cấp / Gấp</option>
-          <option value="normal">Bình thường</option>
-        </select>
-      </div>
+    <div class="space-y-1 shrink-0">
+      <span class="text-[10px] font-bold text-zinc-650 uppercase tracking-wider block">Mức độ khẩn cấp</span>
+      <select 
+        bind:value={priorityFilter}
+        class="border-2 border-black px-3 py-2 text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300 bg-white font-semibold text-black w-44"
+      >
+        <option value="">Tất cả</option>
+        <option value="important">Khẩn cấp / Gấp</option>
+        <option value="normal">Bình thường</option>
+      </select>
     </div>
   </div>
 
@@ -235,7 +233,7 @@
           onkeydown={(e) => e.key === 'Enter' && (selectedRequest = req, replyText = req.response || '', assignSelection = req.assignedToId || '', isDetailOpen = true)}
           role="button"
           tabindex="0"
-          class="border-2 border-black bg-white p-5 rounded-lg shadow-secondary active:shadow-none active:translate-x-[2px] active:translate-y-[2px] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all cursor-pointer text-left focus:outline-none focus:ring-2 focus:ring-blue-300"
+          class="border-2 border-black bg-white p-5 rounded-lg shadow-secondary active:shadow-none active:translate-x-[2px] active:translate-y-[2px] transition-all cursor-pointer text-left focus:outline-none focus:ring-2 focus:ring-blue-300"
         >
           <div class="flex justify-between items-start gap-2 mb-3">
             <div>

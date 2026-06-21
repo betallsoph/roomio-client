@@ -214,7 +214,7 @@
   {/if}
 
   <!-- Filters -->
-  <div class="bg-white border-2 border-black p-4 rounded-lg shadow-secondary grid gap-4 sm:grid-cols-3 items-end">
+  <div class="grid gap-4 sm:grid-cols-3 items-end">
     <div class="space-y-1">
       <span class="text-[10px] font-black text-zinc-500 uppercase tracking-wider block">Trạng thái thanh toán</span>
       <select 
