@@ -153,10 +153,12 @@
 
   function tapBounce(event: MouseEvent, callback?: () => void) {
     const element = event.currentTarget as HTMLElement;
-    element.classList.remove('tap-sink', 'tap-bounce');
-    void element.offsetWidth;
-    element.classList.add('tap-bounce');
-    window.setTimeout(() => element.classList.remove('tap-bounce'), 260);
+    if (!element.classList.contains('tap-sink') && !element.classList.contains('tap-bounce')) {
+      element.classList.remove('tap-bounce');
+      void element.offsetWidth;
+      element.classList.add('tap-bounce');
+      window.setTimeout(() => element.classList.remove('tap-bounce'), 260);
+    }
 
     if (callback) {
       window.setTimeout(callback, TAP_ACTION_DELAY);
@@ -552,7 +554,7 @@
           
           <button
             onclick={(e) => tapBounce(e, () => openRoomDetail(room))}
-            class="room-card border-2 rounded-lg p-4 flex flex-col justify-between items-start text-left shadow-secondary active:translate-x-[3px] active:translate-y-[3px] active:shadow-none transition-[transform,box-shadow] cursor-pointer h-32 focus:outline-none focus:ring-2 focus:ring-blue-300 {statusColor}"
+            class="room-card border-2 rounded-lg p-4 flex flex-col justify-between items-start text-left shadow-secondary active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-[transform,box-shadow] cursor-pointer h-32 focus:outline-none focus:ring-2 focus:ring-blue-300 {statusColor}"
           >
             <div>
               <span class="room-card-number text-xl font-black text-black leading-none">{room.roomNumber}</span>
@@ -751,7 +753,7 @@
             <button 
               type="submit"
               disabled={isCreatingRoom}
-              class="bg-blue-300 hover:bg-blue-400 disabled:opacity-50 text-black border-2 border-black px-4 py-2 rounded-[6px] text-xs font-bold shadow-secondary active:translate-x-[3px] active:translate-y-[3px] active:shadow-none transition-all flex items-center gap-1.5 cursor-pointer"
+              class="bg-blue-300 hover:bg-blue-400 disabled:opacity-50 text-black border-2 border-black px-4 py-2 rounded-[6px] text-xs font-bold shadow-secondary active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all flex items-center gap-1.5 cursor-pointer"
             >
               Thêm phòng
               {#if isCreatingRoom}

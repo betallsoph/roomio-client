@@ -966,7 +966,7 @@
 										openPayment(pendingInvoice()!);
 										activeTab = 'bills';
 									}}
-									class="flex cursor-pointer items-center justify-center gap-1.5 rounded-[6px] border-2 border-black bg-blue-300 px-5 py-3 text-sm font-bold text-black shadow-primary transition-all active:translate-x-[5px] active:translate-y-[6px] active:shadow-none active:translate-x-[5px] active:translate-y-[6px] active:shadow-none"
+									class="flex cursor-pointer items-center justify-center gap-1.5 rounded-[6px] border-2 border-black bg-blue-300 px-5 py-3 text-sm font-bold text-black shadow-primary transition-all active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
 								>
 									Quét QR thanh toán <QrCode class="h-4.5 w-4.5" />
 								</button>
@@ -1132,7 +1132,7 @@
 											<button
 												type="submit"
 												disabled={isSubmittingProof}
-												class="flex w-full cursor-pointer items-center justify-center gap-1 rounded-[6px] border-2 border-black bg-blue-300 py-2.5 text-xs font-black text-black shadow-secondary transition-all active:translate-x-[3px] active:translate-y-[3px] hover:bg-blue-400 active:shadow-none disabled:opacity-50"
+												class="flex w-full cursor-pointer items-center justify-center gap-1 rounded-[6px] border-2 border-black bg-blue-300 py-2.5 text-xs font-black text-black shadow-secondary transition-all active:translate-x-[2px] active:translate-y-[2px] hover:bg-blue-400 active:shadow-none disabled:opacity-50"
 											>
 												Gửi hóa đơn chứng nhận đã chuyển khoản
 												{#if isSubmittingProof}
@@ -1326,7 +1326,7 @@
 									<button
 										type="submit"
 										disabled={isSubmittingRequest}
-										class="flex cursor-pointer items-center gap-1.5 rounded-[6px] border-2 border-black bg-blue-300 px-5 py-2.5 text-xs font-black text-black shadow-secondary transition-all active:translate-x-[3px] active:translate-y-[3px] active:shadow-none"
+										class="flex cursor-pointer items-center gap-1.5 rounded-[6px] border-2 border-black bg-blue-300 px-5 py-2.5 text-xs font-black text-black shadow-secondary transition-all active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
 									>
 										Gửi yêu cầu sửa chữa
 										{#if isSubmittingRequest}
@@ -1522,7 +1522,7 @@
 										<button
 											type="submit"
 											disabled={isSubmittingMeter}
-											class="flex cursor-pointer items-center gap-1.5 rounded-[6px] border-2 border-black bg-blue-300 px-5 py-2.5 text-xs font-black text-black shadow-secondary transition-all active:translate-x-[3px] active:translate-y-[3px] active:shadow-none"
+											class="flex cursor-pointer items-center gap-1.5 rounded-[6px] border-2 border-black bg-blue-300 px-5 py-2.5 text-xs font-black text-black shadow-secondary transition-all active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
 										>
 											Gửi chỉ số
 											{#if isSubmittingMeter}
@@ -1768,7 +1768,7 @@
 
 								<button
 									onclick={handleCopyReferral}
-									class="flex cursor-pointer items-center gap-1.5 rounded-[6px] border-2 border-black bg-blue-300 px-5 py-2.5 text-xs font-black text-black shadow-secondary transition-all active:translate-x-[3px] active:translate-y-[3px] active:shadow-none"
+									class="flex cursor-pointer items-center gap-1.5 rounded-[6px] border-2 border-black bg-blue-300 px-5 py-2.5 text-xs font-black text-black shadow-secondary transition-all active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
 								>
 									<Copy class="h-4 w-4" />
 									Sao chép lời giới thiệu
@@ -1951,7 +1951,7 @@
 									<button
 										type="submit"
 										disabled={isSubmittingDocs}
-										class="flex cursor-pointer items-center gap-1.5 rounded-[6px] border-2 border-black bg-blue-300 px-5 py-2.5 text-xs font-black text-black shadow-secondary transition-all active:translate-x-[3px] active:translate-y-[3px] active:shadow-none"
+										class="flex cursor-pointer items-center gap-1.5 rounded-[6px] border-2 border-black bg-blue-300 px-5 py-2.5 text-xs font-black text-black shadow-secondary transition-all active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
 									>
 										Lưu hồ sơ giấy tờ
 										{#if isSubmittingDocs}
@@ -1995,7 +1995,7 @@
 									<button
 										type="submit"
 										disabled={isSubmittingNote}
-										class="flex cursor-pointer items-center gap-1.5 rounded-[6px] border-2 border-black bg-blue-300 px-5 py-2.5 text-xs font-black text-black shadow-secondary transition-all active:translate-x-[3px] active:translate-y-[3px] active:shadow-none"
+										class="flex cursor-pointer items-center gap-1.5 rounded-[6px] border-2 border-black bg-blue-300 px-5 py-2.5 text-xs font-black text-black shadow-secondary transition-all active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
 									>
 										Gửi lời nhắn
 										{#if isSubmittingNote}

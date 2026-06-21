@@ -48,6 +48,7 @@
   let address = $state('');
   let blocksText = $state(''); // e.g. "Block A, Block B"
   let isSubmitting = $state(false);
+  const TAP_ACTION_DELAY = 200;
 
   onMount(() => {
     const sessionStr = localStorage.getItem('roomio_user');
@@ -154,6 +155,20 @@
     };
     return labels[type] || type;
   }
+
+  function tapBounce(event: MouseEvent, callback?: () => void) {
+    const element = event.currentTarget as HTMLElement;
+    if (!element.classList.contains('tap-sink') && !element.classList.contains('tap-bounce')) {
+      element.classList.remove('tap-bounce');
+      void element.offsetWidth;
+      element.classList.add('tap-bounce');
+      window.setTimeout(() => element.classList.remove('tap-bounce'), 260);
+    }
+
+    if (callback) {
+      window.setTimeout(callback, TAP_ACTION_DELAY);
+    }
+  }
 </script>
 
 <div class="space-y-6">
@@ -164,7 +179,7 @@
       <p class="text-zinc-600 text-sm mt-1 font-bold">{properties.length} tòa nhà, {properties.reduce((sum, p) => sum + p.rooms.length, 0)} phòng trọ</p>
     </div>
     <button 
-      onclick={() => isAddDialogOpen = true}
+      onclick={(e) => tapBounce(e, () => (isAddDialogOpen = true))}
       class="w-full sm:w-auto bg-blue-300 text-black border-2 border-black px-4 py-2.5 rounded-[6px] shadow-secondary active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all flex items-center justify-center gap-1.5 cursor-pointer font-black text-sm"
     >
       Thêm tòa nhà <Plus class="h-4.5 w-4.5" />
@@ -186,7 +201,7 @@
         Bắt đầu bằng cách thêm tòa nhà đầu tiên của bạn để thiết lập các phòng trọ, quản lý dịch vụ và tính tiền hàng tháng.
       </p>
       <button 
-        onclick={() => isAddDialogOpen = true}
+        onclick={(e) => tapBounce(e, () => (isAddDialogOpen = true))}
         class="mt-5 bg-blue-300 text-black border-2 border-black px-5 py-2.5 rounded-[6px] text-sm font-black shadow-secondary active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all cursor-pointer"
       >
         Tạo tòa nhà mới
@@ -227,7 +242,7 @@
           <div class="flex items-center justify-between">
             <span class="text-xs text-zinc-500 font-bold">Lấp đầy: {stats.total > 0 ? Math.round(((stats.total - stats.empty) / stats.total) * 100) : 0}%</span>
             <button
-              onclick={() => window.setTimeout(() => { selectedProperty = prop; isDetailDrawerOpen = true; }, 200)}
+              onclick={(e) => tapBounce(e, () => { selectedProperty = prop; isDetailDrawerOpen = true; })}
               class="bg-blue-300 text-black border-2 border-black px-3 py-1.5 rounded-[6px] text-xs font-black shadow-secondary active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all cursor-pointer"
             >
               Chi tiết
@@ -242,11 +257,11 @@
       {#each properties as prop}
         {@const stats = calculatePropertyStats(prop.rooms)}
         <div
-          onclick={() => window.setTimeout(() => { selectedProperty = prop; isDetailDrawerOpen = true; }, 200)}
+          onclick={(e) => tapBounce(e, () => { selectedProperty = prop; isDetailDrawerOpen = true; })}
           onkeydown={(e) => e.key === 'Enter' && (selectedProperty = prop, isDetailDrawerOpen = true)}
           role="button"
           tabindex="0"
-          class="bg-white border-2 border-black rounded-lg p-5 shadow-secondary active:shadow-none active:translate-x-[2px] active:translate-y-[2px] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all cursor-pointer text-left focus:outline-none focus:ring-2 focus:ring-blue-300"
+          class="bg-white border-2 border-black rounded-lg p-5 shadow-secondary active:shadow-none active:translate-x-[2px] active:translate-y-[2px] transition-all cursor-pointer text-left focus:outline-none focus:ring-2 focus:ring-blue-300"
         >
           <div class="flex justify-between items-start mb-4">
             <div class="flex items-center gap-3 min-w-0">

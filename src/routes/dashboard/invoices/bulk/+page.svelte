@@ -401,7 +401,7 @@
             <button
               type="submit"
               disabled={isSubmitting}
-              class="bg-green-200 hover:bg-green-300 disabled:opacity-50 text-black border-2 border-black px-6 py-3 rounded-[6px] text-sm font-black shadow-primary active:translate-x-[3px] active:translate-y-[3px] active:shadow-none transition-all flex items-center gap-1.5 cursor-pointer"
+              class="bg-green-200 hover:bg-green-300 disabled:opacity-50 text-black border-2 border-black px-6 py-3 rounded-[6px] text-sm font-black shadow-primary active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all flex items-center gap-1.5 cursor-pointer"
             >
               {#if isSubmitting}
                 Đang tạo hóa đơn...

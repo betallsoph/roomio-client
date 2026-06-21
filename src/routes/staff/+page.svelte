@@ -306,7 +306,7 @@
           {#each requests as req}
             <button
               onclick={() => window.setTimeout(() => openRequest(req), 200)}
-              class="roomio-card cursor-pointer p-5 text-left transition-all active:translate-x-[3px] active:translate-y-[3px] active:shadow-none"
+              class="roomio-card cursor-pointer p-5 text-left transition-all active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
             >
               <div class="mb-3 flex items-start justify-between gap-2">
                 <span class="rounded-full border border-black px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wider {statusBadgeClass(req.status)}">
