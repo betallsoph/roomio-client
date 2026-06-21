@@ -9,11 +9,29 @@
   const TAP_ACTION_DELAY = 200;
 
   onMount(() => {
-    function animateTap(element: HTMLElement) {
-      element.classList.remove('tap-bounce');
+    function findTapTarget(target: EventTarget | null) {
+      if (!(target instanceof Element)) return null;
+
+      const interactive = target.closest<HTMLElement>('button, a[href], [role="button"]');
+      if (!interactive || interactive.dataset.tapImmediate === 'true') return null;
+      if (interactive.closest('[data-tap-zone="plain"]')) return null;
+      if (interactive.matches(':disabled, [aria-disabled="true"]')) return null;
+
+      return interactive;
+    }
+
+    function bounceTouchTarget(element: HTMLElement) {
+      element.classList.remove('tap-sink', 'tap-bounce');
       void element.offsetWidth;
-      element.classList.add('tap-bounce');
-      window.setTimeout(() => element.classList.remove('tap-bounce'), 260);
+      element.classList.add('tap-sink');
+
+      window.setTimeout(() => {
+        if (!document.body.contains(element)) return;
+
+        element.classList.remove('tap-sink');
+        void element.offsetWidth;
+        element.classList.add('tap-bounce');
+      }, 100);
     }
 
     function delayInternalLink(event: MouseEvent, anchor: HTMLAnchorElement) {
@@ -33,27 +51,44 @@
       }, TAP_ACTION_DELAY);
     }
 
+    function handlePointerDown(event: PointerEvent) {
+      if (event.pointerType !== 'touch') return;
+
+      const interactive = findTapTarget(event.target);
+      if (!interactive) return;
+
+      bounceTouchTarget(interactive);
+    }
+
     function handleClick(event: MouseEvent) {
-      const target = event.target;
-      if (!(target instanceof Element)) return;
+      const interactive = findTapTarget(event.target);
+      if (!interactive) return;
 
-      const interactive = target.closest<HTMLElement>('button, a[href], [role="button"]');
-      if (!interactive || interactive.dataset.tapImmediate === 'true') return;
-      if (interactive.closest('[data-tap-zone="plain"]')) return;
-      if (interactive.matches(':disabled, [aria-disabled="true"]')) return;
-
-      animateTap(interactive);
-
-      const anchor = interactive instanceof HTMLAnchorElement
-        ? interactive
-        : interactive.closest<HTMLAnchorElement>('a[href]');
+      const anchor =
+        interactive instanceof HTMLAnchorElement
+          ? interactive
+          : interactive.closest<HTMLAnchorElement>('a[href]');
       if (anchor) {
         delayInternalLink(event, anchor);
       }
     }
 
+    function handleAnimationEnd(event: AnimationEvent) {
+      if (event.animationName !== 'tap-bounce') return;
+      if (event.target instanceof HTMLElement) {
+        event.target.classList.remove('tap-bounce');
+      }
+    }
+
+    document.addEventListener('pointerdown', handlePointerDown, { passive: true });
     document.addEventListener('click', handleClick, true);
-    return () => document.removeEventListener('click', handleClick, true);
+    document.addEventListener('animationend', handleAnimationEnd, { passive: true });
+
+    return () => {
+      document.removeEventListener('pointerdown', handlePointerDown);
+      document.removeEventListener('click', handleClick, true);
+      document.removeEventListener('animationend', handleAnimationEnd);
+    };
   });
 </script>
 

@@ -153,7 +153,7 @@
 
   function tapBounce(event: MouseEvent, callback?: () => void) {
     const element = event.currentTarget as HTMLElement;
-    element.classList.remove('tap-bounce');
+    element.classList.remove('tap-sink', 'tap-bounce');
     void element.offsetWidth;
     element.classList.add('tap-bounce');
     window.setTimeout(() => element.classList.remove('tap-bounce'), 260);
