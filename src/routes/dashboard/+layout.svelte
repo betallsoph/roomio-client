@@ -122,7 +122,7 @@
 				<nav class="space-y-6">
 					{#each menuGroups as group}
 						<div>
-							<p class="mb-2 px-2 text-[10px] font-bold uppercase tracking-wider text-zinc-400">
+							<p class="mb-2 px-2 text-xs font-bold text-zinc-400">
 								{group.label}
 							</p>
 							<div class="space-y-1">
@@ -212,7 +212,7 @@
 				<nav class="space-y-6">
 					{#each menuGroups as group}
 						<div>
-							<p class="mb-2 px-2 text-[10px] font-bold uppercase tracking-wider text-zinc-400">
+							<p class="mb-2 px-2 text-xs font-bold text-zinc-400">
 								{group.label}
 							</p>
 							<div class="space-y-1">

@@ -126,13 +126,13 @@
       
       <!-- Section 1: User Profile -->
       <section class="space-y-4 text-black">
-        <h2 class="flex items-center gap-2 border-b-2 border-black pb-2 text-base font-black text-black select-none">
+        <h2 class="flex items-center gap-2 text-base font-black text-black select-none">
           1. Thông tin cá nhân (Chỉ xem) <User class="h-5 w-5" />
         </h2>
         
         <div class="grid gap-4 sm:grid-cols-3">
           <div class="space-y-1">
-            <span class="text-[10px] font-bold text-zinc-600 uppercase tracking-wider block">Họ và tên</span>
+            <span class="block text-xs font-bold text-zinc-600">Họ và tên</span>
             <input 
               type="text" 
               bind:value={name} 
@@ -141,7 +141,7 @@
             />
           </div>
           <div class="space-y-1">
-            <span class="text-[10px] font-bold text-zinc-600 uppercase tracking-wider block">Email đăng nhập</span>
+            <span class="block text-xs font-bold text-zinc-600">Email đăng nhập</span>
             <input 
               type="email" 
               bind:value={email} 
@@ -150,7 +150,7 @@
             />
           </div>
           <div class="space-y-1">
-            <span class="text-[10px] font-bold text-zinc-650 uppercase tracking-wider block">Số điện thoại</span>
+            <span class="block text-xs font-bold text-zinc-650">Số điện thoại</span>
             <input 
               type="tel" 
               bind:value={phone} 
@@ -163,13 +163,13 @@
 
       <!-- Section 2: Brand & fallback bank settings -->
       <section class="space-y-4 text-black">
-        <h2 class="flex items-center gap-2 border-b-2 border-black pb-2 text-base font-black text-black select-none">
+        <h2 class="flex items-center gap-2 text-base font-black text-black select-none">
           2. Thương hiệu & tài khoản nhận tiền dự phòng <Landmark class="h-5 w-5" />
         </h2>
         
         <div class="grid gap-4 sm:grid-cols-2 font-semibold">
           <div class="space-y-1 sm:col-span-2">
-            <label for="s-comp" class="text-xs font-bold text-zinc-650 uppercase tracking-wider block">Tên thương hiệu quản lý trọ</label>
+            <label for="s-comp" class="block text-xs font-bold text-zinc-650">Tên thương hiệu quản lý trọ</label>
             <input 
               id="s-comp"
               type="text" 
@@ -181,7 +181,7 @@
           </div>
 
           <div class="space-y-1">
-            <label for="s-bcode" class="text-xs font-bold text-zinc-650 uppercase tracking-wider block">Mã Ngân hàng</label>
+            <label for="s-bcode" class="block text-xs font-bold text-zinc-650">Mã ngân hàng</label>
             <select 
               id="s-bcode"
               bind:value={bankCode} 
@@ -200,7 +200,7 @@
           </div>
 
           <div class="space-y-1">
-            <label for="s-bname" class="text-xs font-bold text-zinc-650 uppercase tracking-wider block">Tên ngân hàng chi tiết</label>
+            <label for="s-bname" class="block text-xs font-bold text-zinc-650">Tên ngân hàng chi tiết</label>
             <input 
               id="s-bname"
               type="text" 
@@ -212,7 +212,7 @@
           </div>
 
           <div class="space-y-1">
-            <label for="s-acc" class="text-xs font-bold text-zinc-650 uppercase tracking-wider block">Số tài khoản nhận tiền</label>
+            <label for="s-acc" class="block text-xs font-bold text-zinc-650">Số tài khoản nhận tiền</label>
             <input 
               id="s-acc"
               type="text" 
@@ -224,7 +224,7 @@
           </div>
 
           <div class="space-y-1">
-            <label for="s-accname" class="text-xs font-bold text-zinc-650 uppercase tracking-wider block">Tên chủ tài khoản (In hoa, không dấu)</label>
+            <label for="s-accname" class="block text-xs font-bold text-zinc-650">Tên chủ tài khoản (in hoa, không dấu)</label>
             <input 
               id="s-accname"
               type="text" 
@@ -236,7 +236,7 @@
           </div>
 
           <div class="space-y-1 sm:col-span-2">
-            <label for="s-branch" class="text-xs font-bold text-zinc-650 uppercase tracking-wider block">Chi nhánh ngân hàng (Tùy chọn)</label>
+            <label for="s-branch" class="block text-xs font-bold text-zinc-650">Chi nhánh ngân hàng (tùy chọn)</label>
             <input 
               id="s-branch"
               type="text" 
@@ -247,7 +247,7 @@
           </div>
 
           <div class="space-y-1 sm:col-span-2">
-            <label for="s-momo" class="text-xs font-bold text-zinc-650 uppercase tracking-wider block">Số Momo nhận tiền (Tùy chọn)</label>
+            <label for="s-momo" class="block text-xs font-bold text-zinc-650">Số Momo nhận tiền (tùy chọn)</label>
             <input 
               id="s-momo"
               type="text" 
