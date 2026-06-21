@@ -81,9 +81,6 @@
 			<h1 class="mt-8 max-w-xl text-3xl font-black leading-tight sm:text-5xl">
 				Một chỗ để chủ trọ chạy hết việc vận hành.
 			</h1>
-			<p class="mt-4 max-w-xl text-base font-semibold leading-relaxed text-zinc-700 sm:text-lg">
-				Quản lý phòng, khách thuê, hóa đơn, sự cố, nhân viên và thanh toán PayOS trong cùng một dashboard.
-			</p>
 		</section>
 
 		<section class="w-full max-w-md lg:justify-self-end">
@@ -94,15 +91,11 @@
 						<div class="roomio-window-dot bg-yellow-500"></div>
 						<div class="roomio-window-dot bg-green-500"></div>
 					</div>
-					<span class="text-xs font-bold text-zinc-500">Cổng đăng nhập</span>
 				</div>
 
 				<div class="p-5 sm:p-6">
 					<div class="mb-5">
 						<h2 class="text-2xl font-bold leading-none">Đăng nhập</h2>
-						<p class="mt-2 text-sm font-semibold leading-relaxed text-zinc-600">
-							Tài khoản chủ trọ được Roomio cấp riêng qua SuperAdmin.
-						</p>
 					</div>
 
 					<form onsubmit={handleSubmit} class="space-y-4">
