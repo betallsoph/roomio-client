@@ -276,7 +276,7 @@
       <!-- Top selectors -->
       <div class="grid gap-4 sm:grid-cols-3">
         <div class="space-y-1">
-          <label for="b-prop" class="text-xs font-bold text-zinc-600 uppercase tracking-wider block">Chọn tòa nhà</label>
+          <label for="b-prop" class="text-xs font-bold text-zinc-600 block">Chọn tòa nhà</label>
           <select 
             id="b-prop"
             bind:value={selectedPropertyId} 
@@ -290,7 +290,7 @@
         </div>
 
         <div class="space-y-1">
-          <label for="b-month" class="text-xs font-bold text-zinc-600 uppercase tracking-wider block">Tháng tính hóa đơn</label>
+          <label for="b-month" class="text-xs font-bold text-zinc-600 block">Tháng tính hóa đơn</label>
           <input 
             id="b-month"
             type="month" 
@@ -301,7 +301,7 @@
         </div>
 
         <div class="space-y-1">
-          <label for="b-due" class="text-xs font-bold text-zinc-600 uppercase tracking-wider block">Hạn nộp tiền</label>
+          <label for="b-due" class="text-xs font-bold text-zinc-600 block">Hạn nộp tiền</label>
           <input 
             id="b-due"
             type="date" 
@@ -332,7 +332,7 @@
           <div class="overflow-x-auto bg-white">
             <table class="w-full text-left border-collapse text-sm">
               <thead>
-                <tr class="bg-blue-300 border-b-2 border-black text-black font-black uppercase text-xs">
+                <tr class="bg-blue-300 border-b-2 border-black text-black font-black text-xs">
                   <th class="px-4 py-3">Số phòng</th>
                   <th class="px-4 py-3">Khách thuê</th>
                   <th class="px-4 py-3">Giá phòng</th>

@@ -224,11 +224,11 @@
   <!-- Mobile: 1-line inline strip -->
   <div class="sm:hidden flex items-center border-2 border-black rounded-lg overflow-hidden divide-x-2 divide-black text-center">
     <div class="flex-1 py-3 px-2">
-      <p class="text-[9px] font-bold uppercase text-zinc-400 tracking-wider">Khách thuê</p>
+      <p class="text-[9px] font-bold text-zinc-400">Khách thuê</p>
       <p class="text-xs font-black text-black mt-0.5">{tenants.length} người</p>
     </div>
     <div class="flex-1 py-3 px-2">
-      <p class="text-[9px] font-bold uppercase text-zinc-400 tracking-wider">Tiền cọc giữ</p>
+      <p class="text-[9px] font-bold text-zinc-400">Tiền cọc giữ</p>
       <p class="text-xs font-black text-black mt-0.5 truncate">{formatCurrency(tenants.reduce((sum, t) => sum + t.deposit, 0))}</p>
     </div>
   </div>
@@ -236,12 +236,12 @@
   <div class="hidden sm:grid sm:grid-cols-2 gap-3">
     <div class="bg-white border-2 border-black p-4 rounded-lg shadow-secondary">
       <Users class="h-5 w-5 text-blue-500 mb-2" />
-      <p class="text-zinc-500 text-[10px] font-bold uppercase tracking-wider">Khách thuê</p>
+      <p class="text-zinc-500 text-[10px] font-bold">Khách thuê</p>
       <h3 class="text-base sm:text-xl font-black text-black mt-0.5">{tenants.length} người</h3>
     </div>
     <div class="bg-white border-2 border-black p-4 rounded-lg shadow-secondary">
       <DollarSign class="h-5 w-5 text-blue-500 mb-2" />
-      <p class="text-zinc-500 text-[10px] font-bold uppercase tracking-wider">Tiền cọc giữ</p>
+      <p class="text-zinc-500 text-[10px] font-bold">Tiền cọc giữ</p>
       <h3 class="text-base sm:text-xl font-black text-black mt-0.5 truncate">
         {formatCurrency(tenants.reduce((sum, t) => sum + t.deposit, 0))}
       </h3>
@@ -298,7 +298,7 @@
       <div class="hidden sm:block overflow-x-auto bg-white">
         <table class="w-full text-left border-collapse text-sm">
           <thead>
-            <tr class="bg-blue-300 border-b-2 border-black text-black font-black uppercase text-xs">
+            <tr class="bg-blue-300 border-b-2 border-black text-black font-black text-xs">
               <th class="px-4 py-3">Tên khách thuê</th>
               <th class="px-4 py-3">Số điện thoại</th>
               <th class="px-4 py-3">Đang ở phòng</th>
@@ -389,10 +389,10 @@
           <form onsubmit={handleAddTenant} class="p-6 space-y-4 overflow-y-auto max-h-[70vh]">
             <!-- Account Info section -->
             <div class="space-y-3">
-              <h3 class="text-xs font-black text-zinc-500 uppercase tracking-wider border-b border-black/15 pb-1.5">1. Thông tin đăng nhập tài khoản</h3>
+              <h3 class="text-xs font-black text-zinc-500 border-b border-black/15 pb-1.5">1. Thông tin đăng nhập tài khoản</h3>
               <div class="grid grid-cols-2 gap-3">
                 <div class="space-y-1">
-                  <label for="t-name" class="text-[10px] text-zinc-600 font-bold uppercase tracking-wider block">Họ và tên khách</label>
+                  <label for="t-name" class="text-[10px] text-zinc-600 font-bold block">Họ và tên khách</label>
                   <input 
                     id="t-name"
                     type="text" 
@@ -403,7 +403,7 @@
                   />
                 </div>
                 <div class="space-y-1">
-                  <label for="t-phone" class="text-[10px] text-zinc-600 font-bold uppercase tracking-wider block">Số điện thoại</label>
+                  <label for="t-phone" class="text-[10px] text-zinc-600 font-bold block">Số điện thoại</label>
                   <input 
                     id="t-phone"
                     type="tel" 
@@ -417,7 +417,7 @@
 
               <div class="grid grid-cols-2 gap-3">
                 <div class="space-y-1">
-                  <label for="t-email" class="text-[10px] text-zinc-600 font-bold uppercase tracking-wider block">Email liên hệ</label>
+                  <label for="t-email" class="text-[10px] text-zinc-600 font-bold block">Email liên hệ</label>
                   <input 
                     id="t-email"
                     type="email" 
@@ -428,7 +428,7 @@
                   />
                 </div>
                 <div class="space-y-1">
-                  <label for="t-pass" class="text-[10px] text-zinc-600 font-bold uppercase tracking-wider block">Mật khẩu truy cập</label>
+                  <label for="t-pass" class="text-[10px] text-zinc-600 font-bold block">Mật khẩu truy cập</label>
                   <input 
                     id="t-pass"
                     type="password" 
@@ -443,10 +443,10 @@
 
             <!-- Profile Info section -->
             <div class="space-y-3">
-              <h3 class="text-xs font-black text-zinc-500 uppercase tracking-wider border-b border-black/15 pb-1.5">2. Hồ sơ hợp đồng & cọc</h3>
+              <h3 class="text-xs font-black text-zinc-500 border-b border-black/15 pb-1.5">2. Hồ sơ hợp đồng & cọc</h3>
               <div class="grid grid-cols-2 gap-3">
                 <div class="space-y-1">
-                  <label for="t-room" class="text-[10px] text-zinc-600 font-bold uppercase tracking-wider block">Chọn phòng nhận bàn giao</label>
+                  <label for="t-room" class="text-[10px] text-zinc-600 font-bold block">Chọn phòng nhận bàn giao</label>
                   <select 
                     id="t-room"
                     bind:value={roomId}
@@ -461,7 +461,7 @@
                   </select>
                 </div>
                 <div class="space-y-1">
-                  <label for="t-cccd" class="text-[10px] text-zinc-600 font-bold uppercase tracking-wider block">Số CCCD / Hộ chiếu</label>
+                  <label for="t-cccd" class="text-[10px] text-zinc-600 font-bold block">Số CCCD / Hộ chiếu</label>
                   <input 
                     id="t-cccd"
                     type="text" 
@@ -475,7 +475,7 @@
 
               <div class="grid grid-cols-2 gap-3">
                 <div class="space-y-1">
-                  <label for="t-date" class="text-[10px] text-zinc-600 font-bold uppercase tracking-wider block">Ngày bàn giao nhận phòng</label>
+                  <label for="t-date" class="text-[10px] text-zinc-600 font-bold block">Ngày bàn giao nhận phòng</label>
                   <input 
                     id="t-date"
                     type="date" 
@@ -485,7 +485,7 @@
                   />
                 </div>
                 <div class="space-y-1">
-                  <label for="t-dep" class="text-[10px] text-zinc-600 font-bold uppercase tracking-wider block">Số tiền cọc đã đóng (đ)</label>
+                  <label for="t-dep" class="text-[10px] text-zinc-600 font-bold block">Số tiền cọc đã đóng (đ)</label>
                   <input 
                     id="t-dep"
                     type="number" 
@@ -500,10 +500,10 @@
 
             <!-- Initial Meter readings -->
             <div class="space-y-3">
-              <h3 class="text-xs font-black text-zinc-500 uppercase tracking-wider border-b border-black/15 pb-1.5">3. Chỉ số điện nước đầu kỳ</h3>
+              <h3 class="text-xs font-black text-zinc-500 border-b border-black/15 pb-1.5">3. Chỉ số điện nước đầu kỳ</h3>
               <div class="grid grid-cols-2 gap-3">
                 <div class="space-y-1">
-                  <label for="t-elec" class="text-[10px] text-zinc-600 font-bold uppercase tracking-wider block">Chỉ số Điện đầu kỳ (kWh)</label>
+                  <label for="t-elec" class="text-[10px] text-zinc-600 font-bold block">Chỉ số Điện đầu kỳ (kWh)</label>
                   <input 
                     id="t-elec"
                     type="number" 
@@ -513,7 +513,7 @@
                   />
                 </div>
                 <div class="space-y-1">
-                  <label for="t-water" class="text-[10px] text-zinc-600 font-bold uppercase tracking-wider block">Chỉ số Nước đầu kỳ (m³)</label>
+                  <label for="t-water" class="text-[10px] text-zinc-600 font-bold block">Chỉ số Nước đầu kỳ (m³)</label>
                   <input 
                     id="t-water"
                     type="number" 
@@ -526,7 +526,7 @@
             </div>
 
             <div class="space-y-1">
-              <label for="t-notes" class="text-[10px] text-zinc-600 font-bold uppercase tracking-wider block">Ghi chú hợp đồng</label>
+              <label for="t-notes" class="text-[10px] text-zinc-600 font-bold block">Ghi chú hợp đồng</label>
               <textarea 
                 id="t-notes"
                 bind:value={notes}
@@ -606,24 +606,24 @@
 
           <!-- Contact info details -->
           <div class="space-y-3">
-            <h4 class="text-xs font-black text-zinc-500 uppercase tracking-wider">Thông tin liên hệ</h4>
+            <h4 class="text-xs font-black text-zinc-500">Thông tin liên hệ</h4>
             <div class="space-y-2.5 divide-y divide-black/15 text-sm font-semibold text-black">
               <div class="flex justify-between items-center py-2">
-                <span class="text-zinc-500 flex items-center gap-1.5 font-bold uppercase text-xs">
+                <span class="text-zinc-500 flex items-center gap-1.5 font-bold text-xs">
                   <Phone class="h-4 w-4 text-black" />
                   Số điện thoại
                 </span>
                 <span class="font-black">{selectedTenant.user.phone}</span>
               </div>
               <div class="flex justify-between items-center py-2">
-                <span class="text-zinc-500 flex items-center gap-1.5 font-bold uppercase text-xs">
+                <span class="text-zinc-500 flex items-center gap-1.5 font-bold text-xs">
                   <Mail class="h-4 w-4 text-black" />
                   Email liên hệ
                 </span>
                 <span class="font-black">{selectedTenant.user.email}</span>
               </div>
               <div class="flex justify-between items-center py-2">
-                <span class="text-zinc-500 flex items-center gap-1.5 font-bold uppercase text-xs">
+                <span class="text-zinc-500 flex items-center gap-1.5 font-bold text-xs">
                   <FileText class="h-4 w-4 text-black" />
                   CCCD / Hộ chiếu
                 </span>
@@ -634,10 +634,10 @@
 
           <!-- Lease Details -->
           <div class="space-y-3">
-            <h4 class="text-xs font-black text-zinc-500 uppercase tracking-wider">Hợp đồng thuê trọ</h4>
+            <h4 class="text-xs font-black text-zinc-500">Hợp đồng thuê trọ</h4>
             <div class="space-y-2.5 divide-y divide-black/15 text-sm font-semibold text-black">
               <div class="flex justify-between items-center py-2">
-                <span class="text-zinc-500 flex items-center gap-1.5 font-bold uppercase text-xs">
+                <span class="text-zinc-500 flex items-center gap-1.5 font-bold text-xs">
                   <Home class="h-4 w-4 text-black" />
                   Phòng đang ở
                 </span>
@@ -650,7 +650,7 @@
                 {/if}
               </div>
               <div class="flex justify-between items-center py-2">
-                <span class="text-zinc-500 flex items-center gap-1.5 font-bold uppercase text-xs">
+                <span class="text-zinc-500 flex items-center gap-1.5 font-bold text-xs">
                   <Calendar class="h-4 w-4 text-black" />
                   Ngày dọn vào ở
                 </span>
@@ -659,7 +659,7 @@
                 </span>
               </div>
               <div class="flex justify-between items-center py-2">
-                <span class="text-zinc-500 flex items-center gap-1.5 font-bold uppercase text-xs">
+                <span class="text-zinc-500 flex items-center gap-1.5 font-bold text-xs">
                   <DollarSign class="h-4 w-4 text-black" />
                   Tiền đặt cọc giữ
                 </span>
@@ -670,7 +670,7 @@
 
           <!-- Notes -->
           <div class="space-y-2">
-            <h4 class="text-xs font-black text-zinc-500 uppercase tracking-wider">Ghi chú / Thỏa thuận riêng</h4>
+            <h4 class="text-xs font-black text-zinc-500">Ghi chú / Thỏa thuận riêng</h4>
             <div class="bg-white border-2 border-black p-3 rounded-lg shadow-secondary text-xs text-black leading-relaxed font-semibold">
               {selectedTenant.notes || 'Không ghi nhận thỏa thuận đặc biệt nào.'}
             </div>

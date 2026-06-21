@@ -291,7 +291,7 @@
         </h2>
         <button
           onclick={() => window.setTimeout(() => (isNoteDialogOpen = true), 200)}
-          class="px-2.5 py-1.5 bg-blue-300 border-2 border-black rounded-[6px] text-[10px] font-black uppercase shadow-secondary transition-all cursor-pointer"
+          class="px-2.5 py-1.5 bg-blue-300 border-2 border-black rounded-[6px] text-[10px] font-black shadow-secondary transition-all cursor-pointer"
         >
           Gửi lời nhắn cho khách
         </button>
@@ -317,23 +317,23 @@
                   <h4 class="font-black text-black text-sm flex items-center gap-1.5">
                     Phòng {roomNum} - {note.tenant.user.name}
                     {#if note.sender === 'LANDLORD'}
-                      <span class="text-[9px] font-black border-2 border-black rounded px-1 bg-blue-200 uppercase">Chủ nhà gửi</span>
+                      <span class="text-[9px] font-black border-2 border-black rounded px-1 bg-blue-200">Chủ nhà gửi</span>
                     {:else}
-                      <span class="text-[9px] font-black border-2 border-black rounded px-1 bg-yellow-200 uppercase">Khách gửi</span>
+                      <span class="text-[9px] font-black border-2 border-black rounded px-1 bg-yellow-200">Khách gửi</span>
                     {/if}
                   </h4>
-                  <p class="text-[10px] text-zinc-500 font-bold mt-0.5 uppercase">SĐT: {note.tenant.user.phone} • {new Date(note.createdAt).toLocaleString('vi-VN')}</p>
+                  <p class="text-[10px] text-zinc-500 font-bold mt-0.5">SĐT: {note.tenant.user.phone} • {new Date(note.createdAt).toLocaleString('vi-VN')}</p>
                 </div>
                 
                 {#if !note.isRead}
                   <button
                     onclick={() => markNoteAsRead(note.id)}
-                    class="px-2.5 py-1 bg-blue-300 hover:bg-blue-400 text-black border-2 border-black rounded-[6px] text-[10px] font-black uppercase shadow-secondary transition-all cursor-pointer"
+                    class="px-2.5 py-1 bg-blue-300 hover:bg-blue-400 text-black border-2 border-black rounded-[6px] text-[10px] font-black shadow-secondary transition-all cursor-pointer"
                   >
                     Đọc xong
                   </button>
                 {:else}
-                  <span class="text-[10px] text-zinc-500 font-bold uppercase">Đã xem</span>
+                  <span class="text-[10px] text-zinc-500 font-bold">Đã xem</span>
                 {/if}
               </div>
               <p class="text-black text-xs leading-relaxed bg-white/30 p-2.5 rounded-lg border-2 border-black shadow-secondary font-semibold">
@@ -380,7 +380,7 @@
                 </button>
               </div>
               <p class="text-zinc-700 text-xs leading-relaxed font-semibold">{ann.content}</p>
-              <div class="flex justify-between items-center text-[9px] text-zinc-500 font-bold uppercase mt-2 border-t border-black/10 pt-2">
+              <div class="flex justify-between items-center text-[9px] text-zinc-500 font-bold mt-2 border-t border-black/10 pt-2">
                 <span>Gửi tới: {ann.targetType === 'ALL' ? 'Tất cả' : 'Theo tòa nhà'}</span>
                 <span class="flex items-center gap-1">
                   <Calendar class="h-3 w-3" />
@@ -427,7 +427,7 @@
 
         <form onsubmit={handleAddAnnouncement} class="p-6 space-y-4">
           <div class="space-y-1">
-            <label for="ann-title" class="text-xs font-bold text-zinc-650 uppercase tracking-wider block">Tiêu đề bản tin</label>
+            <label for="ann-title" class="text-xs font-bold text-zinc-650 block">Tiêu đề bản tin</label>
             <input 
               id="ann-title"
               type="text" 
@@ -439,7 +439,7 @@
           </div>
 
           <div class="space-y-1">
-            <label for="ann-content" class="text-xs font-bold text-zinc-655 uppercase tracking-wider block">Nội dung chi tiết</label>
+            <label for="ann-content" class="text-xs font-bold text-zinc-655 block">Nội dung chi tiết</label>
             <textarea 
               id="ann-content"
               bind:value={annContent}
@@ -453,7 +453,7 @@
           <!-- Target & priority selectors -->
           <div class="grid grid-cols-2 gap-3 text-xs">
             <div class="space-y-1">
-              <label for="ann-target" class="text-[10px] text-zinc-650 font-bold uppercase tracking-wider block">Đối tượng nhận tin</label>
+              <label for="ann-target" class="text-[10px] text-zinc-650 font-bold block">Đối tượng nhận tin</label>
               <select 
                 id="ann-target"
                 bind:value={annTargetType}
@@ -469,7 +469,7 @@
 
             {#if annTargetType === 'PROPERTY'}
               <div class="space-y-1">
-                <label for="ann-prop" class="text-[10px] text-zinc-650 font-bold uppercase tracking-wider block">Chọn tòa nhà</label>
+                <label for="ann-prop" class="text-[10px] text-zinc-650 font-bold block">Chọn tòa nhà</label>
                 <select 
                   id="ann-prop"
                   bind:value={annTargetId}
@@ -484,7 +484,7 @@
               </div>
             {:else if annTargetType === 'BLOCK'}
               <div class="space-y-1">
-                <label for="ann-block" class="text-[10px] text-zinc-650 font-bold uppercase tracking-wider block">Chọn block</label>
+                <label for="ann-block" class="text-[10px] text-zinc-650 font-bold block">Chọn block</label>
                 <select 
                   id="ann-block"
                   bind:value={annTargetId}
@@ -501,7 +501,7 @@
               </div>
             {:else if annTargetType === 'ROOM'}
               <div class="space-y-1">
-                <label for="ann-room-prop" class="text-[10px] text-zinc-650 font-bold uppercase tracking-wider block">Tòa nhà rồi chọn phòng</label>
+                <label for="ann-room-prop" class="text-[10px] text-zinc-650 font-bold block">Tòa nhà rồi chọn phòng</label>
                 <div class="flex gap-1">
                   <select 
                     id="ann-room-prop"
@@ -528,7 +528,7 @@
               </div>
             {:else if annTargetType === 'TENANT'}
               <div class="space-y-1">
-                <label for="ann-tenant" class="text-[10px] text-zinc-650 font-bold uppercase tracking-wider block">Chọn khách thuê</label>
+                <label for="ann-tenant" class="text-[10px] text-zinc-650 font-bold block">Chọn khách thuê</label>
                 <select 
                   id="ann-tenant"
                   bind:value={annTargetId}
@@ -590,7 +590,7 @@
       </div>
       <div class="p-4 space-y-3">
         <div class="space-y-1">
-          <label for="note-tenant" class="text-[10px] text-zinc-650 font-bold uppercase tracking-wider block">Khách thuê</label>
+          <label for="note-tenant" class="text-[10px] text-zinc-650 font-bold block">Khách thuê</label>
           <select
             id="note-tenant"
             bind:value={noteTenantId}
@@ -603,7 +603,7 @@
           </select>
         </div>
         <div class="space-y-1">
-          <label for="note-content" class="text-[10px] text-zinc-650 font-bold uppercase tracking-wider block">Nội dung lưu ý</label>
+          <label for="note-content" class="text-[10px] text-zinc-650 font-bold block">Nội dung lưu ý</label>
           <textarea
             id="note-content"
             bind:value={noteContent}

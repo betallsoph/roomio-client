@@ -172,12 +172,12 @@
   <div class="grid grid-cols-2 gap-3">
     <div class="bg-white border-2 border-black p-4 rounded-lg shadow-secondary">
       <UserCog class="h-5 w-5 text-blue-500 mb-2" />
-      <p class="text-zinc-500 text-[10px] font-bold uppercase tracking-wider">Tổng nhân viên</p>
+      <p class="text-zinc-500 text-[10px] font-bold">Tổng nhân viên</p>
       <h3 class="text-base sm:text-xl font-black text-black mt-0.5">{staffList.length} người</h3>
     </div>
     <div class="bg-white border-2 border-black p-4 rounded-lg shadow-secondary">
       <ShieldCheck class="h-5 w-5 text-green-600 mb-2" />
-      <p class="text-zinc-500 text-[10px] font-bold uppercase tracking-wider">Đang hoạt động</p>
+      <p class="text-zinc-500 text-[10px] font-bold">Đang hoạt động</p>
       <h3 class="text-base sm:text-xl font-black text-black mt-0.5">{activeCount} người</h3>
     </div>
   </div>
@@ -207,9 +207,9 @@
                 <p class="text-xs text-zinc-500 font-bold mt-0.5">{staff.user.phone}</p>
               </div>
               {#if staff.user.isActive}
-                <span class="text-[10px] px-2 py-0.5 rounded-full font-black uppercase border border-black bg-green-200 text-green-800 shrink-0">Hoạt động</span>
+                <span class="text-[10px] px-2 py-0.5 rounded-full font-black border border-black bg-green-200 text-green-800 shrink-0">Hoạt động</span>
               {:else}
-                <span class="text-[10px] px-2 py-0.5 rounded-full font-black uppercase border border-black bg-zinc-200 text-zinc-600 shrink-0">Đã khóa</span>
+                <span class="text-[10px] px-2 py-0.5 rounded-full font-black border border-black bg-zinc-200 text-zinc-600 shrink-0">Đã khóa</span>
               {/if}
             </div>
             <div class="flex items-center justify-end gap-2 pt-1">
@@ -230,7 +230,7 @@
       <div class="hidden sm:block overflow-x-auto bg-white">
         <table class="w-full text-left border-collapse text-sm">
           <thead>
-            <tr class="bg-blue-300 border-b-2 border-black text-black font-black uppercase text-xs">
+            <tr class="bg-blue-300 border-b-2 border-black text-black font-black text-xs">
               <th class="px-4 py-3">Tên nhân viên</th>
               <th class="px-4 py-3">Số điện thoại</th>
               <th class="px-4 py-3">Email đăng nhập</th>
@@ -246,9 +246,9 @@
                 <td class="px-4 py-4">{staff.user.email}</td>
                 <td class="px-4 py-4">
                   {#if staff.user.isActive}
-                    <span class="text-[10px] px-2.5 py-0.5 rounded-full font-black uppercase border border-black bg-green-200 text-green-800">Hoạt động</span>
+                    <span class="text-[10px] px-2.5 py-0.5 rounded-full font-black border border-black bg-green-200 text-green-800">Hoạt động</span>
                   {:else}
-                    <span class="text-[10px] px-2.5 py-0.5 rounded-full font-black uppercase border border-black bg-zinc-200 text-zinc-600">Đã khóa</span>
+                    <span class="text-[10px] px-2.5 py-0.5 rounded-full font-black border border-black bg-zinc-200 text-zinc-600">Đã khóa</span>
                   {/if}
                 </td>
                 <td class="px-4 py-4">
@@ -305,20 +305,20 @@
 
         <form onsubmit={handleSubmit} class="p-6 space-y-4 overflow-y-auto">
           <div class="space-y-1">
-            <label for="s-name" class="text-[10px] text-zinc-600 font-bold uppercase tracking-wider block">Họ và tên nhân viên</label>
+            <label for="s-name" class="text-[10px] text-zinc-600 font-bold block">Họ và tên nhân viên</label>
             <input id="s-name" type="text" bind:value={name} required placeholder="Trần Thị B" class="w-full border-2 border-black px-2.5 py-1.5 text-xs rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300 bg-white font-semibold text-black" />
           </div>
 
           <div class="grid grid-cols-2 gap-3">
             <div class="space-y-1">
-              <label for="s-phone" class="text-[10px] text-zinc-600 font-bold uppercase tracking-wider block">Số điện thoại</label>
+              <label for="s-phone" class="text-[10px] text-zinc-600 font-bold block">Số điện thoại</label>
               <div class="relative">
                 <span class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none text-zinc-400"><Phone class="h-3.5 w-3.5" /></span>
                 <input id="s-phone" type="tel" bind:value={phone} required placeholder="0987654321" class="w-full pl-8 pr-2.5 py-1.5 border-2 border-black text-xs rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300 bg-white font-semibold text-black" />
               </div>
             </div>
             <div class="space-y-1">
-              <label for="s-email" class="text-[10px] text-zinc-600 font-bold uppercase tracking-wider block">Email đăng nhập</label>
+              <label for="s-email" class="text-[10px] text-zinc-600 font-bold block">Email đăng nhập</label>
               <div class="relative">
                 <span class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none text-zinc-400"><Mail class="h-3.5 w-3.5" /></span>
                 <input id="s-email" type="email" bind:value={email} required placeholder="nhanvien@nhatro.com" class="w-full pl-8 pr-2.5 py-1.5 border-2 border-black text-xs rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300 bg-white font-semibold text-black" />
@@ -327,7 +327,7 @@
           </div>
 
           <div class="space-y-1">
-            <label for="s-pass" class="text-[10px] text-zinc-600 font-bold uppercase tracking-wider block">
+            <label for="s-pass" class="text-[10px] text-zinc-600 font-bold block">
               {editingId ? 'Đặt lại mật khẩu (để trống nếu giữ nguyên)' : 'Mật khẩu truy cập'}
             </label>
             <input id="s-pass" type="password" bind:value={password} placeholder={editingId ? '••••••••' : 'Mật khẩu cho nhân viên'} class="w-full border-2 border-black px-2.5 py-1.5 text-xs rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300 bg-white font-semibold text-black" />

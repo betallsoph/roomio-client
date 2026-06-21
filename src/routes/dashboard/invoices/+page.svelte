@@ -216,7 +216,7 @@
   <!-- Filters -->
   <div class="grid gap-4 sm:grid-cols-3 items-end">
     <div class="space-y-1">
-      <span class="text-[10px] font-black text-zinc-500 uppercase tracking-wider block">Trạng thái thanh toán</span>
+      <span class="text-[10px] font-black text-zinc-500 block">Trạng thái thanh toán</span>
       <select 
         bind:value={statusFilter}
         class="w-full border-2 border-black px-3 py-2 text-sm rounded-lg focus:outline-none bg-white font-bold text-black"
@@ -229,7 +229,7 @@
     </div>
 
     <div class="space-y-1">
-      <span class="text-[10px] font-black text-zinc-500 uppercase tracking-wider block">Lọc theo Tháng</span>
+      <span class="text-[10px] font-black text-zinc-500 block">Lọc theo Tháng</span>
       <input 
         type="month" 
         bind:value={monthFilter}
@@ -238,7 +238,7 @@
     </div>
 
     <div class="space-y-1">
-      <span class="text-[10px] font-black text-zinc-500 uppercase tracking-wider block">Tìm theo số phòng/tên khách</span>
+      <span class="text-[10px] font-black text-zinc-500 block">Tìm theo số phòng/tên khách</span>
       <input 
         type="text" 
         bind:value={searchRoom}
@@ -277,7 +277,7 @@
                 <input type="checkbox" checked={selectedInvoiceIds.includes(invoice.id)} onchange={() => toggleInvoiceSelection(invoice.id)} />
                 Chọn
               </label>
-              <span class="text-[10px] px-2 py-0.5 rounded-full font-black uppercase border border-black shrink-0 {invoice.status === 'paid' ? 'bg-green-200 text-green-800' : 'bg-red-200 text-red-800'}">
+              <span class="text-[10px] px-2 py-0.5 rounded-full font-black border border-black shrink-0 {invoice.status === 'paid' ? 'bg-green-200 text-green-800' : 'bg-red-200 text-red-800'}">
                 {invoice.status === 'paid' ? 'Đã đóng' : 'Chưa đóng'}
               </span>
               <button
@@ -294,7 +294,7 @@
       <div class="hidden sm:block overflow-x-auto">
         <table class="w-full text-left border-collapse text-sm">
           <thead>
-            <tr class="bg-blue-300 border-b-2 border-black text-black font-black uppercase text-xs">
+            <tr class="bg-blue-300 border-b-2 border-black text-black font-black text-xs">
               <th class="px-4 py-3 w-10">
                 <span class="sr-only">Chọn</span>
               </th>
@@ -327,13 +327,13 @@
                 <td class="px-4 py-4 font-bold">{invoice.month}</td>
                 <td class="px-4 py-4 font-black text-black">{formatCurrency(invoice.totalAmount)}</td>
                 <td class="px-4 py-4">
-                  <span class="text-[9px] px-2.5 py-0.5 rounded-full font-black uppercase border border-black {invoice.status === 'paid' ? 'bg-green-200 text-green-800' : 'bg-red-200 text-red-800'}">
+                  <span class="text-[9px] px-2.5 py-0.5 rounded-full font-black border border-black {invoice.status === 'paid' ? 'bg-green-200 text-green-800' : 'bg-red-200 text-red-800'}">
                     {invoice.status === 'paid' ? 'Đã đóng' : 'Chưa đóng'}
                   </span>
                 </td>
                 <td class="px-4 py-4">
                   {#if invoice.paymentProofImage}
-                    <span class="text-[9px] px-2 py-0.5 rounded-full font-black uppercase border border-black bg-amber-200 text-amber-800 flex items-center gap-1 w-fit">
+                    <span class="text-[9px] px-2 py-0.5 rounded-full font-black border border-black bg-amber-200 text-amber-800 flex items-center gap-1 w-fit">
                       <FileText class="h-3 w-3" />
                       Có bill
                     </span>
@@ -389,29 +389,29 @@
           <!-- Meta info columns -->
           <div class="grid grid-cols-2 gap-4 text-sm bg-white p-4 border-2 border-black rounded-lg shadow-secondary font-semibold text-black">
             <div>
-              <p class="text-zinc-500 text-xs font-black uppercase">Tòa nhà / Số phòng</p>
+              <p class="text-zinc-500 text-xs font-black">Tòa nhà / Số phòng</p>
               <p class="font-bold text-black mt-1">{selectedInvoice.room.property.name} - Phòng {selectedInvoice.roomNumber}</p>
             </div>
             <div>
-              <p class="text-zinc-500 text-xs font-black uppercase">Khách thuê phòng</p>
+              <p class="text-zinc-500 text-xs font-black">Khách thuê phòng</p>
               <p class="font-bold text-black mt-1">{selectedInvoice.tenantName} ({selectedInvoice.tenantPhone})</p>
             </div>
             <div>
-              <p class="text-zinc-500 text-xs font-black uppercase">Tháng hóa đơn</p>
+              <p class="text-zinc-500 text-xs font-black">Tháng hóa đơn</p>
               <p class="font-bold text-black mt-1 flex items-center gap-1">
                 <Calendar class="h-4 w-4 text-zinc-500" />
                 Tháng {selectedInvoice.month}
               </p>
             </div>
             <div>
-              <p class="text-zinc-500 text-xs font-black uppercase">Hạn đóng tiền</p>
+              <p class="text-zinc-500 text-xs font-black">Hạn đóng tiền</p>
               <p class="font-black text-red-650 mt-1">{new Date(selectedInvoice.dueDate).toLocaleDateString('vi-VN')}</p>
             </div>
           </div>
 
           <!-- Bill Line Items -->
           <div class="space-y-2">
-            <h3 class="text-xs font-black text-zinc-500 uppercase tracking-wider">Các mục thanh toán</h3>
+            <h3 class="text-xs font-black text-zinc-500">Các mục thanh toán</h3>
             <div class="border-2 border-black bg-white rounded-lg shadow-secondary overflow-hidden divide-y divide-black/15">
               {#each selectedInvoice.items as item}
                 <div class="p-3 flex justify-between items-center text-sm font-semibold">
@@ -435,7 +435,7 @@
           <!-- Tenant Submitted Proof -->
           {#if selectedInvoice.paymentProofImage}
             <div class="space-y-2">
-              <h3 class="text-xs font-black text-zinc-500 uppercase tracking-wider flex items-center gap-1">
+              <h3 class="text-xs font-black text-zinc-500 flex items-center gap-1">
                 Ảnh chụp bill thanh toán của khách <AlertTriangle class="h-4 w-4 text-amber-500" />
               </h3>
               <div class="border-2 border-black rounded-lg p-3 bg-amber-50/30 flex flex-col items-center shadow-secondary">

@@ -170,11 +170,11 @@
 		<!-- Tổng quan -->
 		<div class="grid grid-cols-1 gap-3 md:grid-cols-3">
 			<div class="rounded-lg border-2 border-black bg-green-100 p-4">
-				<p class="text-xs font-black text-zinc-600 uppercase">Doanh thu (6 tháng)</p>
+				<p class="text-xs font-black text-zinc-600">Doanh thu (6 tháng)</p>
 				<p class="mt-1 text-xl font-black text-black">{formatMoney(totals.revenue)}</p>
 			</div>
 			<div class="rounded-lg border-2 border-black bg-red-100 p-4">
-				<p class="text-xs font-black text-zinc-600 uppercase">Chi phí (6 tháng)</p>
+				<p class="text-xs font-black text-zinc-600">Chi phí (6 tháng)</p>
 				<p class="mt-1 text-xl font-black text-black">{formatMoney(totals.expense)}</p>
 			</div>
 			<div
@@ -182,7 +182,7 @@
 					? 'bg-blue-100'
 					: 'bg-red-200'} p-4"
 			>
-				<p class="text-xs font-black text-zinc-600 uppercase">Lợi nhuận</p>
+				<p class="text-xs font-black text-zinc-600">Lợi nhuận</p>
 				<p class="mt-1 text-xl font-black text-black">{formatMoney(totals.profit)}</p>
 			</div>
 		</div>

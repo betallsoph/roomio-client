@@ -309,11 +309,11 @@
               class="roomio-card cursor-pointer p-5 text-left transition-all"
             >
               <div class="mb-3 flex items-start justify-between gap-2">
-                <span class="rounded-full border border-black px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wider {statusBadgeClass(req.status)}">
+                <span class="rounded-full border border-black px-2.5 py-0.5 text-[10px] font-black {statusBadgeClass(req.status)}">
                   {getStatusLabel(req.status)}
                 </span>
                 {#if req.priority === 'important'}
-                  <span class="rounded-full border border-black bg-red-500 px-2 py-0.5 text-[9px] font-black uppercase text-black">Gấp</span>
+                  <span class="rounded-full border border-black bg-red-500 px-2 py-0.5 text-[9px] font-black text-black">Gấp</span>
                 {/if}
               </div>
               <h3 class="truncate text-base font-black leading-tight text-black">{req.title}</h3>
@@ -356,15 +356,15 @@
 
               <div class="mt-3 flex flex-wrap items-end gap-3">
                 <div class="space-y-1">
-                  <span class="block text-[10px] font-bold uppercase tracking-wider text-zinc-500">Chỉ số cũ</span>
+                  <span class="block text-[10px] font-bold text-zinc-500">Chỉ số cũ</span>
                   <input type="number" bind:value={m.prevValue} class="w-24 rounded-lg border-2 border-black px-2 py-1.5 text-center text-xs font-black text-black focus:outline-none focus:ring-2 focus:ring-blue-300" />
                 </div>
                 <div class="space-y-1">
-                  <span class="block text-[10px] font-bold uppercase tracking-wider text-zinc-500">Chỉ số mới</span>
+                  <span class="block text-[10px] font-bold text-zinc-500">Chỉ số mới</span>
                   <input type="number" bind:value={m.currValue} class="w-24 rounded-lg border-2 border-black px-2 py-1.5 text-center text-xs font-black text-black focus:outline-none focus:ring-2 focus:ring-blue-300" />
                 </div>
                 <div class="space-y-1">
-                  <span class="block text-[10px] font-bold uppercase tracking-wider text-zinc-500">Tiêu thụ</span>
+                  <span class="block text-[10px] font-bold text-zinc-500">Tiêu thụ</span>
                   <p class="py-1.5 text-sm font-black text-blue-600">{m.currValue - m.prevValue}</p>
                 </div>
                 {#if m.photoUrl}
@@ -397,7 +397,7 @@
           <div class="overflow-x-auto">
             <table class="w-full border-collapse text-left text-sm">
               <thead>
-                <tr class="border-b-2 border-black bg-blue-300 text-xs font-black uppercase text-black">
+                <tr class="border-b-2 border-black bg-blue-300 text-xs font-black text-black">
                   <th class="px-4 py-3">Phòng</th>
                   <th class="px-4 py-3">Cơ sở</th>
                   <th class="px-4 py-3">Khách thuê</th>
@@ -418,11 +418,11 @@
                     </td>
                     <td class="px-4 py-3">
                       {#if room.status === 'paid'}
-                        <span class="rounded-full border border-black bg-green-200 px-2 py-0.5 text-[10px] font-black uppercase text-green-800">Đã thu</span>
+                        <span class="rounded-full border border-black bg-green-200 px-2 py-0.5 text-[10px] font-black text-green-800">Đã thu</span>
                       {:else if room.status === 'debt'}
-                        <span class="rounded-full border border-black bg-red-200 px-2 py-0.5 text-[10px] font-black uppercase text-red-800">Còn nợ</span>
+                        <span class="rounded-full border border-black bg-red-200 px-2 py-0.5 text-[10px] font-black text-red-800">Còn nợ</span>
                       {:else}
-                        <span class="rounded-full border border-black bg-zinc-200 px-2 py-0.5 text-[10px] font-black uppercase text-zinc-600">Trống</span>
+                        <span class="rounded-full border border-black bg-zinc-200 px-2 py-0.5 text-[10px] font-black text-zinc-600">Trống</span>
                       {/if}
                     </td>
                   </tr>
@@ -480,7 +480,7 @@
         {/if}
 
         <div class="space-y-2">
-          <label for="staff-reply" class="block text-xs font-black uppercase tracking-wider text-zinc-600">Ghi chú / biên bản xử lý</label>
+          <label for="staff-reply" class="block text-xs font-black text-zinc-600">Ghi chú / biên bản xử lý</label>
           <textarea
             id="staff-reply"
             bind:value={replyText}

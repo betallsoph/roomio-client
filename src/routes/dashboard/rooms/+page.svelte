@@ -452,7 +452,7 @@
   <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
     <div>
       <h1 class="text-xl sm:text-2xl font-black text-black leading-none">Sơ Đồ Phòng Trọ</h1>
-      <p class="text-zinc-500 text-sm mt-1.5 font-bold uppercase tracking-wider">Quản lý trạng thái, chỉ số và thiết bị bàn giao</p>
+      <p class="text-zinc-500 text-sm mt-1.5 font-bold">Quản lý trạng thái, chỉ số và thiết bị bàn giao</p>
     </div>
     
     <button 
@@ -467,7 +467,7 @@
   <div class="space-y-3">
     <div class="grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]">
       <div class="space-y-1">
-        <span class="text-[10px] font-black text-zinc-500 uppercase tracking-wider block">Chọn tòa nhà</span>
+        <span class="text-[10px] font-black text-zinc-500 block">Chọn tòa nhà</span>
         <select 
           bind:value={selectedPropertyId} 
           class="w-full border-2 border-black px-3 py-2 text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300 bg-white font-bold text-black"
@@ -480,7 +480,7 @@
 
       {#if getActiveProperty() && getActiveProperty()!.blocks.length > 0}
         <div class="space-y-1">
-          <span class="text-[10px] font-black text-zinc-500 uppercase tracking-wider block">Dãy/Phân cụm</span>
+          <span class="text-[10px] font-black text-zinc-500 block">Dãy/Phân cụm</span>
           <select 
             bind:value={selectedBlockId} 
             class="w-full border-2 border-black px-3 py-2 text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300 bg-white font-bold text-black"
@@ -494,7 +494,7 @@
       {/if}
 
       <div class="space-y-1">
-        <span class="text-[10px] font-black text-zinc-500 uppercase tracking-wider block">Kiểu xem</span>
+        <span class="text-[10px] font-black text-zinc-500 block">Kiểu xem</span>
         <div class="grid grid-cols-2 rounded-lg border-2 border-black bg-white p-1 shadow-secondary lg:min-w-56">
           <button
             type="button"
@@ -558,11 +558,11 @@
           >
             <div>
               <span class="room-card-number text-xl font-black text-black leading-none">{room.roomNumber}</span>
-              <p class="text-[9px] font-black text-zinc-600 uppercase tracking-wider mt-1">{getRoomTypeLabel(room.roomType)}</p>
+              <p class="text-[9px] font-black text-zinc-600 mt-1">{getRoomTypeLabel(room.roomType)}</p>
             </div>
             
             <div class="w-full flex justify-between items-end border-t border-black/15 pt-2 mt-2">
-              <span class="text-[10px] font-black uppercase tracking-wider {statusBadge}">
+              <span class="text-[10px] font-black {statusBadge}">
                 {room.status === 'empty' ? 'Trống' : room.status === 'paid' ? 'Đã đóng' : 'Còn nợ'}
               </span>
               <span class="text-xs font-black text-black">{formatCurrency(room.monthlyRent)}</span>
@@ -572,7 +572,7 @@
       </div>
     {:else}
       <div class="overflow-hidden rounded-lg border-2 border-black bg-white shadow-secondary">
-        <div class="hidden grid-cols-[1fr_1.2fr_1.5fr_1fr_1fr_1fr_90px] gap-3 border-b-2 border-black bg-zinc-50 px-4 py-3 text-[10px] font-black uppercase tracking-wider text-zinc-500 md:grid">
+        <div class="hidden grid-cols-[1fr_1.2fr_1.5fr_1fr_1fr_1fr_90px] gap-3 border-b-2 border-black bg-zinc-50 px-4 py-3 text-[10px] font-black text-zinc-500 md:grid">
           <span>Phòng</span>
           <span>Loại</span>
           <span>Khách thuê</span>
@@ -591,7 +591,7 @@
               <div>
                 <p class="text-lg font-black leading-none text-black">Phòng {room.roomNumber}</p>
                 {#if room.floor}
-                  <p class="mt-1 text-[10px] font-black uppercase tracking-wider text-zinc-500">Tầng {room.floor}</p>
+                  <p class="mt-1 text-[10px] font-black text-zinc-500">Tầng {room.floor}</p>
                 {/if}
               </div>
 
@@ -604,7 +604,7 @@
                 {/if}
               </div>
 
-              <span class="w-fit rounded-md border-2 border-black px-2 py-1 text-[10px] font-black uppercase tracking-wider {statusPill}">
+              <span class="w-fit rounded-md border-2 border-black px-2 py-1 text-[10px] font-black {statusPill}">
                 {statusLabel}
               </span>
 
@@ -655,7 +655,7 @@
         <form onsubmit={handleAddRoom} class="p-6 space-y-4">
           <div class="grid grid-cols-2 gap-4">
             <div class="space-y-1">
-              <label for="r-num" class="text-xs font-bold text-zinc-600 uppercase tracking-wider block">Số phòng</label>
+              <label for="r-num" class="text-xs font-bold text-zinc-600 block">Số phòng</label>
               <input 
                 id="r-num"
                 type="text" 
@@ -666,7 +666,7 @@
               />
             </div>
             <div class="space-y-1">
-              <label for="r-code" class="text-xs font-bold text-zinc-600 uppercase tracking-wider block">Mã căn hộ (Tùy chọn)</label>
+              <label for="r-code" class="text-xs font-bold text-zinc-600 block">Mã căn hộ (Tùy chọn)</label>
               <input 
                 id="r-code"
                 type="text" 
@@ -679,7 +679,7 @@
 
           <div class="grid grid-cols-2 gap-4">
             <div class="space-y-1">
-              <label for="r-type" class="text-xs font-bold text-zinc-600 uppercase tracking-wider block">Loại phòng</label>
+              <label for="r-type" class="text-xs font-bold text-zinc-600 block">Loại phòng</label>
               <select 
                 id="r-type"
                 bind:value={newRoomType}
@@ -691,7 +691,7 @@
               </select>
             </div>
             <div class="space-y-1">
-              <label for="r-floor" class="text-xs font-bold text-zinc-600 uppercase tracking-wider block">Tầng</label>
+              <label for="r-floor" class="text-xs font-bold text-zinc-600 block">Tầng</label>
               <input 
                 id="r-floor"
                 type="number" 
@@ -704,7 +704,7 @@
 
           <div class="grid grid-cols-2 gap-4">
             <div class="space-y-1">
-              <label for="r-rent" class="text-xs font-bold text-zinc-600 uppercase tracking-wider block">Giá thuê tháng (đ)</label>
+              <label for="r-rent" class="text-xs font-bold text-zinc-600 block">Giá thuê tháng (đ)</label>
               <input 
                 id="r-rent"
                 type="number" 
@@ -715,7 +715,7 @@
               />
             </div>
             <div class="space-y-1">
-              <label for="r-area" class="text-xs font-bold text-zinc-600 uppercase tracking-wider block">Diện tích (m²)</label>
+              <label for="r-area" class="text-xs font-bold text-zinc-600 block">Diện tích (m²)</label>
               <input 
                 id="r-area"
                 type="number" 
@@ -728,7 +728,7 @@
 
           {#if getActiveProperty() && getActiveProperty()!.blocks.length > 0}
             <div class="space-y-1">
-              <label for="r-block" class="text-xs font-bold text-zinc-600 uppercase tracking-wider block">Thuộc Dãy/Cụm</label>
+              <label for="r-block" class="text-xs font-bold text-zinc-600 block">Thuộc Dãy/Cụm</label>
               <select 
                 id="r-block"
                 bind:value={newBlockId}
@@ -801,7 +801,7 @@
               <Home class="h-6 w-6 text-blue-500" />
               <div>
                 <h3 class="font-black text-black text-lg leading-none">Phòng {selectedRoom.roomNumber}</h3>
-                <p class="text-zinc-600 text-xs mt-1.5 font-bold uppercase tracking-wider">
+                <p class="text-zinc-600 text-xs mt-1.5 font-bold">
                   Loại: {getRoomTypeLabel(selectedRoom.roomType)} | Diện tích: {selectedRoom.area || '--'}m² | Tầng: {selectedRoom.floor || '--'}
                 </p>
               </div>
@@ -811,25 +811,25 @@
             <div class="flex border-b border-black/15 mt-4 shrink-0 gap-1 bg-white/50 p-1 rounded-lg border-2 border-black select-none">
               <button 
                 onclick={(e) => tapBounce(e, () => (activeTab = 'general'))}
-                class="flex-1 py-1.5 text-xs font-black uppercase tracking-wider rounded-[6px] transition-all cursor-pointer {activeTab === 'general' ? 'bg-blue-300 text-black border border-black' : 'text-zinc-500 hover:text-black border border-transparent'}"
+                class="flex-1 py-1.5 text-xs font-black rounded-[6px] transition-all cursor-pointer {activeTab === 'general' ? 'bg-blue-300 text-black border border-black' : 'text-zinc-500 hover:text-black border border-transparent'}"
               >
                 Chung
               </button>
               <button 
                 onclick={(e) => tapBounce(e, () => (activeTab = 'services'))}
-                class="flex-1 py-1.5 text-xs font-black uppercase tracking-wider rounded-[6px] transition-all cursor-pointer {activeTab === 'services' ? 'bg-blue-300 text-black border border-black' : 'text-zinc-500 hover:text-black border border-transparent'}"
+                class="flex-1 py-1.5 text-xs font-black rounded-[6px] transition-all cursor-pointer {activeTab === 'services' ? 'bg-blue-300 text-black border border-black' : 'text-zinc-500 hover:text-black border border-transparent'}"
               >
                 Dịch vụ
               </button>
               <button 
                 onclick={(e) => tapBounce(e, () => (activeTab = 'meters'))}
-                class="flex-1 py-1.5 text-xs font-black uppercase tracking-wider rounded-[6px] transition-all cursor-pointer {activeTab === 'meters' ? 'bg-blue-300 text-black border border-black' : 'text-zinc-500 hover:text-black border border-transparent'}"
+                class="flex-1 py-1.5 text-xs font-black rounded-[6px] transition-all cursor-pointer {activeTab === 'meters' ? 'bg-blue-300 text-black border border-black' : 'text-zinc-500 hover:text-black border border-transparent'}"
               >
                 Ghi số
               </button>
               <button 
                 onclick={(e) => tapBounce(e, () => (activeTab = 'assets'))}
-                class="flex-1 py-1.5 text-xs font-black uppercase tracking-wider rounded-[6px] transition-all cursor-pointer {activeTab === 'assets' ? 'bg-blue-300 text-black border border-black' : 'text-zinc-500 hover:text-black border border-transparent'}"
+                class="flex-1 py-1.5 text-xs font-black rounded-[6px] transition-all cursor-pointer {activeTab === 'assets' ? 'bg-blue-300 text-black border border-black' : 'text-zinc-500 hover:text-black border border-transparent'}"
               >
                 Tài sản
               </button>
@@ -843,14 +843,14 @@
                   <!-- Status Card -->
                   <div class="p-4 rounded-lg border-2 border-black flex justify-between items-center shadow-secondary {selectedRoom.status === 'empty' ? 'bg-white' : selectedRoom.status === 'paid' ? 'bg-green-200' : 'bg-red-200'}">
                     <div>
-                      <span class="text-xs text-zinc-600 uppercase tracking-wider font-black">Trạng thái phòng</span>
-                      <h4 class="font-black text-sm uppercase mt-1 {selectedRoom.status === 'empty' ? 'text-zinc-700' : selectedRoom.status === 'paid' ? 'text-green-850' : 'text-red-850'}">
+                      <span class="text-xs text-zinc-600 font-black">Trạng thái phòng</span>
+                      <h4 class="font-black text-sm mt-1 {selectedRoom.status === 'empty' ? 'text-zinc-700' : selectedRoom.status === 'paid' ? 'text-green-850' : 'text-red-850'}">
                         {selectedRoom.status === 'empty' ? 'Đang trống' : selectedRoom.status === 'paid' ? 'Đã đóng tiền' : 'Còn nợ tiền nhà'}
                       </h4>
                     </div>
                     {#if selectedRoom.status !== 'empty'}
                       <div class="text-right">
-                        <span class="text-xs text-zinc-600 uppercase tracking-wider font-black">Số tiền đang nợ</span>
+                        <span class="text-xs text-zinc-600 font-black">Số tiền đang nợ</span>
                         <p class="font-black text-lg text-red-650 mt-1">{formatCurrency(selectedRoom.debtAmount)}</p>
                       </div>
                     {/if}
@@ -858,23 +858,23 @@
 
                   <!-- Tenant Details -->
                   <div class="bg-white border-2 border-black rounded-lg p-4 space-y-3 shadow-secondary">
-                    <h4 class="text-xs font-black text-zinc-500 uppercase tracking-wider border-b pb-1.5">Thông tin khách thuê</h4>
+                    <h4 class="text-xs font-black text-zinc-500 border-b pb-1.5">Thông tin khách thuê</h4>
                     {#if selectedRoom.tenant}
                       <div class="grid grid-cols-2 gap-3 text-sm font-semibold">
                         <div>
-                          <p class="text-zinc-400 text-xs font-bold uppercase tracking-wider">Họ và tên</p>
+                          <p class="text-zinc-400 text-xs font-bold">Họ và tên</p>
                           <p class="font-bold text-black">{selectedRoom.tenant.user.name}</p>
                         </div>
                         <div>
-                          <p class="text-zinc-400 text-xs font-bold uppercase tracking-wider">Số điện thoại</p>
+                          <p class="text-zinc-400 text-xs font-bold">Số điện thoại</p>
                           <p class="font-bold text-black">{selectedRoom.tenant.user.phone}</p>
                         </div>
                         <div>
-                          <p class="text-zinc-400 text-xs font-bold uppercase tracking-wider">Ngày dọn vào</p>
+                          <p class="text-zinc-400 text-xs font-bold">Ngày dọn vào</p>
                           <p class="font-bold text-black">{new Date(selectedRoom.tenant.moveInDate).toLocaleDateString('vi-VN')}</p>
                         </div>
                         <div>
-                          <p class="text-zinc-400 text-xs font-bold uppercase tracking-wider">Tiền đặt cọc</p>
+                          <p class="text-zinc-400 text-xs font-bold">Tiền đặt cọc</p>
                           <p class="font-black text-green-650">{formatCurrency(selectedRoom.tenant.deposit)}</p>
                         </div>
                       </div>
@@ -897,8 +897,8 @@
                 <div class="space-y-4">
                   <div class="bg-white border-2 border-black rounded-lg p-4 space-y-3 shadow-secondary">
                     <div class="flex justify-between items-center border-b pb-2">
-                      <h4 class="text-xs font-black text-zinc-500 uppercase tracking-wider">Dịch vụ phòng trọ sử dụng</h4>
-                      <span class="text-[10px] text-zinc-400 font-bold uppercase">Nhấn Lưu để đổi biểu phí riêng</span>
+                      <h4 class="text-xs font-black text-zinc-500">Dịch vụ phòng trọ sử dụng</h4>
+                      <span class="text-[10px] text-zinc-400 font-bold">Nhấn Lưu để đổi biểu phí riêng</span>
                     </div>
                     
                     <div class="divide-y divide-zinc-200">
@@ -912,7 +912,7 @@
                           </div>
                           <div class="flex gap-2 items-center">
                             <div class="space-y-1">
-                              <span class="text-[9px] text-zinc-400 font-black uppercase block">Giá riêng (đ)</span>
+                              <span class="text-[9px] text-zinc-400 font-black block">Giá riêng (đ)</span>
                               <input 
                                 type="number" 
                                 placeholder="Kế thừa"
@@ -927,7 +927,7 @@
                             
                             {#if config.service.type !== 'METERED'}
                               <div class="space-y-1">
-                                <span class="text-[9px] text-zinc-400 font-black uppercase block">Số lượng</span>
+                                <span class="text-[9px] text-zinc-400 font-black block">Số lượng</span>
                                 <input 
                                   type="number" 
                                   bind:value={config.quantity}
@@ -961,11 +961,11 @@
                 <div class="space-y-4">
                   <!-- Log Meter Reading Form -->
                   <div class="bg-white border-2 border-black rounded-lg p-4 space-y-3 shadow-secondary">
-                    <h4 class="text-xs font-black text-zinc-500 uppercase tracking-wider border-b pb-1.5">Nhập chỉ số điện/nước mới</h4>
+                    <h4 class="text-xs font-black text-zinc-500 border-b pb-1.5">Nhập chỉ số điện/nước mới</h4>
                     <form onsubmit={handleLogMeter} class="space-y-3">
                       <div class="grid grid-cols-2 gap-3">
                         <div class="space-y-1">
-                          <label for="m-serv" class="text-[10px] text-zinc-500 font-black uppercase tracking-wider block">Dịch vụ</label>
+                          <label for="m-serv" class="text-[10px] text-zinc-500 font-black block">Dịch vụ</label>
                           <select 
                             id="m-serv"
                             bind:value={meterServiceId}
@@ -979,7 +979,7 @@
                           </select>
                         </div>
                         <div class="space-y-1">
-                          <label for="m-month" class="text-[10px] text-zinc-500 font-black uppercase tracking-wider block">Tháng ghi</label>
+                          <label for="m-month" class="text-[10px] text-zinc-500 font-black block">Tháng ghi</label>
                           <input 
                             id="m-month"
                             type="month" 
@@ -992,7 +992,7 @@
 
                       <div class="grid grid-cols-2 gap-3">
                         <div class="space-y-1">
-                          <label for="m-prev" class="text-[10px] text-zinc-500 font-black uppercase tracking-wider block">Chỉ số cũ</label>
+                          <label for="m-prev" class="text-[10px] text-zinc-500 font-black block">Chỉ số cũ</label>
                           <input 
                             id="m-prev"
                             type="number" 
@@ -1003,7 +1003,7 @@
                           />
                         </div>
                         <div class="space-y-1">
-                          <label for="m-curr" class="text-[10px] text-zinc-500 font-black uppercase tracking-wider block">Chỉ số mới</label>
+                          <label for="m-curr" class="text-[10px] text-zinc-500 font-black block">Chỉ số mới</label>
                           <input 
                             id="m-curr"
                             type="number" 
@@ -1032,14 +1032,14 @@
 
                   <!-- Readings History -->
                   <div class="bg-white border-2 border-black rounded-lg p-4 space-y-3 shadow-secondary">
-                    <h4 class="text-xs font-black text-zinc-500 uppercase tracking-wider border-b pb-1.5">Lịch sử ghi số</h4>
+                    <h4 class="text-xs font-black text-zinc-500 border-b pb-1.5">Lịch sử ghi số</h4>
                     {#if selectedRoom.meterReadings.length === 0}
                       <p class="text-xs text-zinc-400 font-semibold text-center py-2">Chưa có lịch sử đo lường nào.</p>
                     {:else}
                       <div class="overflow-x-auto">
                         <table class="w-full text-left border-collapse text-xs">
                           <thead>
-                            <tr class="bg-zinc-50 border-b-2 border-black text-zinc-500 font-black uppercase tracking-wider">
+                            <tr class="bg-zinc-50 border-b-2 border-black text-zinc-500 font-black">
                               <th class="px-3 py-2">Tháng</th>
                               <th class="px-3 py-2">Dịch vụ</th>
                               <th class="px-3 py-2">Chỉ số Cũ - Mới</th>
@@ -1070,13 +1070,13 @@
                 <div class="space-y-4">
                   <!-- Add Asset Form -->
                   <div class="bg-white border-2 border-black rounded-lg p-4 space-y-3 shadow-secondary">
-                    <h4 class="text-xs font-black text-zinc-500 uppercase tracking-wider border-b pb-1.5">
+                    <h4 class="text-xs font-black text-zinc-500 border-b pb-1.5">
                       {editingAssetId ? 'Sửa thiết bị bàn giao' : 'Thêm thiết bị bàn giao mới'}
                     </h4>
                     <form onsubmit={handleAddAsset} class="space-y-3">
                       <div class="grid grid-cols-2 gap-3">
                         <div class="space-y-1">
-                          <label for="a-name" class="text-[10px] text-zinc-500 font-black uppercase block">Tên thiết bị</label>
+                          <label for="a-name" class="text-[10px] text-zinc-500 font-black block">Tên thiết bị</label>
                           <input 
                             id="a-name"
                             type="text" 
@@ -1087,7 +1087,7 @@
                           />
                         </div>
                         <div class="space-y-1">
-                          <label for="a-code" class="text-[10px] text-zinc-500 font-black uppercase block">Mã kiểm kê (Tùy chọn)</label>
+                          <label for="a-code" class="text-[10px] text-zinc-500 font-black block">Mã kiểm kê (Tùy chọn)</label>
                           <input 
                             id="a-code"
                             type="text" 
@@ -1100,7 +1100,7 @@
 
                       <div class="grid grid-cols-2 gap-3">
                         <div class="space-y-1">
-                          <label for="a-status" class="text-[10px] text-zinc-500 font-black uppercase block">Tình trạng</label>
+                          <label for="a-status" class="text-[10px] text-zinc-500 font-black block">Tình trạng</label>
                           <select 
                             id="a-status"
                             bind:value={assetStatus}
@@ -1112,7 +1112,7 @@
                           </select>
                         </div>
                         <div class="space-y-1">
-                          <label for="a-notes" class="text-[10px] text-zinc-500 font-black uppercase block">Ghi chú thêm</label>
+                          <label for="a-notes" class="text-[10px] text-zinc-500 font-black block">Ghi chú thêm</label>
                           <input 
                             id="a-notes"
                             type="text" 
@@ -1149,7 +1149,7 @@
 
                   <!-- Assets List -->
                   <div class="bg-white border-2 border-black rounded-lg p-4 space-y-3 shadow-secondary">
-                    <h4 class="text-xs font-black text-zinc-500 uppercase tracking-wider border-b pb-1.5">Danh sách thiết bị ({selectedRoom.assets.length})</h4>
+                    <h4 class="text-xs font-black text-zinc-500 border-b pb-1.5">Danh sách thiết bị ({selectedRoom.assets.length})</h4>
                     {#if selectedRoom.assets.length === 0}
                       <p class="text-xs text-zinc-400 font-semibold text-center py-2">Phòng này chưa bàn giao thiết bị nào.</p>
                     {:else}
@@ -1161,7 +1161,7 @@
                               <p class="text-[10px] text-zinc-400 mt-0.5">Mã: {asset.code || 'không có'} | Ghi chú: {asset.notes || '--'}</p>
                             </div>
                             <div class="flex items-center gap-3">
-                              <span class="text-[9px] px-2 py-0.5 rounded-full font-black uppercase border border-black {asset.status === 'good' ? 'bg-green-200 text-green-800' : asset.status === 'broken' ? 'bg-red-200 text-red-800' : 'bg-amber-200 text-amber-800'}">
+                              <span class="text-[9px] px-2 py-0.5 rounded-full font-black border border-black {asset.status === 'good' ? 'bg-green-200 text-green-800' : asset.status === 'broken' ? 'bg-red-200 text-red-800' : 'bg-amber-200 text-amber-800'}">
                                 {asset.status === 'good' ? 'Tốt' : asset.status === 'broken' ? 'Hỏng' : 'Bảo trì'}
                               </span>
                               <button

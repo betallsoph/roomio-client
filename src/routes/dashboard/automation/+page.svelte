@@ -152,7 +152,7 @@
 						<div class="p-4 text-xs font-bold text-zinc-700">
 							<div class="flex items-center justify-between gap-3">
 								<span class="font-black text-black">{job.type}</span>
-								<span class="rounded-full border border-black px-2 py-0.5 text-[10px] uppercase {job.status === 'completed' ? 'bg-green-200 text-green-800' : job.status === 'failed' ? 'bg-red-200 text-red-800' : 'bg-blue-100 text-blue-800'}">{job.status}</span>
+								<span class="rounded-full border border-black px-2 py-0.5 text-[10px] {job.status === 'completed' ? 'bg-green-200 text-green-800' : job.status === 'failed' ? 'bg-red-200 text-red-800' : 'bg-blue-100 text-blue-800'}">{job.status}</span>
 							</div>
 							<p class="mt-1 text-zinc-500">{parseResult(job.result)}</p>
 						</div>
@@ -172,7 +172,7 @@
 						<div class="p-4">
 							<div class="flex items-center justify-between gap-3">
 								<h3 class="text-sm font-black text-black">{item.title}</h3>
-								<span class="rounded-full border border-black bg-blue-100 px-2 py-0.5 text-[10px] font-black uppercase text-blue-800">{item.channel}</span>
+								<span class="rounded-full border border-black bg-blue-100 px-2 py-0.5 text-[10px] font-black text-blue-800">{item.channel}</span>
 							</div>
 							<p class="mt-1 text-xs font-bold leading-relaxed text-zinc-600">{item.content}</p>
 						</div>

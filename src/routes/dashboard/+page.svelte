@@ -210,19 +210,19 @@
     <!-- Mobile: compact inline stats strip (no cards) -->
     <section class="sm:hidden flex items-center gap-0 overflow-hidden rounded-lg border-2 border-black bg-white text-center">
       <div class="flex-1 py-3 px-2">
-        <p class="text-[9px] font-bold uppercase text-zinc-400 tracking-wider">Doanh thu</p>
+        <p class="text-[9px] font-bold text-zinc-400">Doanh thu</p>
         <p class="text-xs font-black text-black mt-0.5 truncate">{formatCurrency(stats.totalRevenue)}</p>
       </div>
       <div class="flex-1 py-3 px-2">
-        <p class="text-[9px] font-bold uppercase text-zinc-400 tracking-wider">Lấp đầy</p>
+        <p class="text-[9px] font-bold text-zinc-400">Lấp đầy</p>
         <p class="text-xs font-black text-black mt-0.5">{stats.totalRooms > 0 ? Math.round((stats.occupiedRooms / stats.totalRooms) * 100) : 0}%</p>
       </div>
       <div class="flex-1 py-3 px-2">
-        <p class="text-[9px] font-bold uppercase text-zinc-400 tracking-wider">Chưa đóng</p>
+        <p class="text-[9px] font-bold text-zinc-400">Chưa đóng</p>
         <p class="text-xs font-black text-blue-500 mt-0.5">{stats.unpaidInvoices} HĐ</p>
       </div>
       <div class="flex-1 py-3 px-2">
-        <p class="text-[9px] font-bold uppercase text-zinc-400 tracking-wider">Hết HĐ</p>
+        <p class="text-[9px] font-bold text-zinc-400">Hết HĐ</p>
         <p class="text-xs font-black text-black mt-0.5">{stats.expiringContracts}</p>
       </div>
     </section>
@@ -234,14 +234,14 @@
       <!-- Card 1: Revenue -->
       <div class="rounded-lg border-2 border-black bg-white p-4">
         <DollarSign class="h-5 w-5 text-blue-500 mb-2" />
-        <p class="text-zinc-500 text-[10px] font-bold uppercase tracking-wider">Doanh thu</p>
+        <p class="text-zinc-500 text-[10px] font-bold">Doanh thu</p>
         <h3 class="text-base sm:text-xl font-black text-black mt-0.5 truncate">{formatCurrency(stats.totalRevenue)}</h3>
       </div>
 
       <!-- Card 2: Occupancy -->
       <div class="rounded-lg border-2 border-black bg-white p-4">
         <Home class="h-5 w-5 text-blue-500 mb-2" />
-        <p class="text-zinc-500 text-[10px] font-bold uppercase tracking-wider">Tỷ lệ trống</p>
+        <p class="text-zinc-500 text-[10px] font-bold">Tỷ lệ trống</p>
         <h3 class="text-base sm:text-xl font-black text-black mt-0.5">
           {stats.emptyRooms}/{stats.totalRooms}
           <span class="text-[10px] font-bold text-zinc-400 block">
@@ -253,14 +253,14 @@
       <!-- Card 3: Unpaid Bills -->
       <div class="rounded-lg border-2 border-black bg-white p-4">
         <Receipt class="h-5 w-5 text-blue-500 mb-2" />
-        <p class="text-zinc-500 text-[10px] font-bold uppercase tracking-wider">Chưa đóng</p>
+        <p class="text-zinc-500 text-[10px] font-bold">Chưa đóng</p>
         <h3 class="text-base sm:text-xl font-black text-black mt-0.5">{stats.unpaidInvoices} HĐ</h3>
       </div>
 
       <!-- Card 4: Expiring Contracts -->
       <div class="rounded-lg border-2 border-black bg-white p-4">
         <Calendar class="h-5 w-5 text-blue-500 mb-2" />
-        <p class="text-zinc-500 text-[10px] font-bold uppercase tracking-wider">Sắp hết HĐ</p>
+        <p class="text-zinc-500 text-[10px] font-bold">Sắp hết HĐ</p>
         <h3 class="text-base sm:text-xl font-black text-black mt-0.5">{stats.expiringContracts}</h3>
       </div>
       </div>
@@ -297,7 +297,7 @@
                     <p class="text-sm font-black text-black truncate">{item.title}</p>
                     <p class="text-xs font-bold text-zinc-600 mt-1 line-clamp-2">{item.description}</p>
                   </div>
-                  <span class="shrink-0 rounded-full border border-black px-2 py-0.5 text-[9px] font-black uppercase {item.priority === 'high' ? 'bg-red-200 text-red-800' : 'bg-blue-100 text-blue-800'}">
+                  <span class="shrink-0 rounded-full border border-black px-2 py-0.5 text-[9px] font-black {item.priority === 'high' ? 'bg-red-200 text-red-800' : 'bg-blue-100 text-blue-800'}">
                     {item.type}
                   </span>
                 </div>
@@ -364,7 +364,7 @@
           <div class="hidden sm:block overflow-x-auto bg-white">
             <table class="w-full text-left border-collapse text-sm">
               <thead>
-                <tr class="bg-blue-300 border-b-2 border-black text-black font-black uppercase text-xs">
+                <tr class="bg-blue-300 border-b-2 border-black text-black font-black text-xs">
                   <th class="px-4 py-3">Phòng</th>
                   <th class="px-4 py-3">Khách thuê</th>
                   <th class="px-4 py-3">Tháng</th>
@@ -445,7 +445,7 @@
                     <h4 class="font-black text-black text-sm">{req.title}</h4>
                     <p class="text-xs text-zinc-500 font-bold mt-0.5">{req.buildingName} - Phòng {req.roomNumber}</p>
                   </div>
-                  <span class="text-[10px] px-2 py-0.5 rounded-full font-black uppercase border border-black {req.priority === 'important' ? 'bg-red-200 text-red-800' : 'bg-zinc-150 text-zinc-700'}">
+                  <span class="text-[10px] px-2 py-0.5 rounded-full font-black border border-black {req.priority === 'important' ? 'bg-red-200 text-red-800' : 'bg-zinc-150 text-zinc-700'}">
                     {req.priority === 'important' ? 'Khẩn cấp' : 'Thường'}
                   </span>
                 </div>

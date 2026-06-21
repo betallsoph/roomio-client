@@ -161,12 +161,12 @@
   <div class="grid grid-cols-2 gap-3">
     <div class="bg-white border-2 border-black p-4 rounded-lg shadow-secondary">
       <Plug class="h-5 w-5 text-blue-500 mb-2" />
-      <p class="text-zinc-500 text-[10px] font-bold uppercase tracking-wider">Tổng dịch vụ</p>
+      <p class="text-zinc-500 text-[10px] font-bold">Tổng dịch vụ</p>
       <h3 class="text-base sm:text-xl font-black text-black mt-0.5">{services.length}</h3>
     </div>
     <div class="bg-white border-2 border-black p-4 rounded-lg shadow-secondary">
       <Power class="h-5 w-5 text-green-600 mb-2" />
-      <p class="text-zinc-500 text-[10px] font-bold uppercase tracking-wider">Đang áp dụng</p>
+      <p class="text-zinc-500 text-[10px] font-bold">Đang áp dụng</p>
       <h3 class="text-base sm:text-xl font-black text-black mt-0.5">{activeCount}</h3>
     </div>
   </div>
@@ -197,9 +197,9 @@
             </div>
             <div class="flex items-center justify-between">
               {#if svc.isActive}
-                <span class="text-[10px] px-2 py-0.5 rounded-full font-black uppercase border border-black bg-green-200 text-green-800">Áp dụng</span>
+                <span class="text-[10px] px-2 py-0.5 rounded-full font-black border border-black bg-green-200 text-green-800">Áp dụng</span>
               {:else}
-                <span class="text-[10px] px-2 py-0.5 rounded-full font-black uppercase border border-black bg-zinc-200 text-zinc-600">Tạm ngưng</span>
+                <span class="text-[10px] px-2 py-0.5 rounded-full font-black border border-black bg-zinc-200 text-zinc-600">Tạm ngưng</span>
               {/if}
               <div class="flex gap-2">
                 <button onclick={() => toggleActive(svc)} class="px-2.5 py-1.5 border-2 border-black bg-white text-black rounded-[6px] text-xs font-bold shadow-secondary active:translate-x-[1px] active:translate-y-[1px] transition-all cursor-pointer">{svc.isActive ? 'Ngưng' : 'Bật'}</button>
@@ -214,7 +214,7 @@
       <div class="hidden sm:block overflow-x-auto bg-white">
         <table class="w-full text-left border-collapse text-sm">
           <thead>
-            <tr class="bg-blue-300 border-b-2 border-black text-black font-black uppercase text-xs">
+            <tr class="bg-blue-300 border-b-2 border-black text-black font-black text-xs">
               <th class="px-4 py-3">Tên dịch vụ</th>
               <th class="px-4 py-3">Cách tính</th>
               <th class="px-4 py-3">Đơn giá</th>
@@ -230,9 +230,9 @@
                 <td class="px-4 py-4 font-black text-blue-600">{formatCurrency(svc.defaultRate)}</td>
                 <td class="px-4 py-4">
                   {#if svc.isActive}
-                    <span class="text-[10px] px-2.5 py-0.5 rounded-full font-black uppercase border border-black bg-green-200 text-green-800">Áp dụng</span>
+                    <span class="text-[10px] px-2.5 py-0.5 rounded-full font-black border border-black bg-green-200 text-green-800">Áp dụng</span>
                   {:else}
-                    <span class="text-[10px] px-2.5 py-0.5 rounded-full font-black uppercase border border-black bg-zinc-200 text-zinc-600">Tạm ngưng</span>
+                    <span class="text-[10px] px-2.5 py-0.5 rounded-full font-black border border-black bg-zinc-200 text-zinc-600">Tạm ngưng</span>
                   {/if}
                 </td>
                 <td class="px-4 py-4">
@@ -289,12 +289,12 @@
 
         <form onsubmit={handleSubmit} class="p-6 space-y-4 overflow-y-auto">
           <div class="space-y-1">
-            <label for="sv-name" class="text-[10px] text-zinc-600 font-bold uppercase tracking-wider block">Tên dịch vụ</label>
+            <label for="sv-name" class="text-[10px] text-zinc-600 font-bold block">Tên dịch vụ</label>
             <input id="sv-name" type="text" bind:value={name} required placeholder="Ví dụ: Điện, Nước, Wifi, Gửi xe..." class="w-full border-2 border-black px-2.5 py-1.5 text-xs rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300 bg-white font-semibold text-black" />
           </div>
 
           <div class="space-y-1">
-            <label for="sv-type" class="text-[10px] text-zinc-600 font-bold uppercase tracking-wider block">Cách tính tiền</label>
+            <label for="sv-type" class="text-[10px] text-zinc-600 font-bold block">Cách tính tiền</label>
             {#if editingId}
               <input id="sv-type" type="text" value={TYPE_LABELS[type] ?? type} disabled class="w-full border-2 border-black px-2.5 py-1.5 text-xs rounded-lg bg-zinc-100 text-zinc-500 font-semibold cursor-not-allowed" />
               <p class="text-[10px] text-zinc-400 font-semibold">Không đổi được cách tính sau khi tạo.</p>
@@ -308,7 +308,7 @@
           </div>
 
           <div class="space-y-1">
-            <label for="sv-rate" class="text-[10px] text-zinc-600 font-bold uppercase tracking-wider block">Đơn giá (đ)</label>
+            <label for="sv-rate" class="text-[10px] text-zinc-600 font-bold block">Đơn giá (đ)</label>
             <input id="sv-rate" type="number" bind:value={defaultRate} required min="0" placeholder="Ví dụ: 3500" class="w-full border-2 border-black px-2.5 py-1.5 text-xs rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300 bg-white font-semibold text-black" />
           </div>
 

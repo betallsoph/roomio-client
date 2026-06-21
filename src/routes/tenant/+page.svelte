@@ -766,7 +766,7 @@
 				alt="Roomio"
 				class="h-auto w-32"
 			/>
-			<span class="text-xs font-bold uppercase tracking-wider text-zinc-500">Cư Dân</span>
+			<span class="text-xs font-bold text-zinc-500">Cư Dân</span>
 		</div>
 
 		<button
@@ -782,7 +782,7 @@
 		<div class="relative z-10 flex flex-1 items-center justify-center">
 			<div class="flex flex-col items-center gap-3">
 				<Loader2 class="h-10 w-10 animate-spin text-black" />
-				<p class="text-xs font-bold tracking-wider text-zinc-500 uppercase">
+				<p class="text-xs font-bold text-zinc-500">
 					Đang tải cổng thông tin cư dân...
 				</p>
 			</div>
@@ -816,7 +816,7 @@
 
 				{#if roomDetails}
 					<div class="relative z-10 shrink-0 text-left sm:text-right">
-						<span class="block text-xs font-bold tracking-wider text-zinc-500 uppercase"
+						<span class="block text-xs font-bold text-zinc-500"
 							>Giá phòng thuê</span
 						>
 						<span class="text-2xl font-black">{formatCurrency(roomDetails.monthlyRent)}</span>
@@ -828,7 +828,7 @@
 			{#if announcements.length > 0}
 				<div class="space-y-2">
 					<h3
-						class="flex items-center gap-1.5 text-xs font-black tracking-wider text-zinc-500 uppercase"
+						class="flex items-center gap-1.5 text-xs font-black text-zinc-500"
 					>
 						<Pin class="h-4 w-4 text-black" />
 						Bảng tin thông báo
@@ -861,7 +861,7 @@
 			>
 				<button
 					onclick={() => (activeTab = 'home')}
-					class="min-w-[80px] flex-grow cursor-pointer rounded-[6px] py-2 text-xs font-black tracking-wider uppercase transition-all {activeTab ===
+					class="min-w-[80px] flex-grow cursor-pointer rounded-[6px] py-2 text-xs font-black transition-all {activeTab ===
 					'home'
 						? 'border-2 border-black bg-blue-300 text-black'
 						: 'border border-transparent text-zinc-600 hover:bg-white/50'}"
@@ -870,7 +870,7 @@
 				</button>
 				<button
 					onclick={() => (activeTab = 'bills')}
-					class="min-w-[80px] flex-grow cursor-pointer rounded-[6px] py-2 text-xs font-black tracking-wider uppercase transition-all {activeTab ===
+					class="min-w-[80px] flex-grow cursor-pointer rounded-[6px] py-2 text-xs font-black transition-all {activeTab ===
 					'bills'
 						? 'border-2 border-black bg-blue-300 text-black'
 						: 'border border-transparent text-zinc-600 hover:bg-white/50'}"
@@ -879,7 +879,7 @@
 				</button>
 				<button
 					onclick={() => (activeTab = 'request')}
-					class="min-w-[100px] flex-grow cursor-pointer rounded-[6px] py-2 text-xs font-black tracking-wider uppercase transition-all {activeTab ===
+					class="min-w-[100px] flex-grow cursor-pointer rounded-[6px] py-2 text-xs font-black transition-all {activeTab ===
 					'request'
 						? 'border-2 border-black bg-blue-300 text-black'
 						: 'border border-transparent text-zinc-600 hover:bg-white/50'}"
@@ -888,7 +888,7 @@
 				</button>
 				<button
 					onclick={() => (activeTab = 'meters')}
-					class="min-w-[120px] flex-grow cursor-pointer rounded-[6px] py-2 text-xs font-black tracking-wider uppercase transition-all {activeTab ===
+					class="min-w-[120px] flex-grow cursor-pointer rounded-[6px] py-2 text-xs font-black transition-all {activeTab ===
 					'meters'
 						? 'border-2 border-black bg-blue-300 text-black'
 						: 'border border-transparent text-zinc-600 hover:bg-white/50'}"
@@ -897,7 +897,7 @@
 				</button>
 				<button
 					onclick={() => (activeTab = 'documents')}
-					class="min-w-[130px] flex-grow cursor-pointer rounded-[6px] py-2 text-xs font-black tracking-wider uppercase transition-all {activeTab ===
+					class="min-w-[130px] flex-grow cursor-pointer rounded-[6px] py-2 text-xs font-black transition-all {activeTab ===
 					'documents'
 						? 'border-2 border-black bg-blue-300 text-black'
 						: 'border border-transparent text-zinc-600 hover:bg-white/50'}"
@@ -906,7 +906,7 @@
 				</button>
 				<button
 					onclick={() => (activeTab = 'note')}
-					class="min-w-[100px] flex-grow cursor-pointer rounded-[6px] py-2 text-xs font-black tracking-wider uppercase transition-all {activeTab ===
+					class="min-w-[100px] flex-grow cursor-pointer rounded-[6px] py-2 text-xs font-black transition-all {activeTab ===
 					'note'
 						? 'border-2 border-black bg-blue-300 text-black'
 						: 'border border-transparent text-zinc-600 hover:bg-white/50'}"
@@ -915,7 +915,7 @@
 				</button>
 				<button
 					onclick={() => (activeTab = 'chat')}
-					class="min-w-[80px] flex-grow cursor-pointer rounded-[6px] py-2 text-xs font-black tracking-wider uppercase transition-all {activeTab ===
+					class="min-w-[80px] flex-grow cursor-pointer rounded-[6px] py-2 text-xs font-black transition-all {activeTab ===
 					'chat'
 						? 'border-2 border-black bg-blue-300 text-black'
 						: 'border border-transparent text-zinc-600 hover:bg-white/50'}"
@@ -1077,7 +1077,7 @@
 									<!-- Bank Info and Proof Upload -->
 									<div class="w-full flex-1 space-y-3">
 										<div class="space-y-2 border-b-2 border-black pb-3 text-xs">
-											<p class="font-black tracking-wider text-zinc-500 uppercase">
+											<p class="font-black text-zinc-500">
 												Thông tin thanh toán
 											</p>
 											<p class="text-sm font-black text-black">Cổng thanh toán PayOS</p>
@@ -1097,7 +1097,7 @@
 										<!-- Upload payment proof image form -->
 										<form onsubmit={handleSubmitProof} class="space-y-3 pt-2">
 											<span
-												class="block text-[10px] font-black tracking-wider text-zinc-500 uppercase"
+												class="block text-[10px] font-black text-zinc-500"
 												>Chụp/tải ảnh Bill chuyển khoản thành công</span
 											>
 											<label
@@ -1168,7 +1168,7 @@
 														Hóa đơn tháng {invoice.month}
 													</h4>
 													<span
-														class="rounded-full border border-black px-2.5 py-0.5 text-[9px] font-black uppercase {invoice.status ===
+														class="rounded-full border border-black px-2.5 py-0.5 text-[9px] font-black {invoice.status ===
 														'paid'
 															? 'bg-green-200 text-green-800'
 															: 'bg-red-200 text-red-800'}"
@@ -1227,7 +1227,7 @@
 									<div class="space-y-1">
 										<label
 											for="req-cat"
-											class="block text-xs font-bold tracking-wider text-zinc-600 uppercase"
+											class="block text-xs font-bold text-zinc-600"
 											>Phân loại kỹ thuật</label
 										>
 										<select
@@ -1245,7 +1245,7 @@
 									<div class="space-y-1">
 										<label
 											for="req-title"
-											class="block text-xs font-bold tracking-wider text-zinc-600 uppercase"
+											class="block text-xs font-bold text-zinc-600"
 											>Tiêu đề sự cố</label
 										>
 										<input
@@ -1262,7 +1262,7 @@
 								<div class="space-y-1">
 									<label
 										for="req-desc"
-										class="block text-xs font-bold tracking-wider text-zinc-600 uppercase"
+										class="block text-xs font-bold text-zinc-600"
 										>Mô tả chi tiết vấn đề</label
 									>
 									<textarea
@@ -1277,7 +1277,7 @@
 
 								<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
 									<div class="space-y-1">
-										<span class="block text-xs font-bold tracking-wider text-zinc-600 uppercase"
+										<span class="block text-xs font-bold text-zinc-600"
 											>Ảnh chụp sự cố (Tùy chọn)</span
 										>
 										<label
@@ -1356,7 +1356,7 @@
 													<div class="flex items-center gap-2">
 														<h4 class="text-sm font-black text-black">{req.title}</h4>
 														<span
-															class="rounded-full border border-black px-2 py-0.5 text-[9px] font-black uppercase {req.status ===
+															class="rounded-full border border-black px-2 py-0.5 text-[9px] font-black {req.status ===
 															'completed'
 																? 'bg-green-150 text-green-800'
 																: req.status === 'in_progress'
@@ -1369,7 +1369,7 @@
 														</span>
 														{#if req.priority === 'important'}
 															<span
-																class="animate-pulse rounded-full border border-black bg-red-500 px-2 py-0.5 text-[9px] font-black text-white uppercase"
+																class="animate-pulse rounded-full border border-black bg-red-500 px-2 py-0.5 text-[9px] font-black text-white"
 																>Gấp</span
 															>
 														{/if}
@@ -1424,7 +1424,7 @@
 										<div class="space-y-1">
 											<label
 												for="tenant-m-serv"
-												class="block text-xs font-bold tracking-wider text-zinc-600 uppercase"
+												class="block text-xs font-bold text-zinc-600"
 												>Dịch vụ đo lường</label
 											>
 											<select
@@ -1442,7 +1442,7 @@
 										<div class="space-y-1">
 											<label
 												for="tenant-m-month"
-												class="block text-xs font-bold tracking-wider text-zinc-600 uppercase"
+												class="block text-xs font-bold text-zinc-600"
 												>Tháng báo số</label
 											>
 											<input
@@ -1457,7 +1457,7 @@
 
 									<div class="grid grid-cols-2 gap-4">
 										<div class="space-y-1">
-											<span class="block text-xs font-bold tracking-wider text-zinc-600 uppercase"
+											<span class="block text-xs font-bold text-zinc-600"
 												>Chỉ số cũ (Kỳ trước)</span
 											>
 											<div
@@ -1469,7 +1469,7 @@
 										<div class="space-y-1">
 											<label
 												for="tenant-m-curr"
-												class="block text-xs font-bold tracking-wider text-zinc-600 uppercase"
+												class="block text-xs font-bold text-zinc-600"
 												>Chỉ số mới (Thực tế)</label
 											>
 											<input
@@ -1485,7 +1485,7 @@
 									</div>
 
 									<div class="space-y-1">
-										<span class="block text-xs font-bold tracking-wider text-zinc-600 uppercase"
+										<span class="block text-xs font-bold text-zinc-600"
 											>Ảnh chụp đồng hồ (Đồng kiểm)</span
 										>
 										<label
@@ -1549,7 +1549,7 @@
 									<table class="w-full border-collapse text-left text-xs">
 										<thead>
 											<tr
-												class="border-b-2 border-black bg-zinc-50 font-black tracking-wider text-zinc-600 uppercase"
+												class="border-b-2 border-black bg-zinc-50 font-black text-zinc-600"
 											>
 												<th class="px-4 py-3">Tháng</th>
 												<th class="px-4 py-3">Dịch vụ</th>
@@ -1618,7 +1618,7 @@
 								<!-- Hợp đồng chính thức đang hiệu lực -->
 								<div class="grid grid-cols-1 gap-4 text-sm font-semibold text-black md:grid-cols-2">
 									<div class="rounded-lg border-2 border-black bg-white p-4 shadow-secondary">
-										<p class="text-xs font-black tracking-wider text-zinc-500 uppercase">
+										<p class="text-xs font-black text-zinc-500">
 											Ngày bắt đầu
 										</p>
 										<p class="mt-1 text-base font-black text-black">
@@ -1630,7 +1630,7 @@
 											? 'bg-red-200'
 											: ''}"
 									>
-										<p class="text-xs font-black tracking-wider text-zinc-500 uppercase">
+										<p class="text-xs font-black text-zinc-500">
 											Ngày kết thúc
 										</p>
 										<p
@@ -1641,14 +1641,14 @@
 											{new Date(activeContract.endDate).toLocaleDateString('vi-VN')}
 											{#if contractExpiringSoon()}
 												<span
-													class="ml-1 rounded-full border border-black bg-red-500 px-2 py-0.5 align-middle text-[9px] font-black text-white uppercase"
+													class="ml-1 rounded-full border border-black bg-red-500 px-2 py-0.5 align-middle text-[9px] font-black text-white"
 													>Sắp hết hạn</span
 												>
 											{/if}
 										</p>
 									</div>
 									<div class="rounded-lg border-2 border-black bg-white p-4 shadow-secondary">
-										<p class="text-xs font-black tracking-wider text-zinc-500 uppercase">
+										<p class="text-xs font-black text-zinc-500">
 											Tiền thuê hàng tháng
 										</p>
 										<p class="mt-1 text-base font-black text-blue-600">
@@ -1656,7 +1656,7 @@
 										</p>
 									</div>
 									<div class="rounded-lg border-2 border-black bg-white p-4 shadow-secondary">
-										<p class="text-xs font-black tracking-wider text-zinc-500 uppercase">
+										<p class="text-xs font-black text-zinc-500">
 											Tiền cọc giữ chỗ
 										</p>
 										<p class="mt-1 text-base font-black text-green-600">
@@ -1680,7 +1680,7 @@
 								<div
 									class="space-y-1 rounded-lg border-2 border-black bg-white p-4 shadow-secondary"
 								>
-									<span class="block text-xs font-black tracking-wider text-zinc-500 uppercase"
+									<span class="block text-xs font-black text-zinc-500"
 										>Ghi chú & Thỏa thuận hợp đồng</span
 									>
 									<p class="mt-1 text-xs leading-relaxed font-bold text-zinc-700 italic">
@@ -1693,7 +1693,7 @@
 								<!-- Fallback: hiển thị thông tin từ hồ sơ khi chưa có hợp đồng chính thức -->
 								<div class="grid grid-cols-1 gap-4 text-sm font-semibold text-black md:grid-cols-3">
 									<div class="rounded-lg border-2 border-black bg-white p-4 shadow-secondary">
-										<p class="text-xs font-black tracking-wider text-zinc-500 uppercase">
+										<p class="text-xs font-black text-zinc-500">
 											Ngày dọn vào
 										</p>
 										<p class="mt-1 text-base font-black text-black">
@@ -1703,7 +1703,7 @@
 										</p>
 									</div>
 									<div class="rounded-lg border-2 border-black bg-white p-4 shadow-secondary">
-										<p class="text-xs font-black tracking-wider text-zinc-500 uppercase">
+										<p class="text-xs font-black text-zinc-500">
 											Tiền cọc giữ chỗ
 										</p>
 										<p class="mt-1 text-base font-black text-green-600">
@@ -1711,7 +1711,7 @@
 										</p>
 									</div>
 									<div class="rounded-lg border-2 border-black bg-white p-4 shadow-secondary">
-										<p class="text-xs font-black tracking-wider text-zinc-500 uppercase">
+										<p class="text-xs font-black text-zinc-500">
 											Phòng đang thuê
 										</p>
 										<p class="mt-1 text-base font-black text-blue-600">
@@ -1723,7 +1723,7 @@
 								<div
 									class="space-y-1 rounded-lg border-2 border-black bg-white p-4 shadow-secondary"
 								>
-									<span class="block text-xs font-black tracking-wider text-zinc-500 uppercase"
+									<span class="block text-xs font-black text-zinc-500"
 										>Ghi chú & Thỏa thuận hợp đồng</span
 									>
 									<p class="mt-1 text-xs leading-relaxed font-bold text-zinc-700 italic">
@@ -1790,7 +1790,7 @@
 								<div class="space-y-1">
 									<label
 										for="doc-cccd"
-										class="block text-xs font-bold tracking-wider text-zinc-600 uppercase"
+										class="block text-xs font-bold text-zinc-600"
 										>Số căn cước công dân (CCCD)</label
 									>
 									<input
@@ -1805,7 +1805,7 @@
 
 								<div class="grid grid-cols-1 gap-4 md:grid-cols-2">
 									<div class="space-y-1">
-										<span class="block text-xs font-bold tracking-wider text-zinc-600 uppercase"
+										<span class="block text-xs font-bold text-zinc-600"
 											>Ảnh CCCD mặt trước</span
 										>
 										<label
@@ -1840,7 +1840,7 @@
 									</div>
 
 									<div class="space-y-1">
-										<span class="block text-xs font-bold tracking-wider text-zinc-600 uppercase"
+										<span class="block text-xs font-bold text-zinc-600"
 											>Ảnh CCCD mặt sau</span
 										>
 										<label
@@ -1877,7 +1877,7 @@
 
 								<div class="grid grid-cols-1 gap-4 md:grid-cols-2">
 									<div class="space-y-1">
-										<span class="block text-xs font-bold tracking-wider text-zinc-600 uppercase"
+										<span class="block text-xs font-bold text-zinc-600"
 											>Ảnh đăng ký xe / Cà vẹt (Nếu có gửi xe)</span
 										>
 										<label
@@ -1912,7 +1912,7 @@
 									</div>
 
 									<div class="space-y-1">
-										<span class="block text-xs font-bold tracking-wider text-zinc-600 uppercase"
+										<span class="block text-xs font-bold text-zinc-600"
 											>Ảnh bàn giao phòng (Lúc check-in)</span
 										>
 										<label
@@ -1979,7 +1979,7 @@
 							<form onsubmit={handleSubmitNote} class="space-y-3">
 								<label
 									for="note-text"
-									class="block text-xs font-bold tracking-wider text-zinc-600 uppercase"
+									class="block text-xs font-bold text-zinc-600"
 									>Nội dung lời nhắn</label
 								>
 								<textarea
@@ -2031,13 +2031,13 @@
 												>
 												{#if note.sender === 'LANDLORD'}
 													<span
-														class="rounded-full border border-black bg-blue-300 px-2 py-0.5 text-[9px] font-black text-black uppercase"
+														class="rounded-full border border-black bg-blue-300 px-2 py-0.5 text-[9px] font-black text-black"
 													>
 														Chủ nhà nhắn
 													</span>
 												{:else}
 													<span
-														class="rounded-full border border-black px-2 py-0.5 text-[9px] font-black uppercase {note.isRead
+														class="rounded-full border border-black px-2 py-0.5 text-[9px] font-black {note.isRead
 															? 'bg-zinc-100 text-zinc-400'
 															: 'bg-blue-200 text-blue-800'}"
 													>

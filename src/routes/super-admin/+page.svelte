@@ -194,7 +194,7 @@
           <Users class="h-6 w-6" />
         </div>
         <div>
-          <p class="text-xs font-bold uppercase tracking-wider text-zinc-500">Tổng chủ trọ vận hành</p>
+          <p class="text-xs font-bold text-zinc-500">Tổng chủ trọ vận hành</p>
           <h3 class="mt-1 text-2xl font-black text-black">{landlords.length} chủ trọ</h3>
         </div>
       </div>
@@ -203,7 +203,7 @@
           <Award class="h-6 w-6" />
         </div>
         <div>
-          <p class="text-xs font-bold uppercase tracking-wider text-zinc-500">Đối tác Premium</p>
+          <p class="text-xs font-bold text-zinc-500">Đối tác Premium</p>
           <h3 class="mt-1 text-2xl font-black text-black">
             {landlords.filter(l => l.subscriptionType !== 'FREE').length} đối tác
           </h3>
@@ -214,7 +214,7 @@
           <Building2 class="h-6 w-6" />
         </div>
         <div>
-          <p class="text-xs font-bold uppercase tracking-wider text-zinc-500">Tổng số phòng quản lý</p>
+          <p class="text-xs font-bold text-zinc-500">Tổng số phòng quản lý</p>
           <h3 class="mt-1 text-2xl font-black text-black">
             {landlords.reduce((sum, l) => sum + l.properties.reduce((s, p) => s + p._count.rooms, 0), 0)} phòng
           </h3>
@@ -247,7 +247,7 @@
         <div class="overflow-x-auto">
           <table class="w-full text-left border-collapse text-sm">
             <thead>
-              <tr class="border-b-2 border-black bg-blue-300 text-xs font-black uppercase text-black">
+              <tr class="border-b-2 border-black bg-blue-300 text-xs font-black text-black">
                 <th class="px-6 py-4">Họ và tên</th>
                 <th class="px-6 py-4">Thương hiệu</th>
                 <th class="px-6 py-4">Tài khoản liên hệ</th>
@@ -273,7 +273,7 @@
                     <span class="text-xs text-slate-400 font-medium block">({totalRooms} phòng trọ)</span>
                   </td>
                   <td class="px-6 py-4">
-                    <span class="text-[10px] px-2.5 py-0.5 rounded-full font-bold uppercase {landlord.subscriptionType === 'FREE' ? 'bg-slate-100 text-slate-600' : landlord.subscriptionType === 'PREMIUM' ? 'bg-indigo-50 text-indigo-600' : 'bg-amber-50 text-amber-700'}">
+                    <span class="text-[10px] px-2.5 py-0.5 rounded-full font-bold {landlord.subscriptionType === 'FREE' ? 'bg-slate-100 text-slate-600' : landlord.subscriptionType === 'PREMIUM' ? 'bg-indigo-50 text-indigo-600' : 'bg-amber-50 text-amber-700'}">
                       {landlord.subscriptionType}
                     </span>
                   </td>
@@ -281,7 +281,7 @@
                     {landlord.subValidUntil ? new Date(landlord.subValidUntil).toLocaleDateString('vi-VN') : 'Vĩnh viễn'}
                   </td>
                   <td class="px-6 py-4">
-                    <span class="text-[10px] px-2.5 py-0.5 rounded-full font-bold uppercase {landlord.user.isActive ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600'}">
+                    <span class="text-[10px] px-2.5 py-0.5 rounded-full font-bold {landlord.user.isActive ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600'}">
                       {landlord.user.isActive ? 'Hoạt động' : 'Đã khóa'}
                     </span>
                   </td>
@@ -348,7 +348,7 @@
           </div>
 
           <div class="space-y-1">
-            <label for="sub-level" class="block text-xs font-bold uppercase tracking-wider text-zinc-600">Chọn gói đăng ký</label>
+            <label for="sub-level" class="block text-xs font-bold text-zinc-600">Chọn gói đăng ký</label>
             <select 
               id="sub-level"
               bind:value={subType}
@@ -362,7 +362,7 @@
           </div>
 
           <div class="space-y-1">
-            <label for="sub-valid" class="block text-xs font-bold uppercase tracking-wider text-zinc-600">Hạn gói dịch vụ</label>
+            <label for="sub-valid" class="block text-xs font-bold text-zinc-600">Hạn gói dịch vụ</label>
             <input 
               id="sub-valid"
               type="date" 

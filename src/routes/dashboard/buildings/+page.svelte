@@ -224,19 +224,19 @@
           <div class="flex items-center border-2 border-black rounded-lg overflow-hidden divide-x-2 divide-black text-center">
             <div class="flex-1 py-3 px-2">
               <p class="text-base font-black text-black">{stats.total}</p>
-              <p class="text-[9px] text-zinc-500 font-bold uppercase">Tổng</p>
+              <p class="text-[9px] text-zinc-500 font-bold">Tổng</p>
             </div>
             <div class="flex-1 py-3 px-2">
               <p class="text-base font-black text-zinc-500">{stats.empty}</p>
-              <p class="text-[9px] text-zinc-500 font-bold uppercase">Trống</p>
+              <p class="text-[9px] text-zinc-500 font-bold">Trống</p>
             </div>
             <div class="flex-1 py-3 px-2">
               <p class="text-base font-black text-green-600">{stats.paid}</p>
-              <p class="text-[9px] text-zinc-500 font-bold uppercase">Đã đóng</p>
+              <p class="text-[9px] text-zinc-500 font-bold">Đã đóng</p>
             </div>
             <div class="flex-1 py-3 px-2">
               <p class="text-base font-black text-red-600">{stats.debt}</p>
-              <p class="text-[9px] text-zinc-500 font-bold uppercase">Còn nợ</p>
+              <p class="text-[9px] text-zinc-500 font-bold">Còn nợ</p>
             </div>
           </div>
           <div class="flex items-center justify-between">
@@ -277,24 +277,24 @@
           <div class="grid grid-cols-4 gap-2 text-center py-3 border-y-2 border-black -mx-5 px-5 bg-white font-semibold">
             <div>
               <p class="text-xl font-black text-black">{stats.total}</p>
-              <p class="text-[9px] text-zinc-500 font-bold uppercase tracking-wide mt-0.5">Tổng phòng</p>
+              <p class="text-[9px] text-zinc-500 font-bold mt-0.5">Tổng phòng</p>
             </div>
             <div>
               <p class="text-xl font-black text-zinc-500">{stats.empty}</p>
-              <p class="text-[9px] text-zinc-500 font-bold uppercase tracking-wide mt-0.5">Còn trống</p>
+              <p class="text-[9px] text-zinc-500 font-bold mt-0.5">Còn trống</p>
             </div>
             <div>
               <p class="text-xl font-black text-green-600">{stats.paid}</p>
-              <p class="text-[9px] text-zinc-500 font-bold uppercase tracking-wide mt-0.5">Đã đóng</p>
+              <p class="text-[9px] text-zinc-500 font-bold mt-0.5">Đã đóng</p>
             </div>
             <div>
               <p class="text-xl font-black text-red-600">{stats.debt}</p>
-              <p class="text-[9px] text-zinc-500 font-bold uppercase tracking-wide mt-0.5">Còn nợ</p>
+              <p class="text-[9px] text-zinc-500 font-bold mt-0.5">Còn nợ</p>
             </div>
           </div>
 
           <div class="flex justify-between items-center mt-4 font-bold">
-            <span class="text-xs text-zinc-600 uppercase tracking-wide">Tỷ lệ lấp đầy</span>
+            <span class="text-xs text-zinc-600">Tỷ lệ lấp đầy</span>
             <span class="text-sm text-black font-black">
               {stats.total > 0 ? Math.round(((stats.total - stats.empty) / stats.total) * 100) : 0}%
             </span>
@@ -338,7 +338,7 @@
         <form onsubmit={handleAddProperty} class="p-6 space-y-4">
           <div class="grid grid-cols-2 gap-4">
             <div class="space-y-1">
-              <label for="p-name" class="text-xs font-bold text-zinc-600 uppercase tracking-wider block">Tên tòa nhà</label>
+              <label for="p-name" class="text-xs font-bold text-zinc-600 block">Tên tòa nhà</label>
               <input 
                 id="p-name"
                 type="text" 
@@ -349,7 +349,7 @@
               />
             </div>
             <div class="space-y-1">
-              <label for="p-short" class="text-xs font-bold text-zinc-600 uppercase tracking-wider block">Tên viết tắt</label>
+              <label for="p-short" class="text-xs font-bold text-zinc-600 block">Tên viết tắt</label>
               <input 
                 id="p-short"
                 type="text" 
@@ -362,7 +362,7 @@
           </div>
 
           <div class="space-y-1">
-            <label for="p-addr" class="text-xs font-bold text-zinc-600 uppercase tracking-wider block">Địa chỉ</label>
+            <label for="p-addr" class="text-xs font-bold text-zinc-600 block">Địa chỉ</label>
             <input 
               id="p-addr"
               type="text" 
@@ -374,7 +374,7 @@
           </div>
 
           <div class="space-y-1">
-            <label for="p-blocks" class="text-xs font-bold text-zinc-600 uppercase tracking-wider block">Dãy/Phân cụm (Tùy chọn)</label>
+            <label for="p-blocks" class="text-xs font-bold text-zinc-600 block">Dãy/Phân cụm (Tùy chọn)</label>
             <input 
               id="p-blocks"
               type="text" 
@@ -453,7 +453,7 @@
           <!-- Basic Info -->
           <div class="space-y-3">
             <div class="flex justify-between items-start text-xs border-b border-black/15 pb-3 font-semibold">
-              <span class="text-zinc-500 flex items-center gap-1.5 shrink-0 uppercase tracking-wide font-bold">
+              <span class="text-zinc-500 flex items-center gap-1.5 shrink-0 font-bold">
                 <MapPin class="h-4 w-4" />
                 Địa chỉ:
               </span>
@@ -463,19 +463,19 @@
 
           <!-- Stats breakdown -->
           <div class="space-y-3">
-            <h4 class="text-xs font-black text-zinc-500 uppercase tracking-wider">Thống kê chi tiết phòng</h4>
+            <h4 class="text-xs font-black text-zinc-500">Thống kê chi tiết phòng</h4>
             <div class="grid grid-cols-3 gap-2 text-center font-semibold text-black">
               <div class="bg-white border-2 border-black p-3 rounded-lg shadow-secondary">
                 <p class="text-lg font-black">{stats.total}</p>
-                <p class="text-[9px] text-zinc-500 font-bold leading-tight uppercase mt-0.5">Tổng số phòng</p>
+                <p class="text-[9px] text-zinc-500 font-bold leading-tight mt-0.5">Tổng số phòng</p>
               </div>
               <div class="bg-white border-2 border-black p-3 rounded-lg shadow-secondary">
                 <p class="text-lg font-black">{stats.total - stats.empty}</p>
-                <p class="text-[9px] text-zinc-500 font-bold leading-tight uppercase mt-0.5">Có người ở</p>
+                <p class="text-[9px] text-zinc-500 font-bold leading-tight mt-0.5">Có người ở</p>
               </div>
               <div class="bg-white border-2 border-black p-3 rounded-lg shadow-secondary">
                 <p class="text-lg font-black">{stats.empty}</p>
-                <p class="text-[9px] text-zinc-500 font-bold leading-tight uppercase mt-0.5">Phòng trống</p>
+                <p class="text-[9px] text-zinc-500 font-bold leading-tight mt-0.5">Phòng trống</p>
               </div>
             </div>
           </div>
@@ -483,7 +483,7 @@
           <!-- Blocks -->
           {#if selectedProperty.blocks.length > 0}
             <div class="space-y-2">
-              <h4 class="text-xs font-black text-zinc-500 uppercase tracking-wider">Các dãy / Phân cụm ({selectedProperty.blocks.length})</h4>
+              <h4 class="text-xs font-black text-zinc-500">Các dãy / Phân cụm ({selectedProperty.blocks.length})</h4>
               <div class="flex flex-wrap gap-2">
                 {#each selectedProperty.blocks as block}
                   <span class="bg-white border border-black text-black px-3 py-1.5 rounded-lg text-xs font-bold shadow-secondary">
@@ -496,7 +496,7 @@
 
           <!-- Room types breakdown -->
           <div class="space-y-3">
-            <h4 class="text-xs font-black text-zinc-500 uppercase tracking-wider">Chi tiết theo loại phòng</h4>
+            <h4 class="text-xs font-black text-zinc-500">Chi tiết theo loại phòng</h4>
             <div class="divide-y divide-black/15 border-t border-b border-black/15 font-semibold text-black">
               {#each ['standard', 'master', 'balcony'] as type}
                 {@const typeRooms = selectedProperty.rooms.filter(r => r.roomType === type)}

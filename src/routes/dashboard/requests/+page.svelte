@@ -186,7 +186,7 @@
   <!-- Filters -->
   <div class="flex gap-4 overflow-x-auto pb-1">
     <div class="space-y-1 shrink-0">
-      <span class="text-[10px] font-bold text-zinc-650 uppercase tracking-wider block">Trạng thái sự cố</span>
+      <span class="text-[10px] font-bold text-zinc-650 block">Trạng thái sự cố</span>
       <select 
         bind:value={statusFilter}
         class="border-2 border-black px-3 py-2 text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300 bg-white font-semibold text-black w-44"
@@ -200,7 +200,7 @@
     </div>
 
     <div class="space-y-1 shrink-0">
-      <span class="text-[10px] font-bold text-zinc-650 uppercase tracking-wider block">Mức độ khẩn cấp</span>
+      <span class="text-[10px] font-bold text-zinc-650 block">Mức độ khẩn cấp</span>
       <select 
         bind:value={priorityFilter}
         class="border-2 border-black px-3 py-2 text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300 bg-white font-semibold text-black w-44"
@@ -237,11 +237,11 @@
         >
           <div class="flex justify-between items-start gap-2 mb-3">
             <div>
-              <span class="text-[10px] px-2.5 py-0.5 rounded-full font-black uppercase tracking-wider border border-black {statusBadge}">
+              <span class="text-[10px] px-2.5 py-0.5 rounded-full font-black border border-black {statusBadge}">
                 {getStatusLabel(req.status)}
               </span>
               {#if req.priority === 'important'}
-                <span class="text-[9px] px-2 py-0.5 ml-1.5 rounded-full font-black uppercase bg-red-500 text-black border border-black animate-pulse">
+                <span class="text-[9px] px-2 py-0.5 ml-1.5 rounded-full font-black bg-red-500 text-black border border-black animate-pulse">
                   Gấp
                 </span>
               {/if}
@@ -258,13 +258,13 @@
               <User class="h-4 w-4 text-black" />
               {req.tenant.user.name}
             </span>
-            <span class="bg-white border border-black text-black px-2 py-1 rounded-lg font-bold text-[9px] uppercase shadow-secondary">
+            <span class="bg-white border border-black text-black px-2 py-1 rounded-lg font-bold text-[9px] shadow-secondary">
               {getCategoryLabel(req.category)}
             </span>
           </div>
 
           {#if req.assignedTo}
-            <p class="mt-2 text-[10px] font-black text-blue-600 uppercase tracking-wider">Phụ trách: {req.assignedTo.user.name}</p>
+            <p class="mt-2 text-[10px] font-black text-blue-600">Phụ trách: {req.assignedTo.user.name}</p>
           {/if}
         </div>
       {/each}
@@ -283,7 +283,7 @@
     >
       <!-- Drawer Content: Brutallist Panel border-l-2 -->
       <div 
-        class="bg-white w-full max-w-lg h-full border-l-2 border-black shadow-primary flex flex-col justify-between overflow-hidden animate-[slide-left_0.2s_ease-out]"
+        class="bg-white h-full w-full max-w-2xl border-l-2 border-black shadow-primary flex flex-col justify-between overflow-hidden animate-[slide-left_0.2s_ease-out] sm:w-[72vw] lg:w-[46vw]"
         onclick={(e) => e.stopPropagation()}
         onkeydown={(e) => e.stopPropagation()}
         role="dialog"
@@ -317,22 +317,22 @@
           <!-- Metadata table -->
           <div class="grid grid-cols-2 gap-4 text-xs bg-white p-4 border-2 border-black rounded-lg shadow-secondary text-black font-semibold">
             <div>
-              <p class="text-zinc-500 uppercase tracking-wide font-bold text-[9px]">Khách báo sự cố</p>
+              <p class="text-zinc-500 font-bold text-[9px]">Khách báo sự cố</p>
               <p class="font-black text-black mt-0.5">{selectedRequest.tenant.user.name} ({selectedRequest.tenant.user.phone})</p>
             </div>
             <div>
-              <p class="text-zinc-500 uppercase tracking-wide font-bold text-[9px]">Ngày gửi báo cáo</p>
+              <p class="text-zinc-500 font-bold text-[9px]">Ngày gửi báo cáo</p>
               <p class="font-black text-black mt-0.5 flex items-center gap-1">
                 <Calendar class="h-3.5 w-3.5 text-black" />
                 {new Date(selectedRequest.createdAt).toLocaleDateString('vi-VN')}
               </p>
             </div>
             <div>
-              <p class="text-zinc-500 uppercase tracking-wide font-bold text-[9px]">Danh mục kỹ thuật</p>
+              <p class="text-zinc-500 font-bold text-[9px]">Danh mục kỹ thuật</p>
               <p class="font-black text-black mt-0.5">{getCategoryLabel(selectedRequest.category)}</p>
             </div>
             <div>
-              <p class="text-zinc-500 uppercase tracking-wide font-bold text-[9px]">Mức độ ưu tiên</p>
+              <p class="text-zinc-500 font-bold text-[9px]">Mức độ ưu tiên</p>
               <p class="font-black mt-0.5 {selectedRequest.priority === 'important' ? 'text-red-650 animate-pulse' : 'text-black'}">
                 {selectedRequest.priority === 'important' ? 'Khẩn cấp / Gấp' : 'Bình thường'}
               </p>
@@ -341,7 +341,7 @@
 
           <!-- Ticket Content -->
           <div class="space-y-2">
-            <h4 class="text-xs font-black text-zinc-500 uppercase tracking-wider">Mô tả sự cố</h4>
+            <h4 class="text-xs font-black text-zinc-500">Mô tả sự cố</h4>
             <div class="bg-white border-2 border-black p-4 rounded-lg shadow-secondary space-y-2 text-black">
               <h5 class="font-black text-black text-sm">{selectedRequest.title}</h5>
               <p class="text-zinc-650 text-xs leading-relaxed font-semibold">{selectedRequest.description}</p>
@@ -351,7 +351,7 @@
           <!-- Incident Image -->
           {#if selectedRequest.imageUrl}
             <div class="space-y-2">
-              <h4 class="text-xs font-black text-zinc-500 uppercase tracking-wider">Ảnh đính kèm</h4>
+              <h4 class="text-xs font-black text-zinc-500">Ảnh đính kèm</h4>
               <img 
                 src={selectedRequest.imageUrl} 
                 alt="Anh su co" 
@@ -362,7 +362,7 @@
 
           <!-- Response Reply -->
           <div class="space-y-2">
-            <label for="req-reply" class="text-xs font-black text-zinc-650 uppercase tracking-wider block">Phản hồi của chủ nhà / Biên bản sửa chữa</label>
+            <label for="req-reply" class="text-xs font-black text-zinc-650 block">Phản hồi của chủ nhà / Biên bản sửa chữa</label>
             <textarea
               id="req-reply"
               bind:value={replyText}
@@ -374,7 +374,7 @@
 
           <!-- Giao việc cho nhân viên -->
           <div class="space-y-2">
-            <label for="req-assign" class="text-xs font-black text-zinc-650 uppercase tracking-wider block">Giao cho nhân viên</label>
+            <label for="req-assign" class="text-xs font-black text-zinc-650 block">Giao cho nhân viên</label>
             <div class="flex gap-2">
               <select
                 id="req-assign"
