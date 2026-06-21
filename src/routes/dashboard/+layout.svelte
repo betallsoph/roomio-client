@@ -26,7 +26,7 @@
 
 	let { children } = $props();
 
-	let user = $state<{ name: string; role: string; landlordProfileId: string } | null>(null);
+	let user = $state<{ name: string; email?: string; role: string; landlordProfileId: string } | null>(null);
 	let isMobileMenuOpen = $state(false);
 	const activeRoute = $derived(page.url.pathname);
 
@@ -111,12 +111,18 @@
 
 		<div class="flex h-full">
 			<aside data-tap-zone="plain" class="hidden h-full w-68 shrink-0 overflow-y-auto border-r-2 border-black bg-white/92 px-5 py-6 backdrop-blur lg:block">
-				<div class="mb-7">
+				<div class="mb-7 space-y-2">
 					<img
 						src="/brand/roomio-wordmark-blue600.png"
 						alt="Roomio"
 						class="h-auto w-36"
 					/>
+					{#if user.email}
+						<p class="truncate text-xs font-semibold text-zinc-500">{user.email}</p>
+					{/if}
+					<button onclick={handleLogout} class="inline-flex items-center gap-1 text-sm font-bold text-blue-500 hover:underline">
+						Đăng xuất <LogOut class="h-3.5 w-3.5" />
+					</button>
 				</div>
 
 				<nav class="space-y-6">
@@ -144,14 +150,6 @@
 						</div>
 					{/each}
 				</nav>
-
-				<div class="mt-8 border-t border-zinc-200 pt-5">
-					<p class="truncate text-sm font-bold text-black">{user.name}</p>
-					<p class="mt-1 text-xs font-semibold text-zinc-500">{user.role === 'SUPER_ADMIN' ? 'Super Admin' : 'Chủ trọ'}</p>
-					<button onclick={handleLogout} class="mt-3 inline-flex items-center gap-1 text-sm font-bold text-blue-500 hover:underline">
-						Đăng xuất <LogOut class="h-3.5 w-3.5" />
-					</button>
-				</div>
 			</aside>
 
 			<div class="flex min-w-0 flex-1 flex-col overflow-y-auto">
@@ -197,7 +195,12 @@
 								alt="Roomio"
 								class="h-auto w-32"
 							/>
-							<p class="mt-1 text-xs font-semibold text-zinc-500">{user.name}</p>
+							{#if user.email}
+								<p class="mt-1 max-w-48 truncate text-xs font-semibold text-zinc-500">{user.email}</p>
+							{/if}
+							<button onclick={handleLogout} class="mt-2 inline-flex items-center gap-1 text-sm font-bold text-blue-500 hover:underline">
+								Đăng xuất <LogOut class="h-3.5 w-3.5" />
+							</button>
 						</div>
 					</div>
 					<button
@@ -235,10 +238,6 @@
 						</div>
 					{/each}
 				</nav>
-
-				<button onclick={handleLogout} class="mt-8 inline-flex items-center gap-1 text-sm font-bold text-blue-500 hover:underline">
-					Đăng xuất <LogOut class="h-3.5 w-3.5" />
-				</button>
 			</aside>
 		{/if}
 		</div>
