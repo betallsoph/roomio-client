@@ -348,7 +348,7 @@
                   <button
                     onclick={() => confirmInvoicePayment(invoice.id)}
                     disabled={processingInvoiceId === invoice.id}
-                    class="px-3 py-1.5 bg-green-200 disabled:opacity-50 text-black border-2 border-black rounded-[6px] shadow-secondary active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all flex items-center gap-1 cursor-pointer font-black text-xs"
+                    class="px-3 py-1.5 bg-green-200 disabled:opacity-50 text-black border-2 border-black rounded-[6px] shadow-secondary transition-all flex items-center gap-1 cursor-pointer font-black text-xs"
                   >
                     {#if processingInvoiceId === invoice.id}
                       <Loader2 class="h-3 w-3 animate-spin" />
@@ -396,7 +396,7 @@
                       <button
                         onclick={() => confirmInvoicePayment(invoice.id)}
                         disabled={processingInvoiceId === invoice.id}
-                        class="px-3 py-1.5 bg-green-200 hover:bg-green-300 disabled:opacity-50 text-black border-2 border-black rounded-[6px] shadow-secondary active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all flex items-center justify-center ml-auto gap-1 cursor-pointer font-black text-xs"
+                        class="px-3 py-1.5 bg-green-200 hover:bg-green-300 disabled:opacity-50 text-black border-2 border-black rounded-[6px] shadow-secondary transition-all flex items-center justify-center ml-auto gap-1 cursor-pointer font-black text-xs"
                       >
                         Xác nhận đóng
                         {#if processingInvoiceId === invoice.id}
@@ -459,7 +459,7 @@
                 <div class="flex gap-2 mt-2">
                   <a 
                     href="/dashboard/requests" 
-                    class="px-3 py-1.5 bg-blue-300 hover:bg-blue-400 text-black border-2 border-black rounded-[6px] shadow-secondary active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all text-xs font-black text-center flex items-center justify-center gap-1.5 cursor-pointer w-full"
+                    class="px-3 py-1.5 bg-blue-300 hover:bg-blue-400 text-black border-2 border-black rounded-[6px] shadow-secondary transition-all text-xs font-black text-center flex items-center justify-center gap-1.5 cursor-pointer w-full"
                   >
                     Chi tiết & Phân công <ArrowRight class="h-3.5 w-3.5" />
                   </a>

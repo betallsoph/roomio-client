@@ -966,7 +966,7 @@
 										openPayment(pendingInvoice()!);
 										activeTab = 'bills';
 									}}
-									class="flex cursor-pointer items-center justify-center gap-1.5 rounded-[6px] border-2 border-black bg-blue-300 px-5 py-3 text-sm font-bold text-black shadow-primary transition-all active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
+									class="flex cursor-pointer items-center justify-center gap-1.5 rounded-[6px] border-2 border-black bg-blue-300 px-5 py-3 text-sm font-bold text-black shadow-primary transition-all"
 								>
 									Quét QR thanh toán <QrCode class="h-4.5 w-4.5" />
 								</button>
@@ -1063,7 +1063,7 @@
 												href={payingInvoice.payosCheckoutUrl}
 												target="_blank"
 												rel="noreferrer"
-												class="mt-4 rounded-[6px] border-2 border-black bg-blue-300 px-4 py-2 text-xs font-black text-black shadow-secondary transition-all active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
+												class="mt-4 rounded-[6px] border-2 border-black bg-blue-300 px-4 py-2 text-xs font-black text-black shadow-secondary transition-all"
 											>
 												Mở PayOS
 											</a>
@@ -1101,7 +1101,7 @@
 												>Chụp/tải ảnh Bill chuyển khoản thành công</span
 											>
 											<label
-												class="flex w-fit cursor-pointer items-center gap-1.5 rounded-[6px] border-2 border-black bg-white px-3 py-2 text-xs font-black text-black shadow-secondary transition-all active:translate-x-[2px] active:translate-y-[2px] hover:bg-zinc-100 active:shadow-none {isUploadingProofImage
+												class="flex w-fit cursor-pointer items-center gap-1.5 rounded-[6px] border-2 border-black bg-white px-3 py-2 text-xs font-black text-black shadow-secondary transition-all hover:bg-zinc-100 {isUploadingProofImage
 													? 'pointer-events-none opacity-50'
 													: ''}"
 											>
@@ -1132,7 +1132,7 @@
 											<button
 												type="submit"
 												disabled={isSubmittingProof}
-												class="flex w-full cursor-pointer items-center justify-center gap-1 rounded-[6px] border-2 border-black bg-blue-300 py-2.5 text-xs font-black text-black shadow-secondary transition-all active:translate-x-[2px] active:translate-y-[2px] hover:bg-blue-400 active:shadow-none disabled:opacity-50"
+												class="flex w-full cursor-pointer items-center justify-center gap-1 rounded-[6px] border-2 border-black bg-blue-300 py-2.5 text-xs font-black text-black shadow-secondary transition-all hover:bg-blue-400 disabled:opacity-50"
 											>
 												Gửi hóa đơn chứng nhận đã chuyển khoản
 												{#if isSubmittingProof}
@@ -1198,7 +1198,7 @@
 															openPayment(invoice);
 															window.scrollTo({ top: 0, behavior: 'smooth' });
 														}}
-														class="cursor-pointer rounded-[6px] border-2 border-black bg-blue-300 px-3 py-1.5 text-xs font-black text-black shadow-secondary transition-all active:translate-x-[2px] active:translate-y-[2px] hover:bg-blue-400 active:shadow-none"
+														class="cursor-pointer rounded-[6px] border-2 border-black bg-blue-300 px-3 py-1.5 text-xs font-black text-black shadow-secondary transition-all hover:bg-blue-400"
 													>
 														Thanh toán
 													</button>
@@ -1281,7 +1281,7 @@
 											>Ảnh chụp sự cố (Tùy chọn)</span
 										>
 										<label
-											class="flex w-fit cursor-pointer items-center gap-1.5 rounded-[6px] border-2 border-black bg-white px-3 py-2 text-xs font-black text-black shadow-secondary transition-all active:translate-x-[2px] active:translate-y-[2px] hover:bg-zinc-100 active:shadow-none {isUploadingReqImage
+											class="flex w-fit cursor-pointer items-center gap-1.5 rounded-[6px] border-2 border-black bg-white px-3 py-2 text-xs font-black text-black shadow-secondary transition-all hover:bg-zinc-100 {isUploadingReqImage
 												? 'pointer-events-none opacity-50'
 												: ''}"
 										>
@@ -1326,7 +1326,7 @@
 									<button
 										type="submit"
 										disabled={isSubmittingRequest}
-										class="flex cursor-pointer items-center gap-1.5 rounded-[6px] border-2 border-black bg-blue-300 px-5 py-2.5 text-xs font-black text-black shadow-secondary transition-all active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
+										class="flex cursor-pointer items-center gap-1.5 rounded-[6px] border-2 border-black bg-blue-300 px-5 py-2.5 text-xs font-black text-black shadow-secondary transition-all"
 									>
 										Gửi yêu cầu sửa chữa
 										{#if isSubmittingRequest}
@@ -1489,7 +1489,7 @@
 											>Ảnh chụp đồng hồ (Đồng kiểm)</span
 										>
 										<label
-											class="flex w-fit cursor-pointer items-center gap-1.5 rounded-[6px] border-2 border-black bg-white px-3 py-2 text-xs font-black text-black shadow-secondary transition-all active:translate-x-[2px] active:translate-y-[2px] hover:bg-zinc-100 active:shadow-none {isUploadingMeterPhoto
+											class="flex w-fit cursor-pointer items-center gap-1.5 rounded-[6px] border-2 border-black bg-white px-3 py-2 text-xs font-black text-black shadow-secondary transition-all hover:bg-zinc-100 {isUploadingMeterPhoto
 												? 'pointer-events-none opacity-50'
 												: ''}"
 										>
@@ -1522,7 +1522,7 @@
 										<button
 											type="submit"
 											disabled={isSubmittingMeter}
-											class="flex cursor-pointer items-center gap-1.5 rounded-[6px] border-2 border-black bg-blue-300 px-5 py-2.5 text-xs font-black text-black shadow-secondary transition-all active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
+											class="flex cursor-pointer items-center gap-1.5 rounded-[6px] border-2 border-black bg-blue-300 px-5 py-2.5 text-xs font-black text-black shadow-secondary transition-all"
 										>
 											Gửi chỉ số
 											{#if isSubmittingMeter}
@@ -1670,7 +1670,7 @@
 										href={activeContract.fileUrl}
 										target="_blank"
 										rel="noreferrer"
-										class="flex w-fit cursor-pointer items-center gap-1.5 rounded-[6px] border-2 border-black bg-blue-300 px-4 py-2 text-xs font-black text-black shadow-secondary transition-all active:translate-x-[2px] active:translate-y-[2px] hover:bg-blue-400 active:shadow-none"
+										class="flex w-fit cursor-pointer items-center gap-1.5 rounded-[6px] border-2 border-black bg-blue-300 px-4 py-2 text-xs font-black text-black shadow-secondary transition-all hover:bg-blue-400"
 									>
 										<FileText class="h-4 w-4" />
 										Xem file hợp đồng
@@ -1768,7 +1768,7 @@
 
 								<button
 									onclick={handleCopyReferral}
-									class="flex cursor-pointer items-center gap-1.5 rounded-[6px] border-2 border-black bg-blue-300 px-5 py-2.5 text-xs font-black text-black shadow-secondary transition-all active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
+									class="flex cursor-pointer items-center gap-1.5 rounded-[6px] border-2 border-black bg-blue-300 px-5 py-2.5 text-xs font-black text-black shadow-secondary transition-all"
 								>
 									<Copy class="h-4 w-4" />
 									Sao chép lời giới thiệu
@@ -1809,7 +1809,7 @@
 											>Ảnh CCCD mặt trước</span
 										>
 										<label
-											class="flex w-fit cursor-pointer items-center gap-1.5 rounded-[6px] border-2 border-black bg-white px-3 py-2 text-xs font-black text-black shadow-secondary transition-all active:translate-x-[2px] active:translate-y-[2px] hover:bg-zinc-100 active:shadow-none {uploadingDocField ===
+											class="flex w-fit cursor-pointer items-center gap-1.5 rounded-[6px] border-2 border-black bg-white px-3 py-2 text-xs font-black text-black shadow-secondary transition-all hover:bg-zinc-100 {uploadingDocField ===
 											'front'
 												? 'pointer-events-none opacity-50'
 												: ''}"
@@ -1844,7 +1844,7 @@
 											>Ảnh CCCD mặt sau</span
 										>
 										<label
-											class="flex w-fit cursor-pointer items-center gap-1.5 rounded-[6px] border-2 border-black bg-white px-3 py-2 text-xs font-black text-black shadow-secondary transition-all active:translate-x-[2px] active:translate-y-[2px] hover:bg-zinc-100 active:shadow-none {uploadingDocField ===
+											class="flex w-fit cursor-pointer items-center gap-1.5 rounded-[6px] border-2 border-black bg-white px-3 py-2 text-xs font-black text-black shadow-secondary transition-all hover:bg-zinc-100 {uploadingDocField ===
 											'back'
 												? 'pointer-events-none opacity-50'
 												: ''}"
@@ -1881,7 +1881,7 @@
 											>Ảnh đăng ký xe / Cà vẹt (Nếu có gửi xe)</span
 										>
 										<label
-											class="flex w-fit cursor-pointer items-center gap-1.5 rounded-[6px] border-2 border-black bg-white px-3 py-2 text-xs font-black text-black shadow-secondary transition-all active:translate-x-[2px] active:translate-y-[2px] hover:bg-zinc-100 active:shadow-none {uploadingDocField ===
+											class="flex w-fit cursor-pointer items-center gap-1.5 rounded-[6px] border-2 border-black bg-white px-3 py-2 text-xs font-black text-black shadow-secondary transition-all hover:bg-zinc-100 {uploadingDocField ===
 											'vehicle'
 												? 'pointer-events-none opacity-50'
 												: ''}"
@@ -1916,7 +1916,7 @@
 											>Ảnh bàn giao phòng (Lúc check-in)</span
 										>
 										<label
-											class="flex w-fit cursor-pointer items-center gap-1.5 rounded-[6px] border-2 border-black bg-white px-3 py-2 text-xs font-black text-black shadow-secondary transition-all active:translate-x-[2px] active:translate-y-[2px] hover:bg-zinc-100 active:shadow-none {uploadingDocField ===
+											class="flex w-fit cursor-pointer items-center gap-1.5 rounded-[6px] border-2 border-black bg-white px-3 py-2 text-xs font-black text-black shadow-secondary transition-all hover:bg-zinc-100 {uploadingDocField ===
 											'checkin'
 												? 'pointer-events-none opacity-50'
 												: ''}"
@@ -1951,7 +1951,7 @@
 									<button
 										type="submit"
 										disabled={isSubmittingDocs}
-										class="flex cursor-pointer items-center gap-1.5 rounded-[6px] border-2 border-black bg-blue-300 px-5 py-2.5 text-xs font-black text-black shadow-secondary transition-all active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
+										class="flex cursor-pointer items-center gap-1.5 rounded-[6px] border-2 border-black bg-blue-300 px-5 py-2.5 text-xs font-black text-black shadow-secondary transition-all"
 									>
 										Lưu hồ sơ giấy tờ
 										{#if isSubmittingDocs}
@@ -1995,7 +1995,7 @@
 									<button
 										type="submit"
 										disabled={isSubmittingNote}
-										class="flex cursor-pointer items-center gap-1.5 rounded-[6px] border-2 border-black bg-blue-300 px-5 py-2.5 text-xs font-black text-black shadow-secondary transition-all active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
+										class="flex cursor-pointer items-center gap-1.5 rounded-[6px] border-2 border-black bg-blue-300 px-5 py-2.5 text-xs font-black text-black shadow-secondary transition-all"
 									>
 										Gửi lời nhắn
 										{#if isSubmittingNote}
@@ -2119,7 +2119,7 @@
 								<button
 									type="submit"
 									disabled={isSendingChat || !chatInput.trim()}
-									class="flex shrink-0 cursor-pointer items-center gap-1.5 rounded-[6px] border-2 border-black bg-blue-300 px-4 py-2 text-xs font-black text-black shadow-secondary transition-all active:translate-x-[2px] active:translate-y-[2px] hover:bg-blue-400 active:shadow-none disabled:opacity-50"
+									class="flex shrink-0 cursor-pointer items-center gap-1.5 rounded-[6px] border-2 border-black bg-blue-300 px-4 py-2 text-xs font-black text-black shadow-secondary transition-all hover:bg-blue-400 disabled:opacity-50"
 								>
 									Gửi
 									{#if isSendingChat}

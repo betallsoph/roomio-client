@@ -151,7 +151,7 @@
     </div>
     <button
       onclick={() => window.setTimeout(openAdd, 200)}
-      class="bg-blue-300 text-black border-2 border-black px-4 py-2.5 rounded-[6px] shadow-secondary active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all flex items-center gap-1.5 cursor-pointer font-black text-sm w-full sm:w-auto justify-center sm:justify-start"
+      class="bg-blue-300 text-black border-2 border-black px-4 py-2.5 rounded-[6px] shadow-secondary transition-all flex items-center gap-1.5 cursor-pointer font-black text-sm w-full sm:w-auto justify-center sm:justify-start"
     >
       Thêm dịch vụ <Plus class="h-4 w-4" />
     </button>
@@ -202,9 +202,9 @@
                 <span class="text-[10px] px-2 py-0.5 rounded-full font-black uppercase border border-black bg-zinc-200 text-zinc-600">Tạm ngưng</span>
               {/if}
               <div class="flex gap-2">
-                <button onclick={() => toggleActive(svc)} class="px-2.5 py-1.5 border-2 border-black bg-white text-black rounded-[6px] text-xs font-bold shadow-secondary active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition-all cursor-pointer">{svc.isActive ? 'Ngưng' : 'Bật'}</button>
-                <button onclick={() => window.setTimeout(() => openEdit(svc), 200)} class="px-2.5 py-1.5 border-2 border-black bg-white text-black rounded-[6px] text-xs font-bold shadow-secondary active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition-all cursor-pointer">Sửa</button>
-                <button onclick={() => handleDelete(svc)} class="px-2.5 py-1.5 border-2 border-black bg-red-200 text-red-800 rounded-[6px] text-xs font-bold shadow-secondary active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition-all cursor-pointer">Xóa</button>
+                <button onclick={() => toggleActive(svc)} class="px-2.5 py-1.5 border-2 border-black bg-white text-black rounded-[6px] text-xs font-bold shadow-secondary active:translate-x-[1px] active:translate-y-[1px] transition-all cursor-pointer">{svc.isActive ? 'Ngưng' : 'Bật'}</button>
+                <button onclick={() => window.setTimeout(() => openEdit(svc), 200)} class="px-2.5 py-1.5 border-2 border-black bg-white text-black rounded-[6px] text-xs font-bold shadow-secondary active:translate-x-[1px] active:translate-y-[1px] transition-all cursor-pointer">Sửa</button>
+                <button onclick={() => handleDelete(svc)} class="px-2.5 py-1.5 border-2 border-black bg-red-200 text-red-800 rounded-[6px] text-xs font-bold shadow-secondary active:translate-x-[1px] active:translate-y-[1px] transition-all cursor-pointer">Xóa</button>
               </div>
             </div>
           </div>
@@ -237,17 +237,17 @@
                 </td>
                 <td class="px-4 py-4">
                   <div class="flex items-center justify-end gap-2">
-                    <button onclick={() => toggleActive(svc)} title={svc.isActive ? 'Tạm ngưng' : 'Bật lại'} class="p-2 border-2 border-black bg-white hover:bg-zinc-150 text-black rounded-[6px] transition-all shadow-secondary active:translate-x-[1px] active:translate-y-[1px] active:shadow-none cursor-pointer">
+                    <button onclick={() => toggleActive(svc)} title={svc.isActive ? 'Tạm ngưng' : 'Bật lại'} class="p-2 border-2 border-black bg-white hover:bg-zinc-150 text-black rounded-[6px] transition-all shadow-secondary active:translate-x-[1px] active:translate-y-[1px] cursor-pointer">
                       {#if svc.isActive}
                         <PowerOff class="h-4 w-4" />
                       {:else}
                         <Power class="h-4 w-4" />
                       {/if}
                     </button>
-                    <button onclick={() => window.setTimeout(() => openEdit(svc), 200)} title="Sửa" class="p-2 border-2 border-black bg-white hover:bg-zinc-150 text-black rounded-[6px] transition-all shadow-secondary active:translate-x-[1px] active:translate-y-[1px] active:shadow-none cursor-pointer">
+                    <button onclick={() => window.setTimeout(() => openEdit(svc), 200)} title="Sửa" class="p-2 border-2 border-black bg-white hover:bg-zinc-150 text-black rounded-[6px] transition-all shadow-secondary active:translate-x-[1px] active:translate-y-[1px] cursor-pointer">
                       <Pencil class="h-4 w-4" />
                     </button>
-                    <button onclick={() => handleDelete(svc)} title="Xóa" class="p-2 border-2 border-black bg-red-200 hover:bg-red-300 text-red-800 rounded-[6px] transition-all shadow-secondary active:translate-x-[1px] active:translate-y-[1px] active:shadow-none cursor-pointer">
+                    <button onclick={() => handleDelete(svc)} title="Xóa" class="p-2 border-2 border-black bg-red-200 hover:bg-red-300 text-red-800 rounded-[6px] transition-all shadow-secondary active:translate-x-[1px] active:translate-y-[1px] cursor-pointer">
                       <Trash2 class="h-4 w-4" />
                     </button>
                   </div>
@@ -316,7 +316,7 @@
             <button type="button" onclick={() => window.setTimeout(() => (isDialogOpen = false), 200)} class="border-2 border-black bg-white hover:bg-zinc-150 text-black px-4 py-2 rounded-[6px] text-xs font-bold transition-all cursor-pointer">
               Hủy
             </button>
-            <button type="submit" disabled={isSubmitting} class="bg-blue-300 hover:bg-blue-400 disabled:opacity-50 text-black border-2 border-black px-4 py-2 rounded-[6px] text-xs font-black shadow-secondary active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all flex items-center gap-1.5 cursor-pointer">
+            <button type="submit" disabled={isSubmitting} class="bg-blue-300 hover:bg-blue-400 disabled:opacity-50 text-black border-2 border-black px-4 py-2 rounded-[6px] text-xs font-black shadow-secondary transition-all flex items-center gap-1.5 cursor-pointer">
               {editingId ? 'Lưu thay đổi' : 'Thêm dịch vụ'}
               {#if isSubmitting}
                 <Loader2 class="h-4.5 w-4.5 animate-spin" />

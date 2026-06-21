@@ -186,7 +186,7 @@
     </div>
     <a 
       href="/dashboard/invoices/bulk"
-      class="bg-blue-300 text-black border-2 border-black px-4 py-2.5 rounded-[6px] shadow-secondary active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all flex items-center justify-center gap-1.5 cursor-pointer font-black text-sm w-full sm:w-auto"
+      class="bg-blue-300 text-black border-2 border-black px-4 py-2.5 rounded-[6px] shadow-secondary transition-all flex items-center justify-center gap-1.5 cursor-pointer font-black text-sm w-full sm:w-auto"
     >
       Tạo hóa đơn loạt <ArrowRight class="h-4 w-4" />
     </a>
@@ -282,7 +282,7 @@
               </span>
               <button
                 onclick={() => window.setTimeout(() => { selectedInvoice = invoice; isDetailOpen = true; }, 200)}
-                class="p-1.5 border-2 border-black bg-white rounded-lg text-black shadow-secondary active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all cursor-pointer"
+                class="p-1.5 border-2 border-black bg-white rounded-lg text-black shadow-secondary transition-all cursor-pointer"
               >
                 <Eye class="h-4 w-4" />
               </button>
@@ -344,7 +344,7 @@
                 <td class="px-4 py-4 text-right">
                   <button
                     onclick={() => window.setTimeout(() => { selectedInvoice = invoice; isDetailOpen = true; }, 200)}
-                    class="p-1.5 border-2 border-black bg-white hover:bg-zinc-150 rounded-lg text-black transition-colors cursor-pointer shadow-secondary active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
+                    class="p-1.5 border-2 border-black bg-white hover:bg-zinc-150 rounded-lg text-black transition-colors cursor-pointer shadow-secondary"
                   >
                     <Eye class="h-4 w-4" />
                   </button>
@@ -454,7 +454,7 @@
             <button
               onclick={() => deleteInvoice(selectedInvoice!.id)}
               disabled={isDeleting}
-              class="border-2 border-black bg-red-200 hover:bg-red-350 text-red-800 p-2.5 rounded-[6px] shadow-secondary active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all flex items-center justify-center cursor-pointer"
+              class="border-2 border-black bg-red-200 hover:bg-red-350 text-red-800 p-2.5 rounded-[6px] shadow-secondary transition-all flex items-center justify-center cursor-pointer"
               title="Xóa hóa đơn"
             >
               {#if isDeleting}
@@ -468,7 +468,7 @@
               <button
                 onclick={() => confirmPayment(selectedInvoice!.id)}
                 disabled={isConfirming}
-                class="flex-1 bg-blue-300 hover:bg-blue-400 text-black border-2 border-black py-2.5 rounded-[6px] text-center text-xs font-black shadow-secondary active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                class="flex-1 bg-blue-300 hover:bg-blue-400 text-black border-2 border-black py-2.5 rounded-[6px] text-center text-xs font-black shadow-secondary transition-all flex items-center justify-center gap-1.5 cursor-pointer"
               >
                 Xác nhận đã nhận tiền (Đóng hóa đơn)
                 {#if isConfirming}

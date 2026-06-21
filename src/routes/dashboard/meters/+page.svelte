@@ -215,14 +215,14 @@
 							<button
 								onclick={() => review(reading, 'approve')}
 								disabled={processingId === reading.id || usage < 0}
-								class="flex items-center gap-1 rounded-[6px] border-2 border-black bg-green-200 px-3 py-2 text-xs font-black shadow-secondary transition-all active:translate-x-[1px] active:translate-y-[1px] active:shadow-none disabled:opacity-50"
+								class="flex items-center gap-1 rounded-[6px] border-2 border-black bg-green-200 px-3 py-2 text-xs font-black shadow-secondary transition-all active:translate-x-[1px] active:translate-y-[1px] disabled:opacity-50"
 							>
 								<Check class="h-4 w-4" /> Chốt
 							</button>
 							<button
 								onclick={() => review(reading, 'reject')}
 								disabled={processingId === reading.id}
-								class="flex items-center gap-1 rounded-[6px] border-2 border-black bg-red-200 px-3 py-2 text-xs font-black shadow-secondary transition-all active:translate-x-[1px] active:translate-y-[1px] active:shadow-none disabled:opacity-50"
+								class="flex items-center gap-1 rounded-[6px] border-2 border-black bg-red-200 px-3 py-2 text-xs font-black shadow-secondary transition-all active:translate-x-[1px] active:translate-y-[1px] disabled:opacity-50"
 							>
 								<X class="h-4 w-4" /> Từ chối
 							</button>

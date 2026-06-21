@@ -214,7 +214,7 @@
     </div>
     <button 
       onclick={() => isAddDialogOpen = true}
-      class="bg-blue-300 text-black border-2 border-black px-4 py-2.5 rounded-[6px] shadow-secondary active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all flex items-center gap-1.5 cursor-pointer font-black text-sm w-full sm:w-auto justify-center sm:justify-start"
+      class="bg-blue-300 text-black border-2 border-black px-4 py-2.5 rounded-[6px] shadow-secondary transition-all flex items-center gap-1.5 cursor-pointer font-black text-sm w-full sm:w-auto justify-center sm:justify-start"
     >
       Thêm khách thuê <Plus class="h-4 w-4" />
     </button>
@@ -286,7 +286,7 @@
               </span>
               <button
                 onclick={() => window.setTimeout(() => { selectedTenant = tenant; isDetailDrawerOpen = true; }, 200)}
-                class="px-3 py-1.5 border-2 border-black bg-white text-black rounded-[6px] text-xs font-bold shadow-secondary active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all cursor-pointer"
+                class="px-3 py-1.5 border-2 border-black bg-white text-black rounded-[6px] text-xs font-bold shadow-secondary transition-all cursor-pointer"
               >
                 Hồ sơ
               </button>
@@ -329,7 +329,7 @@
                 <td class="px-4 py-4 text-right">
                   <button
                     onclick={() => window.setTimeout(() => { selectedTenant = tenant; isDetailDrawerOpen = true; }, 200)}
-                    class="px-3 py-1.5 border-2 border-black bg-white hover:bg-zinc-150 text-black rounded-[6px] text-xs font-bold transition-all shadow-secondary active:translate-x-[2px] active:translate-y-[2px] active:shadow-none cursor-pointer"
+                    class="px-3 py-1.5 border-2 border-black bg-white hover:bg-zinc-150 text-black rounded-[6px] text-xs font-bold transition-all shadow-secondary cursor-pointer"
                   >
                     Hồ sơ
                   </button>
@@ -380,7 +380,7 @@
             <p class="text-zinc-500 text-xs font-semibold">Vui lòng tạo phòng trọ trống trước hoặc trả phòng phòng hiện tại.</p>
             <button 
               onclick={() => isAddDialogOpen = false}
-              class="border-2 border-black bg-white px-4 py-2 rounded-[6px] text-xs font-bold shadow-secondary active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all cursor-pointer"
+              class="border-2 border-black bg-white px-4 py-2 rounded-[6px] text-xs font-bold shadow-secondary transition-all cursor-pointer"
             >
               Quay lại
             </button>
@@ -547,7 +547,7 @@
               <button 
                 type="submit"
                 disabled={isSubmitting}
-                class="bg-blue-300 hover:bg-blue-400 disabled:opacity-50 text-black border-2 border-black px-4 py-2 rounded-[6px] text-xs font-black shadow-secondary active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all flex items-center gap-1.5 cursor-pointer"
+                class="bg-blue-300 hover:bg-blue-400 disabled:opacity-50 text-black border-2 border-black px-4 py-2 rounded-[6px] text-xs font-black shadow-secondary transition-all flex items-center gap-1.5 cursor-pointer"
               >
                 Đăng ký khách thuê
                 {#if isSubmitting}
@@ -682,7 +682,7 @@
           {#if selectedTenant.rooms[0]}
             <button
               onclick={() => handleCheckout(selectedTenant!.rooms[0].id)}
-              class="flex-1 border-2 border-black bg-red-200 hover:bg-red-300 text-red-800 py-2.5 rounded-[6px] text-center text-xs font-black shadow-secondary active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+              class="flex-1 border-2 border-black bg-red-200 hover:bg-red-300 text-red-800 py-2.5 rounded-[6px] text-center text-xs font-black shadow-secondary transition-all flex items-center justify-center gap-1.5 cursor-pointer"
             >
               Trả phòng (Checkout) <LogOut class="h-4 w-4" />
             </button>

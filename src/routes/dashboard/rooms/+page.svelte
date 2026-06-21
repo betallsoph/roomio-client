@@ -457,7 +457,7 @@
     
     <button 
       onclick={(e) => tapBounce(e, () => (isAddDialogOpen = true))}
-      class="w-full sm:w-auto bg-blue-300 hover:bg-blue-400 text-black border-2 border-black px-4 py-2.5 rounded-[6px] shadow-secondary active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all flex items-center justify-center gap-1.5 cursor-pointer font-bold text-sm"
+      class="w-full sm:w-auto bg-blue-300 hover:bg-blue-400 text-black border-2 border-black px-4 py-2.5 rounded-[6px] shadow-secondary transition-all flex items-center justify-center gap-1.5 cursor-pointer font-bold text-sm"
     >
       Thêm phòng <Plus class="h-4.5 w-4.5" />
     </button>
@@ -613,7 +613,7 @@
 
               <button
                 onclick={(e) => tapBounce(e, () => openRoomDetail(room))}
-                class="w-full rounded-[6px] border-2 border-black bg-blue-300 px-3 py-2 text-xs font-black text-black shadow-secondary transition-[background-color,transform,box-shadow] hover:bg-blue-400 active:translate-x-[2px] active:translate-y-[2px] active:shadow-none md:w-auto"
+                class="w-full rounded-[6px] border-2 border-black bg-blue-300 px-3 py-2 text-xs font-black text-black shadow-secondary transition-[background-color,transform,box-shadow] hover:bg-blue-400 md:w-auto"
               >
                 Chi tiết
               </button>
@@ -753,7 +753,7 @@
             <button 
               type="submit"
               disabled={isCreatingRoom}
-              class="bg-blue-300 hover:bg-blue-400 disabled:opacity-50 text-black border-2 border-black px-4 py-2 rounded-[6px] text-xs font-bold shadow-secondary active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all flex items-center gap-1.5 cursor-pointer"
+              class="bg-blue-300 hover:bg-blue-400 disabled:opacity-50 text-black border-2 border-black px-4 py-2 rounded-[6px] text-xs font-bold shadow-secondary transition-all flex items-center gap-1.5 cursor-pointer"
             >
               Thêm phòng
               {#if isCreatingRoom}
@@ -883,7 +883,7 @@
                         <p class="text-sm text-zinc-500 font-semibold">Chưa có thông tin khách thuê phòng này.</p>
                         <a 
                           href="/dashboard/tenants"
-                          class="inline-flex bg-blue-300 text-black border-2 border-black px-4 py-2 rounded-[6px] shadow-secondary active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all text-xs font-black"
+                          class="inline-flex bg-blue-300 text-black border-2 border-black px-4 py-2 rounded-[6px] shadow-secondary transition-all text-xs font-black"
                         >
                           Đến trang Thêm khách thuê <ArrowRight class="h-3.5 w-3.5" />
                         </a>
@@ -948,7 +948,7 @@
                           customRate: s.customRate === null ? null : s.customRate.toString(),
                           quantity: s.quantity
                         }))))}
-                        class="bg-blue-300 text-black border-2 border-black rounded-[6px] shadow-secondary active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all px-4 py-2 text-xs font-black cursor-pointer"
+                        class="bg-blue-300 text-black border-2 border-black rounded-[6px] shadow-secondary transition-all px-4 py-2 text-xs font-black cursor-pointer"
                       >
                         Lưu cấu hình dịch vụ
                       </button>
@@ -1019,7 +1019,7 @@
                         <button
                           type="submit"
                           disabled={isLoggingMeter}
-                          class="bg-blue-300 text-black border-2 border-black rounded-[6px] shadow-secondary active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all px-4 py-2 text-xs font-black cursor-pointer flex items-center gap-1.5"
+                          class="bg-blue-300 text-black border-2 border-black rounded-[6px] shadow-secondary transition-all px-4 py-2 text-xs font-black cursor-pointer flex items-center gap-1.5"
                         >
                           Ghi chỉ số
                           {#if isLoggingMeter}
@@ -1136,7 +1136,7 @@
                         <button
                           type="submit"
                           disabled={isAddingAsset}
-                          class="bg-blue-300 text-black border-2 border-black rounded-[6px] shadow-secondary active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all px-4 py-2 text-xs font-black cursor-pointer flex items-center gap-1.5"
+                          class="bg-blue-300 text-black border-2 border-black rounded-[6px] shadow-secondary transition-all px-4 py-2 text-xs font-black cursor-pointer flex items-center gap-1.5"
                         >
                           {editingAssetId ? 'Lưu thiết bị' : 'Bàn giao thiết bị'}
                           {#if isAddingAsset}
@@ -1192,7 +1192,7 @@
             {#if selectedRoom.tenantId}
               <button
                 onclick={(e) => tapBounce(e, () => handleCheckout(selectedRoom!.id))}
-                class="flex-1 bg-red-200 hover:bg-red-300 text-red-800 border-2 border-black py-2.5 rounded-[6px] text-center text-xs font-black shadow-secondary active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                class="flex-1 bg-red-200 hover:bg-red-300 text-red-800 border-2 border-black py-2.5 rounded-[6px] text-center text-xs font-black shadow-secondary transition-all flex items-center justify-center gap-1.5 cursor-pointer"
               >
                 Khách trả phòng (Checkout)
                 <LogOut class="h-4 w-4" />
@@ -1200,7 +1200,7 @@
             {/if}
             <button
               onclick={(e) => tapBounce(e, () => (isDetailOpen = false))}
-              class="flex-1 bg-white hover:bg-zinc-150 text-black border-2 border-black py-2.5 rounded-[6px] text-center text-xs font-black shadow-secondary active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all cursor-pointer"
+              class="flex-1 bg-white hover:bg-zinc-150 text-black border-2 border-black py-2.5 rounded-[6px] text-center text-xs font-black shadow-secondary transition-all cursor-pointer"
             >
               Đóng
             </button>

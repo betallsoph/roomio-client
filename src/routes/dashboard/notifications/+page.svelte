@@ -276,7 +276,7 @@
     </div>
     <button 
       onclick={() => isAddDialogOpen = true}
-      class="bg-blue-300 text-black border-2 border-black px-4 py-2.5 rounded-[6px] shadow-secondary active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all flex items-center gap-1.5 cursor-pointer font-black text-sm"
+      class="bg-blue-300 text-black border-2 border-black px-4 py-2.5 rounded-[6px] shadow-secondary transition-all flex items-center gap-1.5 cursor-pointer font-black text-sm"
     >
       Đăng thông báo <Plus class="h-4.5 w-4.5" />
     </button>
@@ -291,7 +291,7 @@
         </h2>
         <button
           onclick={() => window.setTimeout(() => (isNoteDialogOpen = true), 200)}
-          class="px-2.5 py-1.5 bg-blue-300 border-2 border-black rounded-[6px] text-[10px] font-black uppercase shadow-secondary active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all cursor-pointer"
+          class="px-2.5 py-1.5 bg-blue-300 border-2 border-black rounded-[6px] text-[10px] font-black uppercase shadow-secondary transition-all cursor-pointer"
         >
           Gửi lời nhắn cho khách
         </button>
@@ -328,7 +328,7 @@
                 {#if !note.isRead}
                   <button
                     onclick={() => markNoteAsRead(note.id)}
-                    class="px-2.5 py-1 bg-blue-300 hover:bg-blue-400 text-black border-2 border-black rounded-[6px] text-[10px] font-black uppercase shadow-secondary active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all cursor-pointer"
+                    class="px-2.5 py-1 bg-blue-300 hover:bg-blue-400 text-black border-2 border-black rounded-[6px] text-[10px] font-black uppercase shadow-secondary transition-all cursor-pointer"
                   >
                     Đọc xong
                   </button>
@@ -565,7 +565,7 @@
             <button 
               type="submit"
               disabled={isSubmitting}
-              class="bg-blue-300 hover:bg-blue-400 disabled:opacity-50 text-black border-2 border-black px-4 py-2 rounded-[6px] text-xs font-black shadow-secondary active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all flex items-center gap-1.5 cursor-pointer"
+              class="bg-blue-300 hover:bg-blue-400 disabled:opacity-50 text-black border-2 border-black px-4 py-2 rounded-[6px] text-xs font-black shadow-secondary transition-all flex items-center gap-1.5 cursor-pointer"
             >
               Đăng bản tin
               {#if isSubmitting}
@@ -615,7 +615,7 @@
         <button
           onclick={sendNoteToTenant}
           disabled={isSendingNote}
-          class="w-full py-2.5 bg-blue-300 border-2 border-black rounded-[6px] shadow-secondary text-sm font-black active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition-all disabled:opacity-50"
+          class="w-full py-2.5 bg-blue-300 border-2 border-black rounded-[6px] shadow-secondary text-sm font-black active:translate-x-[1px] active:translate-y-[1px] transition-all disabled:opacity-50"
         >
           {isSendingNote ? 'Đang gửi...' : 'Gửi lời nhắn'}
         </button>

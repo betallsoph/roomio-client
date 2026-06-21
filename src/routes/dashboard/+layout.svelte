@@ -167,7 +167,7 @@
 					</div>
 					<button
 						onclick={() => window.setTimeout(() => (isMobileMenuOpen = true), 200)}
-						class="rounded-lg border-2 border-black bg-white p-2 text-black shadow-secondary transition-all active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
+						class="rounded-lg border-2 border-black bg-white p-2 text-black shadow-secondary transition-all"
 						aria-label="Mở menu"
 					>
 						<Menu class="h-5 w-5" />
