@@ -4,24 +4,16 @@
   import { toast } from 'svelte-sonner';
   import { confirmPopup } from '$lib/confirm-popup';
   import {
-    Award,
-    Bell,
-    Building2,
-    Calendar,
     Check,
-    CreditCard,
     Eye,
-    Home,
     Loader2,
     Lock,
     LogOut,
     Plus,
     Search,
-    ShieldAlert,
     Sliders,
     Unlock,
     UserPlus,
-    Users,
     X
   } from '@lucide/svelte';
 
@@ -343,50 +335,31 @@
     </div>
   </header>
 
-  <main class="mx-auto max-w-7xl space-y-6 px-5 py-6 sm:px-6">
-    <section class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-      <div class="rounded-lg border-2 border-black bg-white p-4">
-        <div class="flex items-center justify-between gap-3">
-          <p class="text-sm font-bold text-zinc-500">Chủ trọ đang hoạt động</p>
-          <Users class="h-5 w-5 text-blue-500" />
-        </div>
-        <p class="mt-3 text-2xl font-black">{platformStats().activeLandlords}/{landlords.length}</p>
-        <p class="mt-1 text-xs font-bold text-zinc-500">{platformStats().paidLandlords} tài khoản trả phí</p>
+  <main class="mx-auto max-w-7xl space-y-5 px-5 py-6 sm:px-6">
+    <section class="flex flex-wrap gap-x-8 gap-y-3 text-sm font-bold">
+      <div>
+        <span class="text-zinc-500">Chủ trọ hoạt động</span>
+        <span class="ml-2 text-lg font-black">{platformStats().activeLandlords}/{landlords.length}</span>
       </div>
-
-      <div class="rounded-lg border-2 border-black bg-white p-4">
-        <div class="flex items-center justify-between gap-3">
-          <p class="text-sm font-bold text-zinc-500">Phòng đang được quản lý</p>
-          <Building2 class="h-5 w-5 text-blue-500" />
-        </div>
-        <p class="mt-3 text-2xl font-black">{platformStats().totalRooms}</p>
-        <p class="mt-1 text-xs font-bold text-zinc-500">Trên toàn hệ thống</p>
+      <div>
+        <span class="text-zinc-500">Tài khoản trả phí</span>
+        <span class="ml-2 text-lg font-black">{platformStats().paidLandlords}</span>
       </div>
-
-      <div class="rounded-lg border-2 border-black bg-white p-4">
-        <div class="flex items-center justify-between gap-3">
-          <p class="text-sm font-bold text-zinc-500">Tiền đã ghi nhận</p>
-          <CreditCard class="h-5 w-5 text-blue-500" />
-        </div>
-        <p class="mt-3 text-2xl font-black">{formatCurrency(platformStats().collectedAmount)}</p>
-        <p class="mt-1 text-xs font-bold text-zinc-500">
-          Tháng này {formatCurrency(platformStats().currentMonthCollectedAmount)}
-        </p>
+      <div>
+        <span class="text-zinc-500">Phòng quản lý</span>
+        <span class="ml-2 text-lg font-black">{platformStats().totalRooms}</span>
       </div>
-
-      <div class="rounded-lg border-2 border-black bg-white p-4">
-        <div class="flex items-center justify-between gap-3">
-          <p class="text-sm font-bold text-zinc-500">Cần theo dõi</p>
-          <ShieldAlert class="h-5 w-5 text-red-500" />
-        </div>
-        <p class="mt-3 text-2xl font-black">{platformStats().overdueInvoices} hóa đơn</p>
-        <p class="mt-1 text-xs font-bold text-zinc-500">
-          {platformStats().payosIssues} giao dịch PayOS cần soát
-        </p>
+      <div>
+        <span class="text-zinc-500">Đã ghi nhận</span>
+        <span class="ml-2 text-lg font-black">{formatCurrency(platformStats().collectedAmount)}</span>
+      </div>
+      <div>
+        <span class="text-zinc-500">Cần soát</span>
+        <span class="ml-2 text-lg font-black">{platformStats().payosIssues} PayOS</span>
       </div>
     </section>
 
-    <section class="grid gap-3 rounded-lg border-2 border-black bg-white p-3 lg:grid-cols-[minmax(0,1fr)_auto_auto]">
+    <section class="grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto_auto]">
       <label class="flex min-w-0 items-center gap-2 rounded-[6px] border-2 border-black px-3 py-2">
         <Search class="h-4 w-4 shrink-0 text-zinc-500" />
         <input
@@ -430,66 +403,50 @@
         <Loader2 class="h-10 w-10 animate-spin text-black" />
       </div>
     {:else}
-      <section class="grid gap-5 lg:grid-cols-[minmax(0,1fr)_380px]">
-        <div class="space-y-3">
+      <section class="grid gap-5 lg:grid-cols-[minmax(0,1fr)_420px]">
+        <div class="min-w-0">
           {#if filteredLandlords().length === 0}
-            <div class="rounded-lg border-2 border-black bg-blue-50 p-10 text-center">
+            <div class="bg-blue-50 p-10 text-center">
               <p class="text-sm font-bold text-zinc-600">Không có chủ trọ nào khớp bộ lọc.</p>
             </div>
           {:else}
-            {#each filteredLandlords() as landlord}
-              <button
-                onclick={() => (selectedLandlord = landlord)}
-                class="w-full rounded-lg border-2 border-black bg-white p-4 text-left transition-colors hover:bg-blue-50 {selectedLandlord?.id === landlord.id ? 'bg-blue-50' : ''}"
-              >
-                <div class="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
-                  <div class="min-w-0">
-                    <div class="flex flex-wrap items-center gap-2">
-                      <h2 class="text-lg font-black leading-tight">{landlord.user.name}</h2>
-                      <span class="rounded-full px-2.5 py-1 text-[10px] font-black {planBadgeClass(landlord.subscriptionType)}">
-                        {landlord.subscriptionType}
-                      </span>
-                      <span class="rounded-full px-2.5 py-1 text-[10px] font-black {accountStatusClass(landlord)}">
-                        {accountStatusLabel(landlord)}
-                      </span>
-                    </div>
-                    <p class="mt-1 text-sm font-bold text-zinc-500">
-                      {landlord.companyName || 'Chưa đặt thương hiệu'} · {landlord.user.email} · {landlord.user.phone}
-                    </p>
-                  </div>
-
-                  <div class="grid grid-cols-2 gap-2 text-xs font-bold sm:grid-cols-4 xl:min-w-[420px]">
-                    <div class="rounded-[6px] bg-zinc-100 px-3 py-2">
-                      <p class="text-zinc-500">Phòng</p>
-                      <p class="mt-1 text-sm font-black text-black">{landlord.metrics.totalRooms}</p>
-                    </div>
-                    <div class="rounded-[6px] bg-zinc-100 px-3 py-2">
-                      <p class="text-zinc-500">Lấp đầy</p>
-                      <p class="mt-1 text-sm font-black text-black">
-                        {landlord.metrics.totalRooms
-                          ? Math.round((landlord.metrics.occupiedRooms / landlord.metrics.totalRooms) * 100)
-                          : 0}%
-                      </p>
-                    </div>
-                    <div class="rounded-[6px] bg-zinc-100 px-3 py-2">
-                      <p class="text-zinc-500">Chưa thu</p>
-                      <p class="mt-1 text-sm font-black text-black">{landlord.metrics.unpaidInvoices}</p>
-                    </div>
-                    <div class="rounded-[6px] bg-zinc-100 px-3 py-2">
-                      <p class="text-zinc-500">PayOS lỗi</p>
-                      <p class="mt-1 text-sm font-black text-black">{landlord.metrics.payosUnmatched}</p>
-                    </div>
-                  </div>
-                </div>
-              </button>
-            {/each}
+            <div class="overflow-x-auto border-2 border-black">
+              <div class="grid min-w-[680px] grid-cols-[minmax(220px,1.4fr)_120px_100px_120px_120px] bg-zinc-50 px-4 py-3 text-xs font-black text-zinc-500">
+                <span>Chủ trọ</span>
+                <span>Gói</span>
+                <span>Phòng</span>
+                <span>Chưa thu</span>
+                <span>Trạng thái</span>
+              </div>
+              {#each filteredLandlords() as landlord}
+                <button
+                  onclick={() => (selectedLandlord = landlord)}
+                  class="grid min-w-[680px] grid-cols-[minmax(220px,1.4fr)_120px_100px_120px_120px] items-center gap-0 border-t-2 border-black px-4 py-3 text-left text-sm font-bold transition-colors hover:bg-blue-50 {selectedLandlord?.id === landlord.id ? 'bg-blue-50' : 'bg-white'}"
+                >
+                  <span class="min-w-0">
+                    <span class="block truncate text-base font-black">{landlord.user.name}</span>
+                    <span class="mt-0.5 block truncate text-xs text-zinc-500">
+                      {landlord.companyName || 'Chưa đặt thương hiệu'} · {landlord.user.email}
+                    </span>
+                  </span>
+                  <span class="w-fit rounded-full px-2.5 py-1 text-[10px] font-black {planBadgeClass(landlord.subscriptionType)}">
+                    {landlord.subscriptionType}
+                  </span>
+                  <span>{landlord.metrics.occupiedRooms}/{landlord.metrics.totalRooms}</span>
+                  <span>{formatCurrency(landlord.metrics.unpaidAmount)}</span>
+                  <span class="w-fit rounded-full px-2.5 py-1 text-[10px] font-black {accountStatusClass(landlord)}">
+                    {accountStatusLabel(landlord)}
+                  </span>
+                </button>
+              {/each}
+            </div>
           {/if}
         </div>
 
         <aside class="lg:sticky lg:top-5 lg:h-fit">
           {#if selectedLandlord}
-            <div class="rounded-lg border-2 border-black bg-white">
-              <div class="space-y-4 p-5">
+            <div class="border-2 border-black bg-white">
+              <div class="space-y-5 p-5">
                 <div class="flex items-start justify-between gap-3">
                   <div class="min-w-0">
                     <p class="text-xs font-bold text-zinc-500">Hồ sơ đối tác</p>
@@ -503,26 +460,22 @@
                   </span>
                 </div>
 
-                <div class="grid grid-cols-2 gap-2 text-xs font-bold">
-                  <div class="rounded-[6px] border-2 border-black p-3">
-                    <Home class="mb-2 h-4 w-4 text-blue-500" />
+                <div class="grid grid-cols-2 gap-x-5 gap-y-3 text-sm font-bold">
+                  <div>
                     <p class="text-zinc-500">Tòa nhà</p>
-                    <p class="mt-1 text-lg font-black">{selectedLandlord.metrics.totalProperties}</p>
+                    <p class="text-lg font-black">{selectedLandlord.metrics.totalProperties}</p>
                   </div>
-                  <div class="rounded-[6px] border-2 border-black p-3">
-                    <Building2 class="mb-2 h-4 w-4 text-blue-500" />
+                  <div>
                     <p class="text-zinc-500">Phòng</p>
-                    <p class="mt-1 text-lg font-black">{selectedLandlord.metrics.totalRooms}</p>
+                    <p class="text-lg font-black">{selectedLandlord.metrics.occupiedRooms}/{selectedLandlord.metrics.totalRooms}</p>
                   </div>
-                  <div class="rounded-[6px] border-2 border-black p-3">
-                    <CreditCard class="mb-2 h-4 w-4 text-blue-500" />
+                  <div>
                     <p class="text-zinc-500">Đã thu</p>
-                    <p class="mt-1 text-lg font-black">{formatCurrency(selectedLandlord.metrics.collectedAmount)}</p>
+                    <p class="text-lg font-black">{formatCurrency(selectedLandlord.metrics.collectedAmount)}</p>
                   </div>
-                  <div class="rounded-[6px] border-2 border-black p-3">
-                    <ShieldAlert class="mb-2 h-4 w-4 text-red-500" />
+                  <div>
                     <p class="text-zinc-500">Chưa thu</p>
-                    <p class="mt-1 text-lg font-black">{formatCurrency(selectedLandlord.metrics.unpaidAmount)}</p>
+                    <p class="text-lg font-black">{formatCurrency(selectedLandlord.metrics.unpaidAmount)}</p>
                   </div>
                 </div>
 
@@ -566,15 +519,15 @@
                 </div>
 
                 <div class="space-y-2">
-                  <p class="text-xs font-black text-zinc-500">Tòa nhà đang quản lý</p>
+                  <p class="text-sm font-black text-zinc-500">Tòa nhà đang quản lý</p>
                   {#if selectedLandlord.properties.length === 0}
-                    <p class="rounded-[6px] bg-zinc-100 px-3 py-2 text-xs font-bold text-zinc-500">
+                    <p class="bg-zinc-100 px-3 py-2 text-xs font-bold text-zinc-500">
                       Chưa có tòa nhà nào.
                     </p>
                   {:else}
-                    <div class="max-h-36 space-y-2 overflow-y-auto pr-1">
+                    <div class="max-h-36 overflow-y-auto pr-1">
                       {#each selectedLandlord.properties as property}
-                        <div class="flex items-center justify-between gap-3 rounded-[6px] bg-zinc-100 px-3 py-2 text-xs font-bold">
+                        <div class="flex items-center justify-between gap-3 border-t border-zinc-200 py-2 text-xs font-bold first:border-t-0">
                           <span class="truncate">{property.name}</span>
                           <span class="shrink-0 text-zinc-500">{property._count.rooms} phòng</span>
                         </div>
@@ -602,7 +555,7 @@
                   </button>
                 </div>
 
-                <div class="rounded-[6px] bg-blue-50 px-3 py-2 text-xs font-bold text-blue-900">
+                <div class="bg-blue-50 px-3 py-2 text-xs font-bold text-blue-900">
                   <Eye class="mr-1 inline h-3.5 w-3.5" />
                   Giai đoạn sau nên thêm xem dưới quyền chủ trọ để support, nhưng chưa bật khi backend chưa có audit log.
                 </div>
