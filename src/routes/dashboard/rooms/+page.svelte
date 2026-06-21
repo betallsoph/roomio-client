@@ -479,7 +479,7 @@
   <div class="space-y-3">
     <div class="grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]">
       <div class="space-y-1">
-        <span class="text-[10px] font-black text-zinc-500 block">Chọn tòa nhà</span>
+        <span class="text-[10px] font-black text-zinc-500 block">Tòa nhà</span>
         <select 
           bind:value={selectedPropertyId} 
           class="w-full border-2 border-black px-3 py-2 text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300 bg-white font-bold text-black"
@@ -492,12 +492,12 @@
 
       {#if getActiveProperty() && getActiveProperty()!.blocks.length > 0}
         <div class="space-y-1">
-          <span class="text-[10px] font-black text-zinc-500 block">Dãy/Phân cụm</span>
+          <span class="text-[10px] font-black text-zinc-500 block">Block</span>
           <select 
             bind:value={selectedBlockId} 
             class="w-full border-2 border-black px-3 py-2 text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300 bg-white font-bold text-black"
           >
-            <option value="all">Tất cả dãy</option>
+            <option value="all">Tất cả block</option>
             {#each getActiveProperty()!.blocks as block}
               <option value={block.id}>{block.name}</option>
             {/each}
@@ -505,8 +505,7 @@
         </div>
       {/if}
 
-      <div class="space-y-1">
-        <span class="text-[10px] font-black text-zinc-500 block">Kiểu xem</span>
+      <div class="lg:self-end">
         <div class="grid grid-cols-2 rounded-lg border-2 border-black bg-white p-1 shadow-secondary lg:min-w-56">
           <button
             type="button"
@@ -740,13 +739,13 @@
 
           {#if getActiveProperty() && getActiveProperty()!.blocks.length > 0}
             <div class="space-y-1">
-              <label for="r-block" class="text-xs font-bold text-zinc-600 block">Thuộc Dãy/Cụm</label>
+              <label for="r-block" class="text-xs font-bold text-zinc-600 block">Block</label>
               <select 
                 id="r-block"
                 bind:value={newBlockId}
                 class="w-full border-2 border-black px-3 py-2 text-sm rounded-lg focus:outline-none bg-white font-bold text-black"
               >
-                <option value="">Không phân dãy</option>
+                <option value="">Không có block</option>
                 {#each getActiveProperty()!.blocks as block}
                   <option value={block.id}>{block.name}</option>
                 {/each}
