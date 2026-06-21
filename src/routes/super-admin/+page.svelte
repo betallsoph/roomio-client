@@ -15,10 +15,12 @@
     Loader2,
     Lock,
     LogOut,
+    Plus,
     Search,
     ShieldAlert,
     Sliders,
     Unlock,
+    UserPlus,
     Users,
     X
   } from '@lucide/svelte';
@@ -71,12 +73,23 @@
   let landlords = $state<Landlord[]>([]);
   let selectedLandlord = $state<Landlord | null>(null);
   let isEditOpen = $state(false);
+  let isCreateOpen = $state(false);
   let subType = $state('FREE');
   let subValid = $state('');
   let isSaving = $state(false);
+  let isCreating = $state(false);
   let searchQuery = $state('');
   let planFilter = $state('all');
   let statusFilter = $state('all');
+  let createForm = $state({
+    name: '',
+    companyName: '',
+    email: '',
+    phone: '',
+    password: '',
+    subscriptionType: 'FREE',
+    subValidUntil: ''
+  });
 
   onMount(() => {
     const sessionStr = localStorage.getItem('roomio_user');
@@ -187,6 +200,54 @@
     isEditOpen = true;
   }
 
+  function openCreateDialog() {
+    createForm = {
+      name: '',
+      companyName: '',
+      email: '',
+      phone: '',
+      password: '',
+      subscriptionType: 'FREE',
+      subValidUntil: ''
+    };
+    isCreateOpen = true;
+  }
+
+  async function handleCreateLandlord(e: SubmitEvent) {
+    e.preventDefault();
+    if (isCreating) return;
+
+    if (!createForm.name || !createForm.email || !createForm.phone || !createForm.password) {
+      toast.error('Vui lòng nhập đủ tên, email, số điện thoại và mật khẩu');
+      return;
+    }
+    if (createForm.password.length < 6) {
+      toast.error('Mật khẩu phải dài ít nhất 6 ký tự');
+      return;
+    }
+
+    isCreating = true;
+    try {
+      const res = await fetch('/api/super-admin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(createForm)
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Không tạo được tài khoản chủ trọ');
+
+      toast.success(`Đã tạo tài khoản chủ trọ cho ${data.name}`);
+      isCreateOpen = false;
+      await fetchLandlords();
+      const created = landlords.find((landlord) => landlord.id === data.id);
+      if (created) selectedLandlord = created;
+    } catch (err: any) {
+      toast.error(err.message);
+    } finally {
+      isCreating = false;
+    }
+  }
+
   function isSubscriptionExpired(landlord: Landlord) {
     if (!landlord.subValidUntil) return false;
     return new Date(landlord.subValidUntil) < new Date();
@@ -272,6 +333,9 @@
 
       <div class="flex shrink-0 items-center gap-3">
         <span class="hidden text-sm font-bold text-zinc-500 sm:block">{adminName}</span>
+        <button onclick={openCreateDialog} class="roomio-button px-3 py-2 text-xs">
+          <Plus class="h-4 w-4" /> Tạo chủ trọ
+        </button>
         <button onclick={handleLogout} class="roomio-button-white px-3 py-2 text-xs">
           Đăng xuất <LogOut class="h-4 w-4" />
         </button>
@@ -625,6 +689,159 @@
                 <Check class="h-4 w-4" />
               {/if}
               Lưu gói
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  {/if}
+
+  {#if isCreateOpen}
+    <div
+      class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4 backdrop-blur-sm"
+      onclick={() => (isCreateOpen = false)}
+      onkeydown={(e) => e.key === 'Escape' && (isCreateOpen = false)}
+      role="button"
+      tabindex="0"
+    >
+      <div
+        class="relative flex max-h-[92vh] w-full max-w-xl animate-[scale-up_0.2s_ease-out] flex-col overflow-hidden rounded-lg border-2 border-black bg-white"
+        onclick={(e) => e.stopPropagation()}
+        onkeydown={(e) => e.stopPropagation()}
+        role="dialog"
+        tabindex="-1"
+      >
+        <div class="flex items-start justify-between gap-3 bg-zinc-50 px-5 py-4">
+          <div>
+            <div class="flex items-center gap-2">
+              <UserPlus class="h-5 w-5 text-blue-500" />
+              <h2 class="text-lg font-black text-black">Tạo tài khoản chủ trọ</h2>
+            </div>
+            <p class="mt-1 text-xs font-bold text-zinc-500">
+              Chỉ SuperAdmin được cấp tài khoản chủ trọ mới.
+            </p>
+          </div>
+          <button
+            onclick={() => (isCreateOpen = false)}
+            class="rounded-lg border-2 border-black bg-white p-1.5 text-black transition-colors hover:bg-zinc-100"
+            aria-label="Đóng"
+          >
+            <X class="h-5 w-5" />
+          </button>
+        </div>
+
+        <form onsubmit={handleCreateLandlord} class="space-y-4 overflow-y-auto p-5">
+          <div class="grid gap-3 sm:grid-cols-2">
+            <label class="block text-xs font-bold text-zinc-600" for="new-landlord-name">
+              Họ và tên
+              <input
+                id="new-landlord-name"
+                bind:value={createForm.name}
+                required
+                type="text"
+                placeholder="Nguyễn Văn Hậu"
+                class="mt-1 w-full rounded-lg border-2 border-black bg-white px-3 py-2 text-sm font-semibold text-black focus:outline-none focus:ring-2 focus:ring-blue-300"
+              />
+            </label>
+
+            <label class="block text-xs font-bold text-zinc-600" for="new-landlord-company">
+              Thương hiệu / công ty
+              <input
+                id="new-landlord-company"
+                bind:value={createForm.companyName}
+                type="text"
+                placeholder="Nhà Trọ Ngọc Hậu"
+                class="mt-1 w-full rounded-lg border-2 border-black bg-white px-3 py-2 text-sm font-semibold text-black focus:outline-none focus:ring-2 focus:ring-blue-300"
+              />
+            </label>
+          </div>
+
+          <div class="grid gap-3 sm:grid-cols-2">
+            <label class="block text-xs font-bold text-zinc-600" for="new-landlord-email">
+              Email đăng nhập
+              <input
+                id="new-landlord-email"
+                bind:value={createForm.email}
+                required
+                type="email"
+                placeholder="chutro@gmail.com"
+                class="mt-1 w-full rounded-lg border-2 border-black bg-white px-3 py-2 text-sm font-semibold text-black focus:outline-none focus:ring-2 focus:ring-blue-300"
+              />
+            </label>
+
+            <label class="block text-xs font-bold text-zinc-600" for="new-landlord-phone">
+              Số điện thoại
+              <input
+                id="new-landlord-phone"
+                bind:value={createForm.phone}
+                required
+                type="tel"
+                placeholder="0901234567"
+                class="mt-1 w-full rounded-lg border-2 border-black bg-white px-3 py-2 text-sm font-semibold text-black focus:outline-none focus:ring-2 focus:ring-blue-300"
+              />
+            </label>
+          </div>
+
+          <label class="block text-xs font-bold text-zinc-600" for="new-landlord-password">
+            Mật khẩu tạm thời
+            <input
+              id="new-landlord-password"
+              bind:value={createForm.password}
+              required
+              type="password"
+              placeholder="Ít nhất 6 ký tự"
+              class="mt-1 w-full rounded-lg border-2 border-black bg-white px-3 py-2 text-sm font-semibold text-black focus:outline-none focus:ring-2 focus:ring-blue-300"
+            />
+          </label>
+
+          <div class="grid gap-3 sm:grid-cols-2">
+            <label class="block text-xs font-bold text-zinc-600" for="new-landlord-plan">
+              Gói ban đầu
+              <select
+                id="new-landlord-plan"
+                bind:value={createForm.subscriptionType}
+                class="mt-1 w-full rounded-lg border-2 border-black bg-white px-3 py-2 text-sm font-semibold text-black focus:outline-none focus:ring-2 focus:ring-blue-300"
+              >
+                <option value="FREE">Gói miễn phí (FREE)</option>
+                <option value="PREMIUM">Gói nâng cao (PREMIUM)</option>
+                <option value="ENTERPRISE">Gói doanh nghiệp (ENTERPRISE)</option>
+              </select>
+            </label>
+
+            <label class="block text-xs font-bold text-zinc-600" for="new-landlord-valid">
+              Hạn gói
+              <input
+                id="new-landlord-valid"
+                bind:value={createForm.subValidUntil}
+                type="date"
+                class="mt-1 w-full rounded-lg border-2 border-black bg-white px-3 py-2 text-sm font-semibold text-black focus:outline-none focus:ring-2 focus:ring-blue-300"
+              />
+            </label>
+          </div>
+
+          <div class="rounded-[6px] bg-blue-50 px-3 py-2 text-xs font-bold text-blue-900">
+            Tài khoản mới sẽ có sẵn dịch vụ mặc định: điện, nước, wifi, rác sinh hoạt và gửi xe máy.
+          </div>
+
+          <div class="flex justify-end gap-3 pt-2">
+            <button
+              type="button"
+              onclick={() => (isCreateOpen = false)}
+              class="cursor-pointer rounded-[6px] border-2 border-black bg-white px-4 py-2 text-xs font-bold text-black transition-colors hover:bg-zinc-100"
+            >
+              Hủy
+            </button>
+            <button
+              type="submit"
+              disabled={isCreating}
+              class="flex cursor-pointer items-center gap-1 rounded-[6px] border-2 border-black bg-blue-300 px-4 py-2 text-xs font-black text-black transition-colors hover:bg-blue-400 disabled:opacity-50"
+            >
+              {#if isCreating}
+                <Loader2 class="h-4 w-4 animate-spin" />
+              {:else}
+                <UserPlus class="h-4 w-4" />
+              {/if}
+              Tạo chủ trọ
             </button>
           </div>
         </form>
