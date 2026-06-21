@@ -554,7 +554,7 @@
           
           <button
             onclick={(e) => tapBounce(e, () => openRoomDetail(room))}
-            class="room-card border-2 rounded-lg p-4 flex flex-col justify-between items-start text-left shadow-secondary active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-[transform,box-shadow] cursor-pointer h-32 focus:outline-none focus:ring-2 focus:ring-blue-300 {statusColor}"
+            class="room-card border-2 rounded-lg p-4 flex flex-col justify-between items-start text-left shadow-secondary transition-[transform,box-shadow] cursor-pointer h-32 focus:outline-none focus:ring-2 focus:ring-blue-300 {statusColor}"
           >
             <div>
               <span class="room-card-number text-xl font-black text-black leading-none">{room.roomNumber}</span>

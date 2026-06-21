@@ -261,7 +261,7 @@
           onkeydown={(e) => e.key === 'Enter' && (selectedProperty = prop, isDetailDrawerOpen = true)}
           role="button"
           tabindex="0"
-          class="bg-white border-2 border-black rounded-lg p-5 shadow-secondary active:shadow-none active:translate-x-[2px] active:translate-y-[2px] transition-all cursor-pointer text-left focus:outline-none focus:ring-2 focus:ring-blue-300"
+          class="property-card bg-white border-2 border-black rounded-lg p-5 shadow-secondary transition-all cursor-pointer text-left focus:outline-none focus:ring-2 focus:ring-blue-300"
         >
           <div class="flex justify-between items-start mb-4">
             <div class="flex items-center gap-3 min-w-0">

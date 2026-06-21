@@ -132,6 +132,12 @@
   @apply h-2.5 w-2.5 rounded-full border border-black sm:h-3 sm:w-3;
 }
 
+.room-card,
+.property-card {
+  --tap-depth: 1px;
+  --tap-shadow: var(--shadow-secondary);
+}
+
 [class*="shadow-primary"] {
   --tap-depth: 2px;
   --tap-shadow: var(--shadow-primary);
