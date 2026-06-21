@@ -224,7 +224,7 @@
     </section>
 
     <!-- Desktop: stat cards grid -->
-    <section class="roomio-section hidden sm:block">
+    <section class="hidden sm:block">
       <h2 class="mb-4 text-lg font-bold sm:text-xl">Chỉ số chính</h2>
       <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
       <!-- Card 1: Revenue -->
@@ -263,9 +263,9 @@
     </section>
 
     <!-- Main Lists Section -->
-    <section class="roomio-section grid gap-6 lg:grid-cols-3">
+    <section class="grid gap-6 lg:grid-cols-3">
       <div class="roomio-window lg:col-span-3">
-        <div class="roomio-window-bar">
+        <div class="roomio-window-bar !border-b-0">
           <div class="roomio-window-dots">
             <div class="roomio-window-dot bg-red-500"></div>
             <div class="roomio-window-dot bg-yellow-500"></div>
@@ -285,9 +285,9 @@
             <p class="text-xs font-bold text-zinc-500 mt-1">Hệ thống chưa phát hiện hóa đơn, chỉ số, hợp đồng hay sự cố cần xử lý.</p>
           </div>
         {:else}
-          <div class="grid divide-y-2 divide-black md:grid-cols-2 md:divide-x-2 md:divide-y-0">
+          <div class="grid gap-2 p-2 md:grid-cols-2">
             {#each inbox.items.slice(0, 8) as item}
-              <a href={item.href} class="block p-4 hover:bg-zinc-50 transition-colors">
+              <a href={item.href} class="block rounded-lg p-4 transition-colors hover:bg-zinc-50">
                 <div class="flex items-start justify-between gap-3">
                   <div class="min-w-0">
                     <p class="text-sm font-black text-black truncate">{item.title}</p>
@@ -305,7 +305,7 @@
 
       <!-- Left 2 Columns: Unpaid Invoices -->
       <div class="roomio-window flex flex-col lg:col-span-2">
-        <div class="roomio-window-bar shrink-0">
+        <div class="roomio-window-bar shrink-0 !border-b-0">
           <div class="roomio-window-dots">
             <div class="roomio-window-dot bg-red-500"></div>
             <div class="roomio-window-dot bg-yellow-500"></div>
@@ -327,7 +327,7 @@
           </div>
         {:else}
           <!-- Mobile: card list view -->
-          <div class="sm:hidden divide-y-2 divide-black bg-white">
+          <div class="sm:hidden bg-white">
             {#each unpaidInvoices as invoice}
               <div class="p-4 space-y-2">
                 <div class="flex justify-between items-start gap-2">
@@ -360,7 +360,7 @@
           <div class="hidden sm:block overflow-x-auto bg-white">
             <table class="w-full text-left border-collapse text-sm">
               <thead>
-                <tr class="bg-blue-300 border-b-2 border-black text-black font-black text-xs">
+                <tr class="bg-blue-300 text-black font-black text-xs">
                   <th class="px-4 py-3">Phòng</th>
                   <th class="px-4 py-3">Khách thuê</th>
                   <th class="px-4 py-3">Tháng</th>
@@ -371,7 +371,7 @@
               </thead>
               <tbody>
                 {#each unpaidInvoices as invoice}
-                  <tr class="border-b border-black/15 hover:bg-slate-50 transition-all font-semibold">
+                  <tr class="hover:bg-slate-50 transition-all font-semibold">
                     <td class="px-4 py-4 font-black text-black">
                       {invoice.room.property.shortName} - {invoice.roomNumber}
                     </td>
@@ -412,7 +412,7 @@
 
       <!-- Right Column: Pending Incidents -->
       <div class="roomio-window flex flex-col">
-        <div class="roomio-window-bar shrink-0">
+        <div class="roomio-window-bar shrink-0 !border-b-0">
           <div class="roomio-window-dots">
             <div class="roomio-window-dot bg-red-500"></div>
             <div class="roomio-window-dot bg-yellow-500"></div>
@@ -433,7 +433,7 @@
             <p class="text-zinc-500 text-xs font-semibold mt-1">Nhà trọ vận hành êm đẹp, chưa ghi nhận vấn đề.</p>
           </div>
         {:else}
-          <div class="divide-y-2 divide-black flex-1 overflow-y-auto bg-white">
+          <div class="flex-1 overflow-y-auto bg-white">
             {#each pendingRequests as req}
               <div class="p-4 hover:bg-slate-50 transition-all flex flex-col gap-2 font-semibold">
                 <div class="flex items-start justify-between gap-3">
