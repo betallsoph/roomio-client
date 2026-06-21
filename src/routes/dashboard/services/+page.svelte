@@ -2,6 +2,7 @@
   import { onMount } from 'svelte';
   import { toast } from 'svelte-sonner';
   import { Plug, Plus, X, Loader2, Pencil, Trash2, Power, PowerOff } from '@lucide/svelte';
+  import { confirmPopup } from '$lib/confirm-popup';
 
   interface Service {
     id: string;
@@ -123,7 +124,12 @@
   }
 
   async function handleDelete(svc: Service) {
-    if (!confirm(`Xóa dịch vụ "${svc.name}"? Dịch vụ sẽ bị gỡ khỏi các phòng.`)) return;
+    if (!(await confirmPopup({
+      title: 'Xóa dịch vụ',
+      message: `Xóa dịch vụ "${svc.name}"? Dịch vụ sẽ bị gỡ khỏi các phòng.`,
+      confirmLabel: 'Xóa',
+      tone: 'danger'
+    }))) return;
     try {
       const res = await fetch(`/api/services?id=${svc.id}`, { method: 'DELETE' });
       const data = await res.json();

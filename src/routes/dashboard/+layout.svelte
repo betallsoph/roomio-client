@@ -189,7 +189,7 @@
 				role="button"
 				tabindex="0"
 			></div>
-			<aside data-tap-zone="plain" class="fixed inset-y-0 left-0 z-50 flex w-[84vw] max-w-xs flex-col overflow-y-auto border-r-2 border-black bg-white px-5 py-5 shadow-primary lg:hidden">
+			<aside data-tap-zone="plain" class="fixed inset-y-0 left-0 z-50 flex w-[92vw] max-w-sm flex-col overflow-y-auto border-r-2 border-black bg-white px-5 py-5 lg:hidden">
 				<div class="mb-6 flex items-center justify-between gap-3">
 					<div class="flex items-center gap-3">
 						<div>

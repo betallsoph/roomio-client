@@ -3,6 +3,7 @@
 	import { toast } from 'svelte-sonner';
 	import { FileText, Plus, Trash2, Ban, Loader2, X } from '@lucide/svelte';
 	import { uploadImage } from '$lib/upload';
+	import { confirmPopup } from '$lib/confirm-popup';
 
 	interface ContractRow {
 		id: string;
@@ -147,7 +148,12 @@
 	}
 
 	async function terminateContract(c: ContractRow) {
-		if (!confirm(`Chấm dứt hợp đồng phòng ${c.room.roomNumber} của ${c.tenant.user.name}?`)) return;
+		if (!(await confirmPopup({
+			title: 'Chấm dứt hợp đồng',
+			message: `Chấm dứt hợp đồng phòng ${c.room.roomNumber} của ${c.tenant.user.name}?`,
+			confirmLabel: 'Chấm dứt',
+			tone: 'warning'
+		}))) return;
 		const res = await fetch('/api/contracts', {
 			method: 'PUT',
 			headers: { 'Content-Type': 'application/json' },
@@ -162,7 +168,12 @@
 	}
 
 	async function deleteContract(c: ContractRow) {
-		if (!confirm('Xóa hẳn hợp đồng này? Hành động không thể hoàn tác.')) return;
+		if (!(await confirmPopup({
+			title: 'Xóa hợp đồng',
+			message: 'Xóa hẳn hợp đồng này? Hành động không thể hoàn tác.',
+			confirmLabel: 'Xóa',
+			tone: 'danger'
+		}))) return;
 		const res = await fetch(`/api/contracts?id=${c.id}`, { method: 'DELETE' });
 		if (res.ok) {
 			toast.success('Đã xóa hợp đồng');

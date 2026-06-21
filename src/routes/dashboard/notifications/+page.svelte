@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { toast } from 'svelte-sonner';
+  import { confirmPopup } from '$lib/confirm-popup';
   import { 
     Bell, 
     Plus, 
@@ -249,7 +250,12 @@
   }
 
   async function handleDeleteAnnouncement(annId: string) {
-    if (!confirm('Bạn có chắc chắn muốn xóa bản tin thông báo này khỏi bảng tin cư dân?')) return;
+    if (!(await confirmPopup({
+      title: 'Xóa bản tin',
+      message: 'Bạn có chắc chắn muốn xóa bản tin thông báo này khỏi bảng tin cư dân?',
+      confirmLabel: 'Xóa',
+      tone: 'danger'
+    }))) return;
 
     try {
       const res = await fetch(`/api/announcements?id=${annId}`, {

@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { toast } from 'svelte-sonner';
+  import { confirmPopup } from '$lib/confirm-popup';
   import {
     UserCog,
     Plus,
@@ -138,7 +139,12 @@
   }
 
   async function handleDelete(staff: Staff) {
-    if (!confirm(`Xóa vĩnh viễn tài khoản nhân viên "${staff.user.name}"?`)) return;
+    if (!(await confirmPopup({
+      title: 'Xóa nhân viên',
+      message: `Xóa vĩnh viễn tài khoản nhân viên "${staff.user.name}"?`,
+      confirmLabel: 'Xóa',
+      tone: 'danger'
+    }))) return;
     try {
       const res = await fetch(`/api/staff?id=${staff.id}`, { method: 'DELETE' });
       const data = await res.json();

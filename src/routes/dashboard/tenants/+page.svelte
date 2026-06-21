@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { toast } from 'svelte-sonner';
+  import { confirmPopup } from '$lib/confirm-popup';
   import { 
     Users, 
     Plus, 
@@ -176,7 +177,12 @@
   }
 
   async function handleCheckout(rId: string) {
-    if (!confirm('Bạn có chắc chắn muốn trả phòng cho khách này?')) return;
+    if (!(await confirmPopup({
+      title: 'Trả phòng',
+      message: 'Bạn có chắc chắn muốn trả phòng cho khách này?',
+      confirmLabel: 'Trả phòng',
+      tone: 'warning'
+    }))) return;
 
     try {
       const res = await fetch('/api/rooms', {

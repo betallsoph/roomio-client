@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { toast } from 'svelte-sonner';
+  import { confirmPopup } from '$lib/confirm-popup';
   import { 
     Building2, 
     Plus, 
@@ -119,7 +120,12 @@
   }
 
   async function handleDeleteProperty(id: string) {
-    if (!confirm('Bạn có chắc chắn muốn xóa tòa nhà này? Tất cả phòng và hóa đơn liên quan sẽ bị xóa!')) return;
+    if (!(await confirmPopup({
+      title: 'Xóa tòa nhà',
+      message: 'Bạn có chắc chắn muốn xóa tòa nhà này? Tất cả phòng và hóa đơn liên quan sẽ bị xóa!',
+      confirmLabel: 'Xóa',
+      tone: 'danger'
+    }))) return;
 
     try {
       const res = await fetch(`/api/properties?id=${id}`, {

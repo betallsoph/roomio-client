@@ -4,6 +4,7 @@
   import './layout.css';
   import favicon from '$lib/assets/favicon.svg';
   import { Toaster } from 'svelte-sonner';
+  import ConfirmPopup from '$lib/ConfirmPopup.svelte';
 
   let { children } = $props();
   const TAP_ACTION_DELAY = 200;
@@ -98,4 +99,5 @@
 </svelte:head>
 
 <Toaster position="top-right" richColors />
+<ConfirmPopup />
 {@render children()}

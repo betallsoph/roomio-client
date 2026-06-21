@@ -124,6 +124,10 @@
   @apply flex items-center justify-between border-b-2 border-black bg-zinc-100 px-3 py-2 sm:px-4 sm:py-3;
 }
 
+[role="dialog"] {
+  box-shadow: none !important;
+}
+
 .roomio-window-dots {
   @apply flex items-center gap-1.5 sm:gap-2;
 }

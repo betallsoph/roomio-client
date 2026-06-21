@@ -2,6 +2,7 @@
 	import { onMount } from 'svelte';
 	import { toast } from 'svelte-sonner';
 	import { TrendingUp, Plus, Trash2, Loader2, X } from '@lucide/svelte';
+	import { confirmPopup } from '$lib/confirm-popup';
 
 	interface MonthlyRow {
 		month: string;
@@ -133,7 +134,12 @@
 	}
 
 	async function deleteExpense(expense: ExpenseRow) {
-		if (!confirm(`Xóa khoản chi "${expense.description}"?`)) return;
+		if (!(await confirmPopup({
+			title: 'Xóa khoản chi',
+			message: `Xóa khoản chi "${expense.description}"?`,
+			confirmLabel: 'Xóa',
+			tone: 'danger'
+		}))) return;
 		const res = await fetch(`/api/expenses?id=${expense.id}`, { method: 'DELETE' });
 		if (res.ok) {
 			toast.success('Đã xóa khoản chi');

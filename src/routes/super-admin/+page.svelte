@@ -2,6 +2,7 @@
   import { onMount } from 'svelte';
   import { goto } from '$app/navigation';
   import { toast } from 'svelte-sonner';
+  import { confirmPopup } from '$lib/confirm-popup';
   import { 
     X, 
     Check, 
@@ -85,7 +86,12 @@
 
   async function handleToggleStatus(userId: string, currentActive: boolean) {
     const actionLabel = currentActive ? 'Khóa' : 'Mở khóa';
-    if (!confirm(`Bạn có chắc muốn ${actionLabel.toLowerCase()} tài khoản chủ trọ này?`)) return;
+    if (!(await confirmPopup({
+      title: `${actionLabel} tài khoản`,
+      message: `Bạn có chắc muốn ${actionLabel.toLowerCase()} tài khoản chủ trọ này?`,
+      confirmLabel: actionLabel,
+      tone: currentActive ? 'danger' : 'default'
+    }))) return;
 
     try {
       const res = await fetch('/api/super-admin', {

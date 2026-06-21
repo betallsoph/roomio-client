@@ -2,6 +2,7 @@
   import { onMount } from 'svelte';
   import { page } from '$app/state';
   import { toast } from 'svelte-sonner';
+  import { confirmPopup } from '$lib/confirm-popup';
   import { 
     Home, 
     Building2, 
@@ -270,7 +271,12 @@
   }
 
   async function handleCheckout(roomId: string) {
-    if (!confirm('Bạn có chắc chắn muốn trả phòng cho khách này? Các khoản nợ sẽ được xóa về 0.')) return;
+    if (!(await confirmPopup({
+      title: 'Trả phòng',
+      message: 'Bạn có chắc chắn muốn trả phòng cho khách này? Các khoản nợ sẽ được xóa về 0.',
+      confirmLabel: 'Trả phòng',
+      tone: 'warning'
+    }))) return;
 
     try {
       const res = await fetch('/api/rooms', {
@@ -405,7 +411,13 @@
   }
 
   async function handleDeleteAsset(assetId: string) {
-    if (!selectedRoom || !confirm('Bạn muốn thu hồi/xóa thiết bị này?')) return;
+    if (!selectedRoom) return;
+    if (!(await confirmPopup({
+      title: 'Xóa thiết bị',
+      message: 'Bạn muốn thu hồi/xóa thiết bị này?',
+      confirmLabel: 'Xóa',
+      tone: 'danger'
+    }))) return;
 
     try {
       const res = await fetch('/api/rooms', {

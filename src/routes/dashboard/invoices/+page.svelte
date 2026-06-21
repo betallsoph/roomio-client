@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { toast } from 'svelte-sonner';
+  import { confirmPopup } from '$lib/confirm-popup';
   import { 
     Receipt, 
     X, 
@@ -109,7 +110,12 @@
   }
 
   async function deleteInvoice(invoiceId: string) {
-    if (!confirm('Bạn có chắc chắn muốn xóa hóa đơn này? Số nợ của phòng sẽ tự động giảm đi.')) return;
+    if (!(await confirmPopup({
+      title: 'Xóa hóa đơn',
+      message: 'Bạn có chắc chắn muốn xóa hóa đơn này? Số nợ của phòng sẽ tự động giảm đi.',
+      confirmLabel: 'Xóa',
+      tone: 'danger'
+    }))) return;
     isDeleting = true;
 
     try {
@@ -133,7 +139,12 @@
 
   async function deleteSelectedInvoices() {
     if (selectedInvoiceIds.length === 0 || isDeleting) return;
-    if (!confirm(`Bạn có chắc muốn xóa ${selectedInvoiceIds.length} hóa đơn đã chọn? Công nợ phòng sẽ được cập nhật lại.`)) return;
+    if (!(await confirmPopup({
+      title: 'Xóa hóa đơn đã chọn',
+      message: `Bạn có chắc muốn xóa ${selectedInvoiceIds.length} hóa đơn đã chọn? Công nợ phòng sẽ được cập nhật lại.`,
+      confirmLabel: 'Xóa',
+      tone: 'danger'
+    }))) return;
     isDeleting = true;
 
     try {
