@@ -2,7 +2,6 @@
   import { onMount } from 'svelte';
   import { toast } from 'svelte-sonner';
   import { 
-    Settings, 
     Landmark, 
     User, 
     Save, 
@@ -109,7 +108,7 @@
   ];
 </script>
 
-<div class="space-y-6 max-w-4xl">
+<div class="max-w-4xl space-y-6">
   <!-- Header -->
   <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
     <div>
@@ -123,11 +122,11 @@
       <Loader2 class="h-10 w-10 text-black animate-spin" />
     </div>
   {:else}
-    <form onsubmit={handleSaveSettings} class="space-y-6">
+    <form onsubmit={handleSaveSettings} class="space-y-8">
       
       <!-- Section 1: User Profile -->
-      <div class="bg-white border-2 border-black p-4 sm:p-6 rounded-lg shadow-secondary space-y-4 text-black">
-        <h2 class="font-black text-black text-base flex items-center gap-2 border-b-2 border-black pb-2 select-none">
+      <section class="space-y-4 text-black">
+        <h2 class="flex items-center gap-2 border-b-2 border-black pb-2 text-base font-black text-black select-none">
           1. Thông tin cá nhân (Chỉ xem) <User class="h-5 w-5" />
         </h2>
         
@@ -160,11 +159,11 @@
             />
           </div>
         </div>
-      </div>
+      </section>
 
       <!-- Section 2: Brand & fallback bank settings -->
-      <div class="bg-white border-2 border-black p-4 sm:p-6 rounded-lg shadow-secondary space-y-4 text-black">
-        <h2 class="font-black text-black text-base flex items-center gap-2 border-b-2 border-black pb-2 select-none">
+      <section class="space-y-4 text-black">
+        <h2 class="flex items-center gap-2 border-b-2 border-black pb-2 text-base font-black text-black select-none">
           2. Thương hiệu & tài khoản nhận tiền dự phòng <Landmark class="h-5 w-5" />
         </h2>
         
@@ -258,7 +257,7 @@
             />
           </div>
         </div>
-      </div>
+      </section>
 
       <!-- Action save -->
       <div class="flex justify-end">

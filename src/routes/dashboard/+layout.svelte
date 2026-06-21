@@ -110,19 +110,13 @@
 		<div class="pointer-events-none fixed inset-0 -z-10 bg-gradient-to-b from-white/80 via-white/60 to-white/80"></div>
 
 		<div class="flex h-full">
-			<aside data-tap-zone="plain" class="hidden h-full w-68 shrink-0 overflow-y-auto border-r-2 border-black bg-white/92 px-5 py-6 backdrop-blur lg:block">
-				<div class="mb-7 space-y-2">
+			<aside data-tap-zone="plain" class="hidden h-full w-68 shrink-0 flex-col overflow-y-auto border-r-2 border-black bg-white/92 px-5 py-6 backdrop-blur lg:flex">
+				<div class="mb-7">
 					<img
 						src="/brand/roomio-wordmark-blue600.png"
 						alt="Roomio"
 						class="h-auto w-36"
 					/>
-					{#if user.email}
-						<p class="truncate text-xs font-semibold text-zinc-500">{user.email}</p>
-					{/if}
-					<button onclick={handleLogout} class="inline-flex items-center gap-1 text-sm font-bold text-blue-500 hover:underline">
-						Đăng xuất <LogOut class="h-3.5 w-3.5" />
-					</button>
 				</div>
 
 				<nav class="space-y-6">
@@ -150,6 +144,15 @@
 						</div>
 					{/each}
 				</nav>
+
+				<div class="mt-auto border-t border-zinc-200 pt-5">
+					{#if user.email}
+						<p class="truncate text-xs font-semibold text-zinc-500">{user.email}</p>
+					{/if}
+					<button onclick={handleLogout} class="mt-2 inline-flex items-center gap-1 text-sm font-bold text-blue-500 hover:underline">
+						Đăng xuất <LogOut class="h-3.5 w-3.5" />
+					</button>
+				</div>
 			</aside>
 
 			<div class="flex min-w-0 flex-1 flex-col overflow-y-auto">
@@ -186,7 +189,7 @@
 				role="button"
 				tabindex="0"
 			></div>
-			<aside data-tap-zone="plain" class="fixed inset-y-0 left-0 z-50 w-[84vw] max-w-xs overflow-y-auto border-r-2 border-black bg-white px-5 py-5 shadow-primary lg:hidden">
+			<aside data-tap-zone="plain" class="fixed inset-y-0 left-0 z-50 flex w-[84vw] max-w-xs flex-col overflow-y-auto border-r-2 border-black bg-white px-5 py-5 shadow-primary lg:hidden">
 				<div class="mb-6 flex items-center justify-between gap-3">
 					<div class="flex items-center gap-3">
 						<div>
@@ -195,12 +198,6 @@
 								alt="Roomio"
 								class="h-auto w-32"
 							/>
-							{#if user.email}
-								<p class="mt-1 max-w-48 truncate text-xs font-semibold text-zinc-500">{user.email}</p>
-							{/if}
-							<button onclick={handleLogout} class="mt-2 inline-flex items-center gap-1 text-sm font-bold text-blue-500 hover:underline">
-								Đăng xuất <LogOut class="h-3.5 w-3.5" />
-							</button>
 						</div>
 					</div>
 					<button
@@ -238,6 +235,15 @@
 						</div>
 					{/each}
 				</nav>
+
+				<div class="mt-auto border-t border-zinc-200 pt-5">
+					{#if user.email}
+						<p class="max-w-56 truncate text-xs font-semibold text-zinc-500">{user.email}</p>
+					{/if}
+					<button onclick={handleLogout} class="mt-2 inline-flex items-center gap-1 text-sm font-bold text-blue-500 hover:underline">
+						Đăng xuất <LogOut class="h-3.5 w-3.5" />
+					</button>
+				</div>
 			</aside>
 		{/if}
 		</div>
