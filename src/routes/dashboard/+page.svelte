@@ -179,9 +179,6 @@
       <p class="flex items-center gap-1.5 text-sm font-semibold leading-relaxed text-zinc-600 sm:text-base">
         Hôm nay, {today} <Calendar class="h-4 w-4 text-zinc-500" />
       </p>
-      <p class="mt-2 max-w-2xl text-sm leading-relaxed text-zinc-600">
-        Theo dõi doanh thu, phòng trống, hóa đơn chưa thu và những việc cần xử lý trong ngày.
-      </p>
     </div>
     <div class="flex gap-3">
       <a 
