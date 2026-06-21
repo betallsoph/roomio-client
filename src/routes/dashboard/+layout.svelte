@@ -110,7 +110,7 @@
 		<div class="pointer-events-none fixed inset-0 -z-10 bg-gradient-to-b from-white/80 via-white/60 to-white/80"></div>
 
 		<div class="flex min-h-screen">
-			<aside class="sticky top-0 hidden h-screen w-68 shrink-0 overflow-y-auto border-r-2 border-black bg-white/92 px-5 py-6 backdrop-blur lg:block">
+			<aside data-tap-zone="plain" class="sticky top-0 hidden h-screen w-68 shrink-0 overflow-y-auto border-r-2 border-black bg-white/92 px-5 py-6 backdrop-blur lg:block">
 				<div class="mb-7">
 					<img
 						src="/brand/roomio-wordmark-blue600.png"
@@ -188,7 +188,7 @@
 				role="button"
 				tabindex="0"
 			></div>
-			<aside class="fixed inset-y-0 left-0 z-50 w-[84vw] max-w-xs overflow-y-auto border-r-2 border-black bg-white px-5 py-5 shadow-primary lg:hidden">
+			<aside data-tap-zone="plain" class="fixed inset-y-0 left-0 z-50 w-[84vw] max-w-xs overflow-y-auto border-r-2 border-black bg-white px-5 py-5 shadow-primary lg:hidden">
 				<div class="mb-6 flex items-center justify-between gap-3">
 					<div class="flex items-center gap-3">
 						<div>
@@ -201,7 +201,7 @@
 						</div>
 					</div>
 					<button
-						onclick={() => window.setTimeout(() => (isMobileMenuOpen = false), 200)}
+						onclick={() => (isMobileMenuOpen = false)}
 						class="rounded-lg border-2 border-black bg-white p-2"
 						aria-label="Đóng menu"
 					>
@@ -220,7 +220,7 @@
 									{@const Icon = item.icon}
 									<a
 										href={item.path}
-										onclick={() => window.setTimeout(() => (isMobileMenuOpen = false), 200)}
+										onclick={() => (isMobileMenuOpen = false)}
 										class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-bold transition-colors {isActive(
 											item.path
 										)

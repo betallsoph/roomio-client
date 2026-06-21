@@ -39,6 +39,7 @@
 
       const interactive = target.closest<HTMLElement>('button, a[href], [role="button"]');
       if (!interactive || interactive.dataset.tapImmediate === 'true') return;
+      if (interactive.closest('[data-tap-zone="plain"]')) return;
       if (interactive.matches(':disabled, [aria-disabled="true"]')) return;
 
       animateTap(interactive);
