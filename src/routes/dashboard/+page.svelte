@@ -175,7 +175,6 @@
   <!-- Header -->
   <section class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
     <div>
-      <h1 class="mb-3 text-2xl font-bold sm:text-3xl">Cổng Quản Trị Roomio</h1>
       <p class="flex items-center gap-1.5 text-sm font-semibold leading-relaxed text-zinc-600 sm:text-base">
         Hôm nay, {today} <Calendar class="h-4 w-4 text-zinc-500" />
       </p>
