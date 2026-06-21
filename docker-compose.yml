@@ -6,4 +6,6 @@ services:
     ports:
       # Bạn ông xài cổng nào rồi thì ông chọn số khác (ví dụ: 8081)
       - "8081:80" 
+    environment:
+      - API_TARGET=http://100.102.69.100:3000
     restart: always

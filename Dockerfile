@@ -21,8 +21,8 @@
     # Nếu xài SvelteKit (adapter-static) thì nó là /app/build
     COPY --from=builder /app/build /usr/share/nginx/html
         
-    # Cấu hình Nginx để ép nó đọc file index.html (Sửa lỗi F5 bị 404 Not Found)
-    RUN echo 'server { listen 80; location / { root /usr/share/nginx/html; index index.html; try_files $uri $uri/ /index.html; } }' > /etc/nginx/conf.d/default.conf
+    # Copy file cấu hình mẫu cho Nginx để hỗ trợ envsubst proxy API
+    COPY nginx/default.conf.template /etc/nginx/templates/default.conf.template
     
     EXPOSE 80
     CMD ["nginx", "-g", "daemon off;"]
