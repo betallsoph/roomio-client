@@ -105,12 +105,12 @@
 </script>
 
 {#if user}
-	<div class="relative min-h-screen overflow-hidden bg-white font-sans text-black">
+	<div class="relative h-screen overflow-hidden bg-white font-sans text-black">
 		<div class="roomio-grid-bg fixed inset-0 -z-10 opacity-50"></div>
 		<div class="pointer-events-none fixed inset-0 -z-10 bg-gradient-to-b from-white/80 via-white/60 to-white/80"></div>
 
-		<div class="flex min-h-screen">
-			<aside data-tap-zone="plain" class="sticky top-0 hidden h-screen w-68 shrink-0 overflow-y-auto border-r-2 border-black bg-white/92 px-5 py-6 backdrop-blur lg:block">
+		<div class="flex h-full">
+			<aside data-tap-zone="plain" class="hidden h-full w-68 shrink-0 overflow-y-auto border-r-2 border-black bg-white/92 px-5 py-6 backdrop-blur lg:block">
 				<div class="mb-7">
 					<img
 						src="/brand/roomio-wordmark-blue600.png"
@@ -154,7 +154,7 @@
 				</div>
 			</aside>
 
-			<div class="flex min-w-0 flex-1 flex-col">
+			<div class="flex min-w-0 flex-1 flex-col overflow-y-auto">
 				<header class="sticky top-0 z-30 flex items-center justify-between border-b-2 border-black bg-white/95 px-5 py-3 backdrop-blur lg:hidden">
 					<div class="flex items-center gap-3">
 						<div>
