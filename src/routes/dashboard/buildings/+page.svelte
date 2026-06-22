@@ -55,7 +55,9 @@
   const TAP_ACTION_DELAY = 200;
   const RENTAL_TYPE_OPTIONS = [
     { value: 'APARTMENT', label: 'Chung cư' },
-    { value: 'MOTEL', label: 'Phòng trọ' }
+    { value: 'MOTEL', label: 'Phòng trọ' },
+    { value: 'SERVICED_APARTMENT', label: 'Căn hộ dịch vụ' },
+    { value: 'DORM', label: 'KTX / Sleepbox' }
   ];
 
   onMount(() => {
@@ -84,11 +86,31 @@
   }
 
   function propertyLabel(type = rentalType) {
-    return type === 'MOTEL' ? 'khu trọ' : 'tòa nhà';
+    if (type === 'MOTEL') return 'khu trọ';
+    if (type === 'SERVICED_APARTMENT') return 'cơ sở căn hộ dịch vụ';
+    if (type === 'DORM') return 'khu KTX / sleepbox';
+    return 'tòa nhà';
   }
 
   function blockLabel(type = rentalType) {
-    return type === 'MOTEL' ? 'Dãy' : 'Block';
+    if (type === 'MOTEL') return 'Dãy';
+    if (type === 'SERVICED_APARTMENT') return 'Tầng / khu';
+    if (type === 'DORM') return 'Phòng / khu';
+    return 'Block';
+  }
+
+  function propertyNamePlaceholder(type = rentalType) {
+    if (type === 'MOTEL') return 'Ví dụ: Khu trọ An Bình';
+    if (type === 'SERVICED_APARTMENT') return 'Ví dụ: CHDV Nguyễn Trãi';
+    if (type === 'DORM') return 'Ví dụ: Sleepbox Cầu Giấy';
+    return 'Ví dụ: Hoàng Anh Gia Lai';
+  }
+
+  function blockPlaceholder(type = rentalType) {
+    if (type === 'MOTEL') return 'Ví dụ: Dãy A, Dãy B, Dãy sau';
+    if (type === 'SERVICED_APARTMENT') return 'Ví dụ: Tầng 1, Tầng 2, Khu sau';
+    if (type === 'DORM') return 'Ví dụ: Phòng nam, Phòng nữ, Khu yên tĩnh';
+    return 'Ví dụ: Block A, Block B';
   }
 
   async function fetchSettings() {
@@ -415,7 +437,7 @@
                 type="text" 
                 bind:value={name}
                 required
-                placeholder={rentalType === 'MOTEL' ? 'Ví dụ: Khu trọ An Bình' : 'Ví dụ: Hoàng Anh Gia Lai'}
+                placeholder={propertyNamePlaceholder(rentalType)}
                 class="w-full border-2 border-black px-3 py-2 text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300 bg-white font-semibold text-black"
               />
             </div>
@@ -450,7 +472,7 @@
               id="p-blocks"
               type="text" 
               bind:value={blocksText}
-              placeholder={rentalType === 'MOTEL' ? 'Ví dụ: Dãy A, Dãy B, Dãy sau' : 'Ví dụ: Block A, Block B'}
+              placeholder={blockPlaceholder(rentalType)}
               class="w-full border-2 border-black px-3 py-2 text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300 bg-white font-semibold text-black"
             />
           </div>
@@ -593,10 +615,10 @@
             <Trash2 class="h-5 w-5" />
           </button>
           <a 
-            href="/dashboard/rooms?propertyId={selectedProperty.id}" 
+            href="/dashboard/workspace/{selectedProperty.id}" 
             class="flex-grow bg-blue-300 hover:bg-blue-400 text-black border-2 border-black py-2.5 rounded-[6px] text-center text-sm font-black shadow-secondary transition-all flex items-center justify-center gap-1.5 cursor-pointer"
           >
-            Xem & Quản lý phòng <Home class="h-4.5 w-4.5" />
+            Vào workspace <Home class="h-4.5 w-4.5" />
           </a>
         </div>
       </div>

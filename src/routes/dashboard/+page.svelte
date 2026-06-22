@@ -181,10 +181,10 @@
     </div>
     <div class="flex gap-3">
       <a 
-        href="/dashboard/rooms" 
+        href="/dashboard/buildings" 
         class="inline-flex items-center gap-1.5 text-sm font-bold text-blue-500 hover:underline"
       >
-        Phòng <ArrowRight class="h-3.5 w-3.5" />
+        Cơ sở <ArrowRight class="h-3.5 w-3.5" />
       </a>
       <a 
         href="/dashboard/invoices/bulk" 

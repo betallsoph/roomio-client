@@ -451,11 +451,26 @@
   }
 
   function propertyLabel() {
-    return activeRentalType() === 'MOTEL' ? 'Khu trọ' : 'Tòa nhà';
+    const type = activeRentalType();
+    if (type === 'MOTEL') return 'Khu trọ';
+    if (type === 'SERVICED_APARTMENT') return 'Căn hộ dịch vụ';
+    if (type === 'DORM') return 'KTX / Sleepbox';
+    return 'Tòa nhà';
   }
 
   function blockLabel() {
-    return activeRentalType() === 'MOTEL' ? 'Dãy' : 'Block';
+    const type = activeRentalType();
+    if (type === 'MOTEL') return 'Dãy';
+    if (type === 'SERVICED_APARTMENT') return 'Tầng / khu';
+    if (type === 'DORM') return 'Phòng / khu';
+    return 'Block';
+  }
+
+  function roomCodeLabel() {
+    const type = activeRentalType();
+    if (type === 'MOTEL') return 'Mã phòng';
+    if (type === 'DORM') return 'Mã giường / box';
+    return 'Mã căn hộ';
   }
 
   function formatCurrency(amount: number) {
@@ -690,7 +705,7 @@
               />
             </div>
             <div class="space-y-1">
-              <label for="r-code" class="text-xs font-bold text-zinc-600 block">{activeRentalType() === 'MOTEL' ? 'Mã phòng' : 'Mã căn hộ'} (tùy chọn)</label>
+              <label for="r-code" class="text-xs font-bold text-zinc-600 block">{roomCodeLabel()} (tùy chọn)</label>
               <input 
                 id="r-code"
                 type="text" 

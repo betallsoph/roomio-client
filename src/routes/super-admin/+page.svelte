@@ -89,7 +89,9 @@
 
   const RENTAL_TYPE_OPTIONS = [
     { value: 'APARTMENT', label: 'Chung cư' },
-    { value: 'MOTEL', label: 'Phòng trọ' }
+    { value: 'MOTEL', label: 'Phòng trọ' },
+    { value: 'SERVICED_APARTMENT', label: 'Căn hộ dịch vụ' },
+    { value: 'DORM', label: 'KTX / Sleepbox' }
   ];
 
   onMount(() => {
