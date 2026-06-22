@@ -92,6 +92,7 @@
     id: string;
     name: string;
     shortName: string;
+    rentalType: string;
     blocks: { id: string; name: string }[];
   }
 
@@ -445,6 +446,18 @@
     return properties.find(p => p.id === selectedPropertyId);
   }
 
+  function activeRentalType() {
+    return getActiveProperty()?.rentalType ?? 'APARTMENT';
+  }
+
+  function propertyLabel() {
+    return activeRentalType() === 'MOTEL' ? 'Khu trọ' : 'Tòa nhà';
+  }
+
+  function blockLabel() {
+    return activeRentalType() === 'MOTEL' ? 'Dãy' : 'Block';
+  }
+
   function formatCurrency(amount: number) {
     return new Intl.NumberFormat('vi-VN').format(amount) + 'đ';
   }
@@ -479,7 +492,7 @@
   <div class="space-y-3">
     <div class="grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]">
       <div class="space-y-1">
-        <span class="text-[10px] font-black text-zinc-500 block">Tòa nhà</span>
+        <span class="text-[10px] font-black text-zinc-500 block">{propertyLabel()}</span>
         <select 
           bind:value={selectedPropertyId} 
           class="w-full border-2 border-black px-3 py-2 text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300 bg-white font-bold text-black"
@@ -492,12 +505,12 @@
 
       {#if getActiveProperty() && getActiveProperty()!.blocks.length > 0}
         <div class="space-y-1">
-          <span class="text-[10px] font-black text-zinc-500 block">Block</span>
+          <span class="text-[10px] font-black text-zinc-500 block">{blockLabel()}</span>
           <select 
             bind:value={selectedBlockId} 
             class="w-full border-2 border-black px-3 py-2 text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300 bg-white font-bold text-black"
           >
-            <option value="all">Tất cả block</option>
+            <option value="all">Tất cả {blockLabel().toLowerCase()}</option>
             {#each getActiveProperty()!.blocks as block}
               <option value={block.id}>{block.name}</option>
             {/each}
@@ -553,7 +566,7 @@
   {:else if rooms.length === 0}
     <div class="bg-white border-2 border-black p-12 rounded-lg text-center max-w-md mx-auto shadow-secondary">
       <Home class="h-12 w-12 text-black mx-auto mb-3" />
-      <h3 class="font-black text-black text-lg">Tòa nhà này chưa có phòng</h3>
+      <h3 class="font-black text-black text-lg">{propertyLabel()} này chưa có phòng</h3>
       <p class="text-zinc-600 text-sm mt-2 font-semibold">Bắt đầu bằng cách tạo các phòng trọ để thêm thông tin khách thuê.</p>
     </div>
   {:else}
@@ -677,7 +690,7 @@
               />
             </div>
             <div class="space-y-1">
-              <label for="r-code" class="text-xs font-bold text-zinc-600 block">Mã căn hộ (Tùy chọn)</label>
+              <label for="r-code" class="text-xs font-bold text-zinc-600 block">{activeRentalType() === 'MOTEL' ? 'Mã phòng' : 'Mã căn hộ'} (tùy chọn)</label>
               <input 
                 id="r-code"
                 type="text" 
@@ -739,13 +752,13 @@
 
           {#if getActiveProperty() && getActiveProperty()!.blocks.length > 0}
             <div class="space-y-1">
-              <label for="r-block" class="text-xs font-bold text-zinc-600 block">Block</label>
+              <label for="r-block" class="text-xs font-bold text-zinc-600 block">{blockLabel()}</label>
               <select 
                 id="r-block"
                 bind:value={newBlockId}
                 class="w-full border-2 border-black px-3 py-2 text-sm rounded-lg focus:outline-none bg-white font-bold text-black"
               >
-                <option value="">Không có block</option>
+                <option value="">Không có {blockLabel().toLowerCase()}</option>
                 {#each getActiveProperty()!.blocks as block}
                   <option value={block.id}>{block.name}</option>
                 {/each}

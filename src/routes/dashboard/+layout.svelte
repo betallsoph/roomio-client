@@ -71,7 +71,7 @@
 			label: 'Vận hành chính',
 			items: [
 				{ name: 'Tổng quan', path: '/dashboard', icon: LayoutDashboard },
-				{ name: 'Phòng trọ', path: '/dashboard/rooms', icon: Home },
+				{ name: 'Phòng', path: '/dashboard/rooms', icon: Home },
 				{ name: 'Hóa đơn', path: '/dashboard/invoices', icon: Receipt },
 				{ name: 'Khách thuê', path: '/dashboard/tenants', icon: Users }
 			]
@@ -89,7 +89,7 @@
 		{
 			label: 'Thiết lập & quản trị',
 			items: [
-				{ name: 'Tòa nhà', path: '/dashboard/buildings', icon: Building2 },
+				{ name: 'Cơ sở', path: '/dashboard/buildings', icon: Building2 },
 				{ name: 'Nhân viên', path: '/dashboard/staff', icon: UserCog },
 				{ name: 'Tài chính', path: '/dashboard/finance', icon: TrendingUp },
 				{ name: 'Dịch vụ', path: '/dashboard/services', icon: Plug },

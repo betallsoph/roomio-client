@@ -30,6 +30,7 @@
     name: string;
     shortName: string;
     address: string;
+    rentalType: string;
     blocks: Block[];
     rooms: RoomSummary[];
   }
@@ -38,6 +39,7 @@
   let isLoading = $state(true);
   let properties = $state<Property[]>([]);
   let selectedProperty = $state<Property | null>(null);
+  let enabledRentalTypes = $state<string[]>(['APARTMENT']);
 
   // Dialog and drawer states
   let isAddDialogOpen = $state(false);
@@ -48,16 +50,60 @@
   let shortName = $state('');
   let address = $state('');
   let blocksText = $state(''); // e.g. "Block A, Block B"
+  let rentalType = $state('APARTMENT');
   let isSubmitting = $state(false);
   const TAP_ACTION_DELAY = 200;
+  const RENTAL_TYPE_OPTIONS = [
+    { value: 'APARTMENT', label: 'Chung cư' },
+    { value: 'MOTEL', label: 'Phòng trọ' }
+  ];
 
   onMount(() => {
     const sessionStr = localStorage.getItem('roomio_user');
     if (!sessionStr) return;
     const session = JSON.parse(sessionStr);
     landlordId = session.landlordProfileId;
+    if (session.enabledRentalTypes) {
+      enabledRentalTypes = parseRentalTypes(session.enabledRentalTypes);
+      rentalType = enabledRentalTypes[0] ?? 'APARTMENT';
+    }
+    fetchSettings();
     fetchProperties(session.landlordProfileId);
   });
+
+  function parseRentalTypes(value: string | null | undefined) {
+    const parsed = (value || 'APARTMENT')
+      .split(',')
+      .map((type) => type.trim())
+      .filter(Boolean);
+    return parsed.length > 0 ? parsed : ['APARTMENT'];
+  }
+
+  function rentalTypeLabel(type: string) {
+    return RENTAL_TYPE_OPTIONS.find((option) => option.value === type)?.label ?? type;
+  }
+
+  function propertyLabel(type = rentalType) {
+    return type === 'MOTEL' ? 'khu trọ' : 'tòa nhà';
+  }
+
+  function blockLabel(type = rentalType) {
+    return type === 'MOTEL' ? 'Dãy' : 'Block';
+  }
+
+  async function fetchSettings() {
+    try {
+      const res = await fetch('/api/settings');
+      const data = await res.json();
+      if (!res.ok) return;
+      enabledRentalTypes = parseRentalTypes(data.enabledRentalTypes);
+      if (!enabledRentalTypes.includes(rentalType)) {
+        rentalType = enabledRentalTypes[0] ?? 'APARTMENT';
+      }
+    } catch {
+      // Không chặn trang cơ sở nếu cấu hình tài khoản tải lỗi.
+    }
+  }
 
   async function fetchProperties(profileId: string) {
     isLoading = true;
@@ -66,7 +112,7 @@
       const data = await res.json();
       if (res.ok) properties = data;
     } catch (e: any) {
-      toast.error('Không thể tải danh sách tòa nhà: ' + e.message);
+      toast.error('Không thể tải danh sách cơ sở: ' + e.message);
     } finally {
       isLoading = false;
     }
@@ -93,6 +139,7 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           landlordId,
+          rentalType,
           name,
           shortName,
           address,
@@ -101,15 +148,16 @@
       });
       const data = await res.json();
 
-      if (!res.ok) throw new Error(data.error || 'Lỗi khi tạo tòa nhà');
+      if (!res.ok) throw new Error(data.error || 'Lỗi khi tạo cơ sở');
 
-      toast.success(`Đã thêm tòa nhà ${name} thành công`);
+      toast.success(`Đã thêm ${propertyLabel(rentalType)} ${name} thành công`);
       isAddDialogOpen = false;
       // Clear forms
       name = '';
       shortName = '';
       address = '';
       blocksText = '';
+      rentalType = enabledRentalTypes[0] ?? 'APARTMENT';
       // Refresh
       fetchProperties(landlordId);
     } catch (err: any) {
@@ -121,8 +169,8 @@
 
   async function handleDeleteProperty(id: string) {
     if (!(await confirmPopup({
-      title: 'Xóa tòa nhà',
-      message: 'Bạn có chắc chắn muốn xóa tòa nhà này? Tất cả phòng và hóa đơn liên quan sẽ bị xóa!',
+      title: 'Xóa cơ sở',
+      message: 'Bạn có chắc chắn muốn xóa cơ sở này? Tất cả phòng và hóa đơn liên quan sẽ bị xóa!',
       confirmLabel: 'Xóa',
       tone: 'danger'
     }))) return;
@@ -133,9 +181,9 @@
       });
       const data = await res.json();
 
-      if (!res.ok) throw new Error(data.error || 'Lỗi khi xóa tòa nhà');
+      if (!res.ok) throw new Error(data.error || 'Lỗi khi xóa cơ sở');
 
-      toast.success('Đã xóa tòa nhà thành công');
+      toast.success('Đã xóa cơ sở thành công');
       isDetailDrawerOpen = false;
       selectedProperty = null;
       if (landlordId) fetchProperties(landlordId);
@@ -181,14 +229,14 @@
   <!-- Header -->
   <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
     <div>
-      <h1 class="text-xl sm:text-2xl font-black text-black">Danh Sách Tòa Nhà</h1>
-      <p class="text-zinc-600 text-sm mt-1 font-bold">{properties.length} tòa nhà, {properties.reduce((sum, p) => sum + p.rooms.length, 0)} phòng trọ</p>
+      <h1 class="text-xl sm:text-2xl font-black text-black">Cơ sở cho thuê</h1>
+      <p class="text-zinc-600 text-sm mt-1 font-bold">{properties.length} cơ sở, {properties.reduce((sum, p) => sum + p.rooms.length, 0)} phòng</p>
     </div>
     <button 
       onclick={(e) => tapBounce(e, () => (isAddDialogOpen = true))}
       class="w-full sm:w-auto bg-blue-300 text-black border-2 border-black px-4 py-2.5 rounded-[6px] shadow-secondary transition-all flex items-center justify-center gap-1.5 cursor-pointer font-black text-sm"
     >
-      Thêm tòa nhà <Plus class="h-4.5 w-4.5" />
+      Thêm cơ sở <Plus class="h-4.5 w-4.5" />
     </button>
   </div>
 
@@ -196,21 +244,21 @@
     <div class="h-[50vh] w-full flex items-center justify-center">
       <div class="flex flex-col items-center gap-3">
         <Loader2 class="h-10 w-10 text-black animate-spin" />
-        <p class="text-zinc-600 font-bold">Đang tải danh sách tòa nhà...</p>
+        <p class="text-zinc-600 font-bold">Đang tải danh sách cơ sở...</p>
       </div>
     </div>
   {:else if properties.length === 0}
     <div class="bg-white border-2 border-black p-12 rounded-lg text-center max-w-md mx-auto shadow-secondary mt-8">
               <Building2 class="h-8 w-8 text-black" />
-      <h3 class="font-black text-black text-lg">Chưa có tòa nhà nào</h3>
+      <h3 class="font-black text-black text-lg">Chưa có cơ sở nào</h3>
       <p class="text-zinc-600 text-sm mt-2 leading-relaxed font-semibold">
-        Bắt đầu bằng cách thêm tòa nhà đầu tiên của bạn để thiết lập các phòng trọ, quản lý dịch vụ và tính tiền hàng tháng.
+        Bắt đầu bằng cách thêm cơ sở đầu tiên để thiết lập phòng, dịch vụ và tiền thuê hàng tháng.
       </p>
       <button 
         onclick={(e) => tapBounce(e, () => (isAddDialogOpen = true))}
         class="mt-5 bg-blue-300 text-black border-2 border-black px-5 py-2.5 rounded-[6px] text-sm font-black shadow-secondary transition-all cursor-pointer"
       >
-        Tạo tòa nhà mới
+        Tạo cơ sở mới
       </button>
     </div>
   {:else}
@@ -223,7 +271,7 @@
           <div class="flex justify-between items-start gap-2">
             <div class="min-w-0">
               <h3 class="font-black text-black text-base leading-tight truncate">{prop.name}</h3>
-              <p class="text-zinc-500 text-xs mt-0.5 truncate font-semibold">{prop.shortName} · {prop.address}</p>
+              <p class="text-zinc-500 text-xs mt-0.5 truncate font-semibold">{rentalTypeLabel(prop.rentalType)} · {prop.shortName} · {prop.address}</p>
             </div>
           </div>
           <!-- Compact inline strip -->
@@ -274,7 +322,7 @@
               <Building2 class="h-6 w-6 text-blue-500" />
               <div class="min-w-0">
                 <h3 class="font-black text-black text-lg leading-tight truncate">{prop.name}</h3>
-                <p class="text-zinc-600 text-xs mt-1 truncate font-semibold">{prop.address}</p>
+                <p class="text-zinc-600 text-xs mt-1 truncate font-semibold">{rentalTypeLabel(prop.rentalType)} · {prop.address}</p>
               </div>
             </div>
           </div>
@@ -332,7 +380,7 @@
           <div class="w-2.5 h-2.5 rounded-full bg-red-500 border border-black"></div>
           <div class="w-2.5 h-2.5 rounded-full bg-yellow-500 border border-black"></div>
           <div class="w-2.5 h-2.5 rounded-full bg-green-500 border border-black"></div>
-          <span class="text-xs font-bold text-zinc-500 ml-2">Thêm tòa nhà mới</span>
+          <span class="text-xs font-bold text-zinc-500 ml-2">Thêm cơ sở mới</span>
           <button 
             onclick={() => isAddDialogOpen = false}
             class="ml-auto text-black hover:bg-zinc-200 p-1 border border-transparent rounded-[6px] cursor-pointer"
@@ -342,15 +390,32 @@
         </div>
 
         <form onsubmit={handleAddProperty} class="p-6 space-y-4">
+          {#if enabledRentalTypes.length > 1}
+            <div class="space-y-2">
+              <p class="text-xs font-bold text-zinc-600">Loại hình</p>
+              <div class="grid grid-cols-2 gap-2">
+                {#each RENTAL_TYPE_OPTIONS.filter((option) => enabledRentalTypes.includes(option.value)) as option}
+                  <button
+                    type="button"
+                    onclick={() => (rentalType = option.value)}
+                    class="rounded-[6px] border-2 border-black px-3 py-2 text-xs font-black transition-colors {rentalType === option.value ? 'bg-blue-300 text-black' : 'bg-white text-zinc-500 hover:bg-zinc-100'}"
+                  >
+                    {option.label}
+                  </button>
+                {/each}
+              </div>
+            </div>
+          {/if}
+
           <div class="grid grid-cols-2 gap-4">
             <div class="space-y-1">
-              <label for="p-name" class="text-xs font-bold text-zinc-600 block">Tên tòa nhà</label>
+              <label for="p-name" class="text-xs font-bold text-zinc-600 block">Tên {propertyLabel(rentalType)}</label>
               <input 
                 id="p-name"
                 type="text" 
                 bind:value={name}
                 required
-                placeholder="Ví dụ: Hoàng Anh Gia Lai" 
+                placeholder={rentalType === 'MOTEL' ? 'Ví dụ: Khu trọ An Bình' : 'Ví dụ: Hoàng Anh Gia Lai'}
                 class="w-full border-2 border-black px-3 py-2 text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300 bg-white font-semibold text-black"
               />
             </div>
@@ -374,18 +439,18 @@
               type="text" 
               bind:value={address}
               required
-              placeholder="Nhập địa chỉ chi tiết tòa nhà" 
+              placeholder="Nhập địa chỉ chi tiết" 
               class="w-full border-2 border-black px-3 py-2 text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300 bg-white font-semibold text-black"
             />
           </div>
 
           <div class="space-y-1">
-            <label for="p-blocks" class="text-xs font-bold text-zinc-600 block">Dãy/Phân cụm (Tùy chọn)</label>
+            <label for="p-blocks" class="text-xs font-bold text-zinc-600 block">{blockLabel(rentalType)} (tùy chọn)</label>
             <input 
               id="p-blocks"
               type="text" 
               bind:value={blocksText}
-              placeholder="Ví dụ: Block A, Block B, Khu trọ phía sau" 
+              placeholder={rentalType === 'MOTEL' ? 'Ví dụ: Dãy A, Dãy B, Dãy sau' : 'Ví dụ: Block A, Block B'}
               class="w-full border-2 border-black px-3 py-2 text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300 bg-white font-semibold text-black"
             />
           </div>
@@ -403,7 +468,7 @@
               disabled={isSubmitting}
               class="bg-blue-300 hover:bg-blue-400 disabled:opacity-50 text-black border-2 border-black px-4 py-2 rounded-[6px] text-sm font-bold shadow-secondary transition-all flex items-center gap-1.5 cursor-pointer font-black"
             >
-              Thêm tòa nhà
+              Thêm {propertyLabel(rentalType)}
               {#if isSubmitting}
                 <Loader2 class="h-4 w-4 animate-spin" />
               {/if}
@@ -437,7 +502,7 @@
           <div class="w-2.5 h-2.5 rounded-full bg-red-500 border border-black"></div>
           <div class="w-2.5 h-2.5 rounded-full bg-yellow-500 border border-black"></div>
           <div class="w-2.5 h-2.5 rounded-full bg-green-500 border border-black"></div>
-          <span class="text-xs font-bold text-zinc-500 ml-2">Chi tiết tòa nhà</span>
+          <span class="text-xs font-bold text-zinc-500 ml-2">Chi tiết {propertyLabel(selectedProperty.rentalType)}</span>
           <button 
             onclick={() => isDetailDrawerOpen = false}
             class="ml-auto text-black hover:bg-zinc-200 p-1 border border-transparent rounded-[6px] cursor-pointer"
@@ -452,7 +517,7 @@
                           <Building2 class="h-5 w-5" />
             <div>
               <h3 class="font-black text-black text-lg leading-tight">{selectedProperty.name}</h3>
-              <p class="text-zinc-600 text-xs mt-1 font-bold">Mã viết tắt: {selectedProperty.shortName}</p>
+              <p class="text-zinc-600 text-xs mt-1 font-bold">{rentalTypeLabel(selectedProperty.rentalType)} · Mã viết tắt: {selectedProperty.shortName}</p>
             </div>
           </div>
 
@@ -489,7 +554,7 @@
           <!-- Blocks -->
           {#if selectedProperty.blocks.length > 0}
             <div class="space-y-2">
-              <h4 class="text-xs font-black text-zinc-500">Các dãy / Phân cụm ({selectedProperty.blocks.length})</h4>
+              <h4 class="text-xs font-black text-zinc-500">{blockLabel(selectedProperty.rentalType)} ({selectedProperty.blocks.length})</h4>
               <div class="flex flex-wrap gap-2">
                 {#each selectedProperty.blocks as block}
                   <span class="bg-white border border-black text-black px-3 py-1.5 rounded-lg text-xs font-bold shadow-secondary">
@@ -523,7 +588,7 @@
           <button
             onclick={() => handleDeleteProperty(selectedProperty!.id)}
             class="border-2 border-black bg-red-200 hover:bg-red-300 text-red-800 p-2.5 rounded-[6px] shadow-secondary transition-all cursor-pointer"
-            title="Xóa tòa nhà"
+            title="Xóa cơ sở"
           >
             <Trash2 class="h-5 w-5" />
           </button>

@@ -42,6 +42,7 @@
     subscriptionType: string;
     subValidUntil: string | null;
     companyName: string | null;
+    enabledRentalTypes: string;
     user: {
       id: string;
       name: string;
@@ -53,6 +54,7 @@
     properties: {
       id: string;
       name: string;
+      rentalType: string;
       _count: {
         rooms: number;
       };
@@ -68,6 +70,7 @@
   let isCreateOpen = $state(false);
   let subType = $state('FREE');
   let subValid = $state('');
+  let editRentalTypes = $state<string[]>(['APARTMENT']);
   let isSaving = $state(false);
   let isCreating = $state(false);
   let searchQuery = $state('');
@@ -80,8 +83,14 @@
     phone: '',
     password: '',
     subscriptionType: 'FREE',
-    subValidUntil: ''
+    subValidUntil: '',
+    enabledRentalTypes: ['APARTMENT']
   });
+
+  const RENTAL_TYPE_OPTIONS = [
+    { value: 'APARTMENT', label: 'Chung cư' },
+    { value: 'MOTEL', label: 'Phòng trọ' }
+  ];
 
   onMount(() => {
     const sessionStr = localStorage.getItem('roomio_user');
@@ -157,7 +166,8 @@
         body: JSON.stringify({
           landlordId: selectedLandlord.id,
           subscriptionType: subType,
-          subValidUntil: subValid || null
+          subValidUntil: subValid || null,
+          enabledRentalTypes: editRentalTypes
         })
       });
       const data = await res.json();
@@ -189,6 +199,7 @@
     selectedLandlord = landlord;
     subType = landlord.subscriptionType;
     subValid = landlord.subValidUntil ? landlord.subValidUntil.slice(0, 10) : '';
+    editRentalTypes = parseRentalTypes(landlord.enabledRentalTypes);
     isEditOpen = true;
   }
 
@@ -200,7 +211,8 @@
       phone: '',
       password: '',
       subscriptionType: 'FREE',
-      subValidUntil: ''
+      subValidUntil: '',
+      enabledRentalTypes: ['APARTMENT']
     };
     isCreateOpen = true;
   }
@@ -309,6 +321,46 @@
     if (!landlord.user.isActive) return 'bg-red-100 text-red-800';
     if (isSubscriptionExpired(landlord)) return 'bg-yellow-100 text-yellow-900';
     return 'bg-green-100 text-green-800';
+  }
+
+  function parseRentalTypes(value: string | null | undefined) {
+    const parsed = (value || 'APARTMENT')
+      .split(',')
+      .map((type) => type.trim())
+      .filter(Boolean);
+    return parsed.length > 0 ? parsed : ['APARTMENT'];
+  }
+
+  function rentalTypesLabel(value: string | null | undefined) {
+    const enabled = parseRentalTypes(value);
+    return RENTAL_TYPE_OPTIONS.filter((option) => enabled.includes(option.value))
+      .map((option) => option.label)
+      .join(', ');
+  }
+
+  function toggleEditRentalType(type: string) {
+    if (editRentalTypes.includes(type)) {
+      if (editRentalTypes.length === 1) return;
+      editRentalTypes = editRentalTypes.filter((item) => item !== type);
+      return;
+    }
+    editRentalTypes = [...editRentalTypes, type];
+  }
+
+  function toggleCreateRentalType(type: string) {
+    const current = createForm.enabledRentalTypes;
+    if (current.includes(type)) {
+      if (current.length === 1) return;
+      createForm = {
+        ...createForm,
+        enabledRentalTypes: current.filter((item) => item !== type)
+      };
+      return;
+    }
+    createForm = {
+      ...createForm,
+      enabledRentalTypes: [...current, type]
+    };
   }
 </script>
 
@@ -497,6 +549,10 @@
                     <span>{selectedLandlord.subscriptionType} · {formatDate(selectedLandlord.subValidUntil)}</span>
                   </div>
                   <div class="flex items-center justify-between gap-3">
+                    <span class="text-zinc-500">Loại hình</span>
+                    <span class="text-right">{rentalTypesLabel(selectedLandlord.enabledRentalTypes)}</span>
+                  </div>
+                  <div class="flex items-center justify-between gap-3">
                     <span class="text-zinc-500">Nhân viên</span>
                     <span>{selectedLandlord.metrics.activeStaff} đang hoạt động</span>
                   </div>
@@ -596,6 +652,21 @@
         </div>
 
         <form onsubmit={handleUpdateSubscription} class="space-y-4">
+          <div class="space-y-2">
+            <p class="block text-xs font-bold text-zinc-600">Loại hình được dùng</p>
+            <div class="grid grid-cols-2 gap-2">
+              {#each RENTAL_TYPE_OPTIONS as option}
+                <button
+                  type="button"
+                  onclick={() => toggleEditRentalType(option.value)}
+                  class="rounded-[6px] border-2 border-black px-3 py-2 text-xs font-black transition-colors {editRentalTypes.includes(option.value) ? 'bg-blue-300 text-black' : 'bg-white text-zinc-500 hover:bg-zinc-100'}"
+                >
+                  {option.label}
+                </button>
+              {/each}
+            </div>
+          </div>
+
           <div class="space-y-1">
             <label for="sub-level" class="block text-xs font-bold text-zinc-600">Gói đăng ký</label>
             <select
@@ -746,6 +817,21 @@
               class="mt-1 w-full rounded-lg border-2 border-black bg-white px-3 py-2 text-sm font-semibold text-black focus:outline-none focus:ring-2 focus:ring-blue-300"
             />
           </label>
+
+          <div class="space-y-2">
+            <p class="block text-xs font-bold text-zinc-600">Loại hình được dùng</p>
+            <div class="grid grid-cols-2 gap-2">
+              {#each RENTAL_TYPE_OPTIONS as option}
+                <button
+                  type="button"
+                  onclick={() => toggleCreateRentalType(option.value)}
+                  class="rounded-[6px] border-2 border-black px-3 py-2 text-xs font-black transition-colors {createForm.enabledRentalTypes.includes(option.value) ? 'bg-blue-300 text-black' : 'bg-white text-zinc-500 hover:bg-zinc-100'}"
+                >
+                  {option.label}
+                </button>
+              {/each}
+            </div>
+          </div>
 
           <div class="grid gap-3 sm:grid-cols-2">
             <label class="block text-xs font-bold text-zinc-600" for="new-landlord-plan">
