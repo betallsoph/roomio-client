@@ -466,10 +466,6 @@
     <div class="mx-auto flex max-w-7xl items-center justify-between gap-4 px-5 py-5 sm:px-6">
       <div class="min-w-0">
         <img src="/brand/roomio-wordmark-blue600.png" alt="Roomio" class="h-auto w-32" />
-        <div class="mt-3 flex flex-wrap items-end gap-3">
-          <h1 class="text-2xl font-black leading-tight sm:text-3xl">Quản trị Roomio</h1>
-          <span class="pb-1 text-sm font-bold text-zinc-500">Console vận hành nền tảng</span>
-        </div>
       </div>
 
       <div class="flex shrink-0 items-center gap-3">
@@ -552,8 +548,8 @@
         <Loader2 class="h-10 w-10 animate-spin text-black" />
       </div>
     {:else}
-      <section class="grid gap-5 lg:grid-cols-[minmax(0,1fr)_420px]">
-        <div class="min-w-0">
+      <section class="grid gap-5 lg:grid-cols-[420px_minmax(0,1fr)]">
+        <div class="min-w-0 lg:order-2">
           {#if filteredLandlords().length === 0}
             <div class="rounded-lg bg-blue-50 p-10 text-center">
               <p class="text-sm font-bold text-zinc-600">Không có chủ trọ nào khớp bộ lọc.</p>
@@ -592,7 +588,7 @@
           {/if}
         </div>
 
-        <aside class="lg:sticky lg:top-5 lg:h-fit">
+        <aside class="lg:sticky lg:top-5 lg:h-fit lg:order-1">
           {#if selectedLandlord}
             <div class="overflow-hidden rounded-lg border-2 border-black bg-white">
               <div class="space-y-5 p-5">
