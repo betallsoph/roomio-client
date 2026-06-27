@@ -1,0 +1,49 @@
+# Deploy roomio-client → VPS Web (149.118.49.134)
+# Thư mục trên server: /home/ubuntu/roomio-client
+# Nginx trong container proxy /api/ → Tailscale IP API (100.102.69.100:3000)
+# Public: roomio.roomieverse.me qua cloudflared
+#
+# GitHub Secrets (repo roomio-client):
+#   DEPLOY_HOST     = 149.118.49.134
+#   DEPLOY_USER     = ubuntu
+#   DEPLOY_SSH_KEY  = nội dung file ssh-key-2026-06-13.key
+#   DEPLOY_PATH     = /home/ubuntu/roomio-client
+
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy Web
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          port: 22
+          command_timeout: 15m
+          script: |
+            set -euo pipefail
+            cd "${{ secrets.DEPLOY_PATH }}"
+
+            echo "==> Pull latest code"
+            git fetch origin main
+            git reset --hard origin/main
+
+            echo "==> Build & restart frontend (port 8081)"
+            docker compose up -d --build --remove-orphans
+
+            docker compose ps
+            docker image prune -f
