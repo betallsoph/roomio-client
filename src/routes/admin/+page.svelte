@@ -548,7 +548,7 @@
         <Loader2 class="h-10 w-10 animate-spin text-black" />
       </div>
     {:else}
-      <section class="grid gap-5 lg:grid-cols-[420px_minmax(0,1fr)]">
+      <section class="grid gap-5 lg:grid-cols-[560px_minmax(0,1fr)]">
         <div class="min-w-0 lg:order-2">
           {#if filteredLandlords().length === 0}
             <div class="rounded-lg bg-blue-50 p-10 text-center">
