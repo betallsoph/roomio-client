@@ -27,13 +27,13 @@ npm run dev          # giao diện tại http://localhost:5173
 
 ## Lệnh
 
-| Lệnh | Mô tả |
-| --- | --- |
-| `npm run dev` | Chạy dev (cổng 5173, proxy `/api` sang backend) |
-| `npm run build` | Build SPA tĩnh ra thư mục `build/` |
-| `npm run preview` | Xem trước bản build |
-| `npm run check` | Kiểm tra type |
-| `npm run lint` | Lint |
+| Lệnh              | Mô tả                                           |
+| ----------------- | ----------------------------------------------- |
+| `npm run dev`     | Chạy dev (cổng 5173, proxy `/api` sang backend) |
+| `npm run build`   | Build SPA tĩnh ra thư mục `build/`              |
+| `npm run preview` | Xem trước bản build                             |
+| `npm run check`   | Kiểm tra type                                   |
+| `npm run lint`    | Lint                                            |
 
 ## Triển khai (server riêng, có thể share tài nguyên)
 

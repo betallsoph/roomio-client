@@ -134,12 +134,15 @@
 	}
 
 	async function deleteExpense(expense: ExpenseRow) {
-		if (!(await confirmPopup({
-			title: 'Xóa khoản chi',
-			message: `Xóa khoản chi "${expense.description}"?`,
-			confirmLabel: 'Xóa',
-			tone: 'danger'
-		}))) return;
+		if (
+			!(await confirmPopup({
+				title: 'Xóa khoản chi',
+				message: `Xóa khoản chi "${expense.description}"?`,
+				confirmLabel: 'Xóa',
+				tone: 'danger'
+			}))
+		)
+			return;
 		const res = await fetch(`/api/expenses?id=${expense.id}`, { method: 'DELETE' });
 		if (res.ok) {
 			toast.success('Đã xóa khoản chi');

@@ -1,513 +1,600 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
-  import { toast } from 'svelte-sonner';
-  import { confirmPopup } from '$lib/confirm-popup';
-  import { 
-    Receipt, 
-    X, 
-    Check, 
-    Trash2, 
-    Loader2, 
-    AlertTriangle,
-    Eye,
-    Calendar,
-    FileText,
-    ArrowRight
-  } from '@lucide/svelte';
+	import { onMount } from 'svelte';
+	import { toast } from 'svelte-sonner';
+	import { confirmPopup } from '$lib/confirm-popup';
+	import {
+		Receipt,
+		X,
+		Check,
+		Trash2,
+		Loader2,
+		AlertTriangle,
+		Eye,
+		Calendar,
+		FileText,
+		ArrowRight
+	} from '@lucide/svelte';
 
-  interface InvoiceItem {
-    id: string;
-    name: string;
-    amount: number;
-    details: string | null;
-  }
+	interface InvoiceItem {
+		id: string;
+		name: string;
+		amount: number;
+		details: string | null;
+	}
 
-  interface Invoice {
-    id: string;
-    roomId: string;
-    roomNumber: string;
-    tenantName: string;
-    tenantPhone: string;
-    month: string;
-    rentAmount: number;
-    totalAmount: number;
-    dueDate: string;
-    paidDate: string | null;
-    status: string; // 'paid' | 'pending' | 'overdue' | 'partial'
-    paidAmount: number;
-    paymentProofImage: string | null;
-    createdAt: string;
-    notes: string | null;
-    items: InvoiceItem[];
-    room: {
-      property: {
-        name: string;
-        shortName: string;
-      }
-    };
-  }
+	interface Invoice {
+		id: string;
+		roomId: string;
+		roomNumber: string;
+		tenantName: string;
+		tenantPhone: string;
+		month: string;
+		rentAmount: number;
+		totalAmount: number;
+		dueDate: string;
+		paidDate: string | null;
+		status: string; // 'paid' | 'pending' | 'overdue' | 'partial'
+		paidAmount: number;
+		paymentProofImage: string | null;
+		createdAt: string;
+		notes: string | null;
+		items: InvoiceItem[];
+		room: {
+			property: {
+				name: string;
+				shortName: string;
+			};
+		};
+	}
 
-  let landlordId = $state<string | null>(null);
-  let isLoading = $state(true);
-  let invoices = $state<Invoice[]>([]);
-  let selectedInvoice = $state<Invoice | null>(null);
-  let isDetailOpen = $state(false);
+	let landlordId = $state<string | null>(null);
+	let isLoading = $state(true);
+	let invoices = $state<Invoice[]>([]);
+	let selectedInvoice = $state<Invoice | null>(null);
+	let isDetailOpen = $state(false);
 
-  // Filters
-  let statusFilter = $state('');
-  let monthFilter = $state('');
-  let searchRoom = $state('');
+	// Filters
+	let statusFilter = $state('');
+	let monthFilter = $state('');
+	let searchRoom = $state('');
 
-  let isConfirming = $state(false);
-  let isDeleting = $state(false);
-  let selectedInvoiceIds = $state<string[]>([]);
+	let isConfirming = $state(false);
+	let isDeleting = $state(false);
+	let selectedInvoiceIds = $state<string[]>([]);
 
-  onMount(() => {
-    const sessionStr = localStorage.getItem('roomio_user');
-    if (!sessionStr) return;
-    const session = JSON.parse(sessionStr);
-    landlordId = session.landlordProfileId;
-    fetchInvoices(session.landlordProfileId);
-  });
+	onMount(() => {
+		const sessionStr = localStorage.getItem('roomio_user');
+		if (!sessionStr) return;
+		const session = JSON.parse(sessionStr);
+		landlordId = session.landlordProfileId;
+		fetchInvoices(session.landlordProfileId);
+	});
 
-  async function fetchInvoices(profileId: string) {
-    isLoading = true;
-    try {
-      const url = `/api/invoices?landlordId=${profileId}`;
-      const res = await fetch(url);
-      const data = await res.json();
-      if (res.ok) invoices = data;
-    } catch (e: any) {
-      toast.error('Lỗi khi tải danh sách hóa đơn: ' + e.message);
-    } finally {
-      isLoading = false;
-    }
-  }
+	async function fetchInvoices(profileId: string) {
+		isLoading = true;
+		try {
+			const url = `/api/invoices?landlordId=${profileId}`;
+			const res = await fetch(url);
+			const data = await res.json();
+			if (res.ok) invoices = data;
+		} catch (e: any) {
+			toast.error('Lỗi khi tải danh sách hóa đơn: ' + e.message);
+		} finally {
+			isLoading = false;
+		}
+	}
 
-  async function confirmPayment(invoiceId: string) {
-    if (isConfirming) return;
-    isConfirming = true;
+	async function confirmPayment(invoiceId: string) {
+		if (isConfirming) return;
+		isConfirming = true;
 
-    try {
-      const res = await fetch(`/api/invoices/${invoiceId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'confirmPaid' })
-      });
-      const data = await res.json();
+		try {
+			const res = await fetch(`/api/invoices/${invoiceId}`, {
+				method: 'PUT',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ action: 'confirmPaid' })
+			});
+			const data = await res.json();
 
-      if (!res.ok) throw new Error(data.error || 'Lỗi xác nhận đóng tiền');
+			if (!res.ok) throw new Error(data.error || 'Lỗi xác nhận đóng tiền');
 
-      toast.success('Đã xác nhận thanh toán hóa đơn thành công!');
-      isDetailOpen = false;
-      selectedInvoice = null;
-      if (landlordId) fetchInvoices(landlordId);
-    } catch (err: any) {
-      toast.error(err.message);
-    } finally {
-      isConfirming = false;
-    }
-  }
+			toast.success('Đã xác nhận thanh toán hóa đơn thành công!');
+			isDetailOpen = false;
+			selectedInvoice = null;
+			if (landlordId) fetchInvoices(landlordId);
+		} catch (err: any) {
+			toast.error(err.message);
+		} finally {
+			isConfirming = false;
+		}
+	}
 
-  async function deleteInvoice(invoiceId: string) {
-    if (!(await confirmPopup({
-      title: 'Xóa hóa đơn',
-      message: 'Bạn có chắc chắn muốn xóa hóa đơn này? Số nợ của phòng sẽ tự động giảm đi.',
-      confirmLabel: 'Xóa',
-      tone: 'danger'
-    }))) return;
-    isDeleting = true;
+	async function deleteInvoice(invoiceId: string) {
+		if (
+			!(await confirmPopup({
+				title: 'Xóa hóa đơn',
+				message: 'Bạn có chắc chắn muốn xóa hóa đơn này? Số nợ của phòng sẽ tự động giảm đi.',
+				confirmLabel: 'Xóa',
+				tone: 'danger'
+			}))
+		)
+			return;
+		isDeleting = true;
 
-    try {
-      const res = await fetch(`/api/invoices/${invoiceId}`, {
-        method: 'DELETE'
-      });
-      const data = await res.json();
+		try {
+			const res = await fetch(`/api/invoices/${invoiceId}`, {
+				method: 'DELETE'
+			});
+			const data = await res.json();
 
-      if (!res.ok) throw new Error(data.error || 'Lỗi khi xóa hóa đơn');
+			if (!res.ok) throw new Error(data.error || 'Lỗi khi xóa hóa đơn');
 
-      toast.success('Đã xóa hóa đơn thành công');
-      isDetailOpen = false;
-      selectedInvoice = null;
-      if (landlordId) fetchInvoices(landlordId);
-    } catch (err: any) {
-      toast.error(err.message);
-    } finally {
-      isDeleting = false;
-    }
-  }
+			toast.success('Đã xóa hóa đơn thành công');
+			isDetailOpen = false;
+			selectedInvoice = null;
+			if (landlordId) fetchInvoices(landlordId);
+		} catch (err: any) {
+			toast.error(err.message);
+		} finally {
+			isDeleting = false;
+		}
+	}
 
-  async function deleteSelectedInvoices() {
-    if (selectedInvoiceIds.length === 0 || isDeleting) return;
-    if (!(await confirmPopup({
-      title: 'Xóa hóa đơn đã chọn',
-      message: `Bạn có chắc muốn xóa ${selectedInvoiceIds.length} hóa đơn đã chọn? Công nợ phòng sẽ được cập nhật lại.`,
-      confirmLabel: 'Xóa',
-      tone: 'danger'
-    }))) return;
-    isDeleting = true;
+	async function deleteSelectedInvoices() {
+		if (selectedInvoiceIds.length === 0 || isDeleting) return;
+		if (
+			!(await confirmPopup({
+				title: 'Xóa hóa đơn đã chọn',
+				message: `Bạn có chắc muốn xóa ${selectedInvoiceIds.length} hóa đơn đã chọn? Công nợ phòng sẽ được cập nhật lại.`,
+				confirmLabel: 'Xóa',
+				tone: 'danger'
+			}))
+		)
+			return;
+		isDeleting = true;
 
-    try {
-      const res = await fetch('/api/invoices', {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ids: selectedInvoiceIds })
-      });
-      const data = await res.json();
+		try {
+			const res = await fetch('/api/invoices', {
+				method: 'DELETE',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ ids: selectedInvoiceIds })
+			});
+			const data = await res.json();
 
-      if (!res.ok) throw new Error(data.error || 'Lỗi khi xóa hóa đơn hàng loạt');
+			if (!res.ok) throw new Error(data.error || 'Lỗi khi xóa hóa đơn hàng loạt');
 
-      toast.success(`Đã xóa ${data.count} hóa đơn`);
-      selectedInvoiceIds = [];
-      if (landlordId) fetchInvoices(landlordId);
-    } catch (err: any) {
-      toast.error(err.message);
-    } finally {
-      isDeleting = false;
-    }
-  }
+			toast.success(`Đã xóa ${data.count} hóa đơn`);
+			selectedInvoiceIds = [];
+			if (landlordId) fetchInvoices(landlordId);
+		} catch (err: any) {
+			toast.error(err.message);
+		} finally {
+			isDeleting = false;
+		}
+	}
 
-  function toggleInvoiceSelection(invoiceId: string) {
-    selectedInvoiceIds = selectedInvoiceIds.includes(invoiceId)
-      ? selectedInvoiceIds.filter(id => id !== invoiceId)
-      : [...selectedInvoiceIds, invoiceId];
-  }
+	function toggleInvoiceSelection(invoiceId: string) {
+		selectedInvoiceIds = selectedInvoiceIds.includes(invoiceId)
+			? selectedInvoiceIds.filter((id) => id !== invoiceId)
+			: [...selectedInvoiceIds, invoiceId];
+	}
 
-  function formatCurrency(amount: number) {
-    return new Intl.NumberFormat('vi-VN').format(amount) + 'đ';
-  }
+	function formatCurrency(amount: number) {
+		return new Intl.NumberFormat('vi-VN').format(amount) + 'đ';
+	}
 
-  // Filtered invoices computed state
-  const filteredInvoices = $derived(() => {
-    return invoices.filter(inv => {
-      const matchStatus = statusFilter === '' || inv.status === statusFilter;
-      const matchMonth = monthFilter === '' || inv.month === monthFilter;
-      const matchRoom = searchRoom === '' || inv.roomNumber.toLowerCase().includes(searchRoom.toLowerCase()) || inv.tenantName.toLowerCase().includes(searchRoom.toLowerCase());
-      return matchStatus && matchMonth && matchRoom;
-    });
-  });
+	// Filtered invoices computed state
+	const filteredInvoices = $derived(() => {
+		return invoices.filter((inv) => {
+			const matchStatus = statusFilter === '' || inv.status === statusFilter;
+			const matchMonth = monthFilter === '' || inv.month === monthFilter;
+			const matchRoom =
+				searchRoom === '' ||
+				inv.roomNumber.toLowerCase().includes(searchRoom.toLowerCase()) ||
+				inv.tenantName.toLowerCase().includes(searchRoom.toLowerCase());
+			return matchStatus && matchMonth && matchRoom;
+		});
+	});
 </script>
 
 <div class="space-y-6">
-  <!-- Header -->
-  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-    <div>
-      <h1 class="text-xl sm:text-2xl font-black text-black leading-none">Quản Lý Hóa Đơn</h1>
-      <p class="text-zinc-500 text-xs sm:text-sm mt-1 font-bold">Lịch sử xuất hóa đơn và đối soát thanh toán</p>
-    </div>
-    <a 
-      href="/dashboard/invoices/bulk"
-      class="bg-blue-300 text-black border-2 border-black px-4 py-2.5 rounded-[6px] shadow-secondary transition-all flex items-center justify-center gap-1.5 cursor-pointer font-black text-sm w-full sm:w-auto"
-    >
-      Tạo hóa đơn loạt <ArrowRight class="h-4 w-4" />
-    </a>
-  </div>
+	<!-- Header -->
+	<div class="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
+		<div>
+			<h1 class="text-xl leading-none font-black text-black sm:text-2xl">Quản Lý Hóa Đơn</h1>
+			<p class="mt-1 text-xs font-bold text-zinc-500 sm:text-sm">
+				Lịch sử xuất hóa đơn và đối soát thanh toán
+			</p>
+		</div>
+		<a
+			href="/dashboard/invoices/bulk"
+			class="flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-[6px] border-2 border-black bg-blue-300 px-4 py-2.5 text-sm font-black text-black shadow-secondary transition-all sm:w-auto"
+		>
+			Tạo hóa đơn loạt <ArrowRight class="h-4 w-4" />
+		</a>
+	</div>
 
-  {#if selectedInvoiceIds.length > 0}
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-2 border-black bg-red-50 rounded-lg p-3 shadow-secondary">
-      <p class="text-sm font-black text-black">Đã chọn {selectedInvoiceIds.length} hóa đơn</p>
-      <div class="flex gap-2">
-        <button
-          onclick={() => selectedInvoiceIds = []}
-          class="border-2 border-black bg-white px-3 py-2 rounded-[6px] text-xs font-black text-black"
-        >
-          Bỏ chọn
-        </button>
-        <button
-          onclick={deleteSelectedInvoices}
-          disabled={isDeleting}
-          class="border-2 border-black bg-red-200 px-3 py-2 rounded-[6px] text-xs font-black text-red-800 shadow-secondary disabled:opacity-50"
-        >
-          Xóa đã chọn
-        </button>
-      </div>
-    </div>
-  {/if}
+	{#if selectedInvoiceIds.length > 0}
+		<div
+			class="flex flex-col justify-between gap-3 rounded-lg border-2 border-black bg-red-50 p-3 shadow-secondary sm:flex-row sm:items-center"
+		>
+			<p class="text-sm font-black text-black">Đã chọn {selectedInvoiceIds.length} hóa đơn</p>
+			<div class="flex gap-2">
+				<button
+					onclick={() => (selectedInvoiceIds = [])}
+					class="rounded-[6px] border-2 border-black bg-white px-3 py-2 text-xs font-black text-black"
+				>
+					Bỏ chọn
+				</button>
+				<button
+					onclick={deleteSelectedInvoices}
+					disabled={isDeleting}
+					class="rounded-[6px] border-2 border-black bg-red-200 px-3 py-2 text-xs font-black text-red-800 shadow-secondary disabled:opacity-50"
+				>
+					Xóa đã chọn
+				</button>
+			</div>
+		</div>
+	{/if}
 
-  <!-- Filters -->
-  <div class="grid gap-4 sm:grid-cols-3 items-end">
-    <div class="space-y-1">
-      <span class="text-[10px] font-black text-zinc-500 block">Trạng thái thanh toán</span>
-      <select 
-        bind:value={statusFilter}
-        class="w-full border-2 border-black px-3 py-2 text-sm rounded-lg focus:outline-none bg-white font-bold text-black"
-      >
-        <option value="">Tất cả hóa đơn</option>
-        <option value="pending">Chưa thanh toán</option>
-        <option value="paid">Đã thanh toán</option>
-        <option value="overdue">Trễ hạn</option>
-      </select>
-    </div>
+	<!-- Filters -->
+	<div class="grid items-end gap-4 sm:grid-cols-3">
+		<div class="space-y-1">
+			<span class="block text-[10px] font-black text-zinc-500">Trạng thái thanh toán</span>
+			<select
+				bind:value={statusFilter}
+				class="w-full rounded-lg border-2 border-black bg-white px-3 py-2 text-sm font-bold text-black focus:outline-none"
+			>
+				<option value="">Tất cả hóa đơn</option>
+				<option value="pending">Chưa thanh toán</option>
+				<option value="paid">Đã thanh toán</option>
+				<option value="overdue">Trễ hạn</option>
+			</select>
+		</div>
 
-    <div class="space-y-1">
-      <span class="text-[10px] font-black text-zinc-500 block">Lọc theo Tháng</span>
-      <input 
-        type="month" 
-        bind:value={monthFilter}
-        class="w-full border-2 border-black px-3 py-2 text-sm rounded-lg focus:outline-none bg-white font-bold text-black"
-      />
-    </div>
+		<div class="space-y-1">
+			<span class="block text-[10px] font-black text-zinc-500">Lọc theo Tháng</span>
+			<input
+				type="month"
+				bind:value={monthFilter}
+				class="w-full rounded-lg border-2 border-black bg-white px-3 py-2 text-sm font-bold text-black focus:outline-none"
+			/>
+		</div>
 
-    <div class="space-y-1">
-      <span class="text-[10px] font-black text-zinc-500 block">Tìm theo số phòng/tên khách</span>
-      <input 
-        type="text" 
-        bind:value={searchRoom}
-        placeholder="Nhập 101, A2, Tên khách..."
-        class="w-full border-2 border-black px-3 py-2 text-sm rounded-lg focus:outline-none bg-white font-bold text-black"
-      />
-    </div>
-  </div>
+		<div class="space-y-1">
+			<span class="block text-[10px] font-black text-zinc-500">Tìm theo số phòng/tên khách</span>
+			<input
+				type="text"
+				bind:value={searchRoom}
+				placeholder="Nhập 101, A2, Tên khách..."
+				class="w-full rounded-lg border-2 border-black bg-white px-3 py-2 text-sm font-bold text-black focus:outline-none"
+			/>
+		</div>
+	</div>
 
-  {#if isLoading}
-    <div class="h-[50vh] w-full flex items-center justify-center">
-      <Loader2 class="h-10 w-10 text-black animate-spin" />
-    </div>
-  {:else if filteredInvoices().length === 0}
-    <div class="bg-white border-2 border-black p-12 rounded-lg text-center max-w-md mx-auto shadow-secondary">
-      <Receipt class="h-12 w-12 text-black mx-auto mb-3" />
-      <h3 class="font-black text-black text-lg">Không tìm thấy hóa đơn nào</h3>
-      <p class="text-zinc-500 text-sm mt-2 font-semibold">Không có hóa đơn nào trùng khớp với bộ lọc hiện tại.</p>
-    </div>
-  {:else}
-    <!-- Invoices List -->
-    <div class="bg-white border-2 border-black rounded-lg shadow-secondary overflow-hidden">
-      <!-- Mobile: card list -->
-      <div class="sm:hidden divide-y-2 divide-black">
-        {#each filteredInvoices() as invoice}
-          <div class="p-4 space-y-2">
-            <div class="flex justify-between items-start gap-2">
-              <div class="min-w-0">
-                <p class="font-black text-black text-sm">{invoice.room.property.shortName} - P.{invoice.roomNumber}</p>
-                <p class="text-xs text-zinc-500 font-bold mt-0.5 truncate">{invoice.tenantName} · T.{invoice.month}</p>
-              </div>
-              <span class="text-sm font-black text-black shrink-0">{formatCurrency(invoice.totalAmount)}</span>
-            </div>
-            <div class="flex items-center justify-between gap-2">
-              <label class="flex items-center gap-2 text-[10px] font-black text-zinc-600">
-                <input type="checkbox" checked={selectedInvoiceIds.includes(invoice.id)} onchange={() => toggleInvoiceSelection(invoice.id)} />
-                Chọn
-              </label>
-              <span class="text-[10px] px-2 py-0.5 rounded-full font-black border border-black shrink-0 {invoice.status === 'paid' ? 'bg-green-200 text-green-800' : 'bg-red-200 text-red-800'}">
-                {invoice.status === 'paid' ? 'Đã đóng' : 'Chưa đóng'}
-              </span>
-              <button
-                onclick={() => window.setTimeout(() => { selectedInvoice = invoice; isDetailOpen = true; }, 200)}
-                class="p-1.5 border-2 border-black bg-white rounded-lg text-black shadow-secondary transition-all cursor-pointer"
-              >
-                <Eye class="h-4 w-4" />
-              </button>
-            </div>
-          </div>
-        {/each}
-      </div>
-      <!-- Desktop: table -->
-      <div class="hidden sm:block overflow-x-auto">
-        <table class="w-full text-left border-collapse text-sm">
-          <thead>
-            <tr class="bg-blue-300 border-b-2 border-black text-black font-black text-xs">
-              <th class="px-4 py-3 w-10">
-                <span class="sr-only">Chọn</span>
-              </th>
-              <th class="px-4 py-3">Mã Hóa Đơn</th>
-              <th class="px-4 py-3">Nhà / Phòng</th>
-              <th class="px-4 py-3">Khách thuê</th>
-              <th class="px-4 py-3">Tháng</th>
-              <th class="px-4 py-3">Tổng tiền</th>
-              <th class="px-4 py-3">Trạng thái</th>
-              <th class="px-4 py-3">Ảnh bill</th>
-              <th class="px-4 py-3 text-right">Chi tiết</th>
-            </tr>
-          </thead>
-          <tbody>
-            {#each filteredInvoices() as invoice}
-              <tr class="border-b border-zinc-200 hover:bg-slate-50 transition-colors text-zinc-600 font-semibold">
-                <td class="px-4 py-4">
-                  <input
-                    type="checkbox"
-                    checked={selectedInvoiceIds.includes(invoice.id)}
-                    onchange={() => toggleInvoiceSelection(invoice.id)}
-                    class="h-4 w-4"
-                  />
-                </td>
-                <td class="px-4 py-4 font-mono font-black text-blue-600">{invoice.id}</td>
-                <td class="px-4 py-4 font-black text-black">
-                  {invoice.room.property.shortName} - {invoice.roomNumber}
-                </td>
-                <td class="px-4 py-4 text-zinc-800 font-bold">{invoice.tenantName}</td>
-                <td class="px-4 py-4 font-bold">{invoice.month}</td>
-                <td class="px-4 py-4 font-black text-black">{formatCurrency(invoice.totalAmount)}</td>
-                <td class="px-4 py-4">
-                  <span class="text-[9px] px-2.5 py-0.5 rounded-full font-black border border-black {invoice.status === 'paid' ? 'bg-green-200 text-green-800' : 'bg-red-200 text-red-800'}">
-                    {invoice.status === 'paid' ? 'Đã đóng' : 'Chưa đóng'}
-                  </span>
-                </td>
-                <td class="px-4 py-4">
-                  {#if invoice.paymentProofImage}
-                    <span class="text-[9px] px-2 py-0.5 rounded-full font-black border border-black bg-amber-200 text-amber-800 flex items-center gap-1 w-fit">
-                      <FileText class="h-3 w-3" />
-                      Có bill
-                    </span>
-                  {:else}
-                    <span class="text-zinc-400 text-xs">--</span>
-                  {/if}
-                </td>
-                <td class="px-4 py-4 text-right">
-                  <button
-                    onclick={() => window.setTimeout(() => { selectedInvoice = invoice; isDetailOpen = true; }, 200)}
-                    class="p-1.5 border-2 border-black bg-white hover:bg-zinc-150 rounded-lg text-black transition-colors cursor-pointer shadow-secondary"
-                  >
-                    <Eye class="h-4 w-4" />
-                  </button>
-                </td>
-              </tr>
-            {/each}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  {/if}
+	{#if isLoading}
+		<div class="flex h-[50vh] w-full items-center justify-center">
+			<Loader2 class="h-10 w-10 animate-spin text-black" />
+		</div>
+	{:else if filteredInvoices().length === 0}
+		<div
+			class="mx-auto max-w-md rounded-lg border-2 border-black bg-white p-12 text-center shadow-secondary"
+		>
+			<Receipt class="mx-auto mb-3 h-12 w-12 text-black" />
+			<h3 class="text-lg font-black text-black">Không tìm thấy hóa đơn nào</h3>
+			<p class="mt-2 text-sm font-semibold text-zinc-500">
+				Không có hóa đơn nào trùng khớp với bộ lọc hiện tại.
+			</p>
+		</div>
+	{:else}
+		<!-- Invoices List -->
+		<div class="overflow-hidden rounded-lg border-2 border-black bg-white shadow-secondary">
+			<!-- Mobile: card list -->
+			<div class="divide-y-2 divide-black sm:hidden">
+				{#each filteredInvoices() as invoice}
+					<div class="space-y-2 p-4">
+						<div class="flex items-start justify-between gap-2">
+							<div class="min-w-0">
+								<p class="text-sm font-black text-black">
+									{invoice.room.property.shortName} - P.{invoice.roomNumber}
+								</p>
+								<p class="mt-0.5 truncate text-xs font-bold text-zinc-500">
+									{invoice.tenantName} · T.{invoice.month}
+								</p>
+							</div>
+							<span class="shrink-0 text-sm font-black text-black"
+								>{formatCurrency(invoice.totalAmount)}</span
+							>
+						</div>
+						<div class="flex items-center justify-between gap-2">
+							<label class="flex items-center gap-2 text-[10px] font-black text-zinc-600">
+								<input
+									type="checkbox"
+									checked={selectedInvoiceIds.includes(invoice.id)}
+									onchange={() => toggleInvoiceSelection(invoice.id)}
+								/>
+								Chọn
+							</label>
+							<span
+								class="shrink-0 rounded-full border border-black px-2 py-0.5 text-[10px] font-black {invoice.status ===
+								'paid'
+									? 'bg-green-200 text-green-800'
+									: 'bg-red-200 text-red-800'}"
+							>
+								{invoice.status === 'paid' ? 'Đã đóng' : 'Chưa đóng'}
+							</span>
+							<button
+								onclick={() =>
+									window.setTimeout(() => {
+										selectedInvoice = invoice;
+										isDetailOpen = true;
+									}, 200)}
+								class="cursor-pointer rounded-lg border-2 border-black bg-white p-1.5 text-black shadow-secondary transition-all"
+							>
+								<Eye class="h-4 w-4" />
+							</button>
+						</div>
+					</div>
+				{/each}
+			</div>
+			<!-- Desktop: table -->
+			<div class="hidden overflow-x-auto sm:block">
+				<table class="w-full border-collapse text-left text-sm">
+					<thead>
+						<tr class="border-b-2 border-black bg-blue-300 text-xs font-black text-black">
+							<th class="w-10 px-4 py-3">
+								<span class="sr-only">Chọn</span>
+							</th>
+							<th class="px-4 py-3">Mã Hóa Đơn</th>
+							<th class="px-4 py-3">Nhà / Phòng</th>
+							<th class="px-4 py-3">Khách thuê</th>
+							<th class="px-4 py-3">Tháng</th>
+							<th class="px-4 py-3">Tổng tiền</th>
+							<th class="px-4 py-3">Trạng thái</th>
+							<th class="px-4 py-3">Ảnh bill</th>
+							<th class="px-4 py-3 text-right">Chi tiết</th>
+						</tr>
+					</thead>
+					<tbody>
+						{#each filteredInvoices() as invoice}
+							<tr
+								class="border-b border-zinc-200 font-semibold text-zinc-600 transition-colors hover:bg-slate-50"
+							>
+								<td class="px-4 py-4">
+									<input
+										type="checkbox"
+										checked={selectedInvoiceIds.includes(invoice.id)}
+										onchange={() => toggleInvoiceSelection(invoice.id)}
+										class="h-4 w-4"
+									/>
+								</td>
+								<td class="px-4 py-4 font-mono font-black text-blue-600">{invoice.id}</td>
+								<td class="px-4 py-4 font-black text-black">
+									{invoice.room.property.shortName} - {invoice.roomNumber}
+								</td>
+								<td class="px-4 py-4 font-bold text-zinc-800">{invoice.tenantName}</td>
+								<td class="px-4 py-4 font-bold">{invoice.month}</td>
+								<td class="px-4 py-4 font-black text-black"
+									>{formatCurrency(invoice.totalAmount)}</td
+								>
+								<td class="px-4 py-4">
+									<span
+										class="rounded-full border border-black px-2.5 py-0.5 text-[9px] font-black {invoice.status ===
+										'paid'
+											? 'bg-green-200 text-green-800'
+											: 'bg-red-200 text-red-800'}"
+									>
+										{invoice.status === 'paid' ? 'Đã đóng' : 'Chưa đóng'}
+									</span>
+								</td>
+								<td class="px-4 py-4">
+									{#if invoice.paymentProofImage}
+										<span
+											class="flex w-fit items-center gap-1 rounded-full border border-black bg-amber-200 px-2 py-0.5 text-[9px] font-black text-amber-800"
+										>
+											<FileText class="h-3 w-3" />
+											Có bill
+										</span>
+									{:else}
+										<span class="text-xs text-zinc-400">--</span>
+									{/if}
+								</td>
+								<td class="px-4 py-4 text-right">
+									<button
+										onclick={() =>
+											window.setTimeout(() => {
+												selectedInvoice = invoice;
+												isDetailOpen = true;
+											}, 200)}
+										class="hover:bg-zinc-150 cursor-pointer rounded-lg border-2 border-black bg-white p-1.5 text-black shadow-secondary transition-colors"
+									>
+										<Eye class="h-4 w-4" />
+									</button>
+								</td>
+							</tr>
+						{/each}
+					</tbody>
+				</table>
+			</div>
+		</div>
+	{/if}
 
-  <!-- Detail Dialog Modal -->
-  {#if isDetailOpen && selectedInvoice}
-    <!-- Overlay -->
-    <div 
-      class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-[fade-in_0.2s_ease-out]"
-      onclick={() => isDetailOpen = false}
-      onkeydown={(e) => e.key === 'Escape' && (isDetailOpen = false)}
-      role="button"
-      tabindex="0"
-    >
-      <!-- Dialog Content: Brutallist Panel with macOS Header -->
-      <div 
-        class="bg-white rounded-lg w-full max-w-2xl border-2 border-black shadow-primary overflow-hidden relative flex flex-col max-h-[90vh] animate-[scale-up_0.2s_ease-out]"
-        onclick={(e) => e.stopPropagation()}
-        onkeydown={(e) => e.stopPropagation()}
-        role="dialog"
-      >
-        <!-- macOS Style Header -->
-        <div class="flex items-center gap-2 px-4 py-3 bg-zinc-50 border-b-2 border-black shrink-0 select-none">
-          <div class="w-2.5 h-2.5 rounded-full bg-red-500 border border-black"></div>
-          <div class="w-2.5 h-2.5 rounded-full bg-yellow-500 border border-black"></div>
-          <div class="w-2.5 h-2.5 rounded-full bg-green-500 border border-black"></div>
-          <span class="text-xs font-bold text-zinc-500 ml-2">Chi Tiết Hóa Đơn</span>
-          <button onclick={() => isDetailOpen = false} class="ml-auto text-black hover:bg-zinc-200 p-1 border border-transparent rounded-[6px]">
-            <X class="h-4 w-4" />
-          </button>
-        </div>
+	<!-- Detail Dialog Modal -->
+	{#if isDetailOpen && selectedInvoice}
+		<!-- Overlay -->
+		<div
+			class="fixed inset-0 z-50 flex animate-[fade-in_0.2s_ease-out] items-center justify-center bg-slate-900/50 p-4 backdrop-blur-sm"
+			onclick={() => (isDetailOpen = false)}
+			onkeydown={(e) => e.key === 'Escape' && (isDetailOpen = false)}
+			role="button"
+			tabindex="0"
+		>
+			<!-- Dialog Content: Brutallist Panel with macOS Header -->
+			<div
+				class="relative flex max-h-[90vh] w-full max-w-2xl animate-[scale-up_0.2s_ease-out] flex-col overflow-hidden rounded-lg border-2 border-black bg-white shadow-primary"
+				onclick={(e) => e.stopPropagation()}
+				onkeydown={(e) => e.stopPropagation()}
+				role="dialog"
+			>
+				<!-- macOS Style Header -->
+				<div
+					class="flex shrink-0 items-center gap-2 border-b-2 border-black bg-zinc-50 px-4 py-3 select-none"
+				>
+					<div class="h-2.5 w-2.5 rounded-full border border-black bg-red-500"></div>
+					<div class="h-2.5 w-2.5 rounded-full border border-black bg-yellow-500"></div>
+					<div class="h-2.5 w-2.5 rounded-full border border-black bg-green-500"></div>
+					<span class="ml-2 text-xs font-bold text-zinc-500">Chi Tiết Hóa Đơn</span>
+					<button
+						onclick={() => (isDetailOpen = false)}
+						class="ml-auto rounded-[6px] border border-transparent p-1 text-black hover:bg-zinc-200"
+					>
+						<X class="h-4 w-4" />
+					</button>
+				</div>
 
-        <div class="p-6 overflow-y-auto space-y-4">
-          <!-- Meta info columns -->
-          <div class="grid grid-cols-2 gap-4 text-sm bg-white p-4 border-2 border-black rounded-lg shadow-secondary font-semibold text-black">
-            <div>
-              <p class="text-zinc-500 text-xs font-black">Tòa nhà / Số phòng</p>
-              <p class="font-bold text-black mt-1">{selectedInvoice.room.property.name} - Phòng {selectedInvoice.roomNumber}</p>
-            </div>
-            <div>
-              <p class="text-zinc-500 text-xs font-black">Khách thuê phòng</p>
-              <p class="font-bold text-black mt-1">{selectedInvoice.tenantName} ({selectedInvoice.tenantPhone})</p>
-            </div>
-            <div>
-              <p class="text-zinc-500 text-xs font-black">Tháng hóa đơn</p>
-              <p class="font-bold text-black mt-1 flex items-center gap-1">
-                <Calendar class="h-4 w-4 text-zinc-500" />
-                Tháng {selectedInvoice.month}
-              </p>
-            </div>
-            <div>
-              <p class="text-zinc-500 text-xs font-black">Hạn đóng tiền</p>
-              <p class="font-black text-red-650 mt-1">{new Date(selectedInvoice.dueDate).toLocaleDateString('vi-VN')}</p>
-            </div>
-          </div>
+				<div class="space-y-4 overflow-y-auto p-6">
+					<!-- Meta info columns -->
+					<div
+						class="grid grid-cols-2 gap-4 rounded-lg border-2 border-black bg-white p-4 text-sm font-semibold text-black shadow-secondary"
+					>
+						<div>
+							<p class="text-xs font-black text-zinc-500">Tòa nhà / Số phòng</p>
+							<p class="mt-1 font-bold text-black">
+								{selectedInvoice.room.property.name} - Phòng {selectedInvoice.roomNumber}
+							</p>
+						</div>
+						<div>
+							<p class="text-xs font-black text-zinc-500">Khách thuê phòng</p>
+							<p class="mt-1 font-bold text-black">
+								{selectedInvoice.tenantName} ({selectedInvoice.tenantPhone})
+							</p>
+						</div>
+						<div>
+							<p class="text-xs font-black text-zinc-500">Tháng hóa đơn</p>
+							<p class="mt-1 flex items-center gap-1 font-bold text-black">
+								<Calendar class="h-4 w-4 text-zinc-500" />
+								Tháng {selectedInvoice.month}
+							</p>
+						</div>
+						<div>
+							<p class="text-xs font-black text-zinc-500">Hạn đóng tiền</p>
+							<p class="text-red-650 mt-1 font-black">
+								{new Date(selectedInvoice.dueDate).toLocaleDateString('vi-VN')}
+							</p>
+						</div>
+					</div>
 
-          <!-- Bill Line Items -->
-          <div class="space-y-2">
-            <h3 class="text-xs font-black text-zinc-500">Các mục thanh toán</h3>
-            <div class="border-2 border-black bg-white rounded-lg shadow-secondary overflow-hidden divide-y divide-black/15">
-              {#each selectedInvoice.items as item}
-                <div class="p-3 flex justify-between items-center text-sm font-semibold">
-                  <div>
-                    <p class="font-bold text-black">{item.name}</p>
-                    {#if item.details}
-                      <p class="text-xs text-zinc-500 mt-0.5 font-bold italic">{item.details}</p>
-                    {/if}
-                  </div>
-                  <span class="font-bold text-zinc-800">{formatCurrency(item.amount)}</span>
-                </div>
-              {/each}
-              <!-- Total Row -->
-              <div class="p-4 bg-zinc-50 flex justify-between items-center text-sm border-t-2 border-black">
-                <span class="font-black text-black text-base">Tổng số tiền cần đóng</span>
-                <span class="font-black text-blue-650 text-lg">{formatCurrency(selectedInvoice.totalAmount)}</span>
-              </div>
-            </div>
-          </div>
+					<!-- Bill Line Items -->
+					<div class="space-y-2">
+						<h3 class="text-xs font-black text-zinc-500">Các mục thanh toán</h3>
+						<div
+							class="divide-y divide-black/15 overflow-hidden rounded-lg border-2 border-black bg-white shadow-secondary"
+						>
+							{#each selectedInvoice.items as item}
+								<div class="flex items-center justify-between p-3 text-sm font-semibold">
+									<div>
+										<p class="font-bold text-black">{item.name}</p>
+										{#if item.details}
+											<p class="mt-0.5 text-xs font-bold text-zinc-500 italic">{item.details}</p>
+										{/if}
+									</div>
+									<span class="font-bold text-zinc-800">{formatCurrency(item.amount)}</span>
+								</div>
+							{/each}
+							<!-- Total Row -->
+							<div
+								class="flex items-center justify-between border-t-2 border-black bg-zinc-50 p-4 text-sm"
+							>
+								<span class="text-base font-black text-black">Tổng số tiền cần đóng</span>
+								<span class="text-blue-650 text-lg font-black"
+									>{formatCurrency(selectedInvoice.totalAmount)}</span
+								>
+							</div>
+						</div>
+					</div>
 
-          <!-- Tenant Submitted Proof -->
-          {#if selectedInvoice.paymentProofImage}
-            <div class="space-y-2">
-              <h3 class="text-xs font-black text-zinc-500 flex items-center gap-1">
-                Ảnh chụp bill thanh toán của khách <AlertTriangle class="h-4 w-4 text-amber-500" />
-              </h3>
-              <div class="border-2 border-black rounded-lg p-3 bg-amber-50/30 flex flex-col items-center shadow-secondary">
-                <img 
-                  src={selectedInvoice.paymentProofImage} 
-                  alt="Bill thanh toan" 
-                  class="max-h-60 rounded-lg object-contain border-2 border-black shadow-secondary bg-white"
-                />
-                <p class="text-xs text-amber-900 mt-2 font-bold text-center">Khách đã tải bill này lên. Vui lòng đối soát STK trước khi xác nhận.</p>
-              </div>
-            </div>
-          {/if}
+					<!-- Tenant Submitted Proof -->
+					{#if selectedInvoice.paymentProofImage}
+						<div class="space-y-2">
+							<h3 class="flex items-center gap-1 text-xs font-black text-zinc-500">
+								Ảnh chụp bill thanh toán của khách <AlertTriangle class="h-4 w-4 text-amber-500" />
+							</h3>
+							<div
+								class="flex flex-col items-center rounded-lg border-2 border-black bg-amber-50/30 p-3 shadow-secondary"
+							>
+								<img
+									src={selectedInvoice.paymentProofImage}
+									alt="Bill thanh toan"
+									class="max-h-60 rounded-lg border-2 border-black bg-white object-contain shadow-secondary"
+								/>
+								<p class="mt-2 text-center text-xs font-bold text-amber-900">
+									Khách đã tải bill này lên. Vui lòng đối soát STK trước khi xác nhận.
+								</p>
+							</div>
+						</div>
+					{/if}
 
-          <!-- Actions -->
-          <div class="flex gap-3 pt-4 border-t-2 border-black">
-            <button
-              onclick={() => deleteInvoice(selectedInvoice!.id)}
-              disabled={isDeleting}
-              class="border-2 border-black bg-red-200 hover:bg-red-350 text-red-800 p-2.5 rounded-[6px] shadow-secondary transition-all flex items-center justify-center cursor-pointer"
-              title="Xóa hóa đơn"
-            >
-              {#if isDeleting}
-                <Loader2 class="h-5 w-5 animate-spin" />
-              {:else}
-                <Trash2 class="h-5 w-5" />
-              {/if}
-            </button>
+					<!-- Actions -->
+					<div class="flex gap-3 border-t-2 border-black pt-4">
+						<button
+							onclick={() => deleteInvoice(selectedInvoice!.id)}
+							disabled={isDeleting}
+							class="hover:bg-red-350 flex cursor-pointer items-center justify-center rounded-[6px] border-2 border-black bg-red-200 p-2.5 text-red-800 shadow-secondary transition-all"
+							title="Xóa hóa đơn"
+						>
+							{#if isDeleting}
+								<Loader2 class="h-5 w-5 animate-spin" />
+							{:else}
+								<Trash2 class="h-5 w-5" />
+							{/if}
+						</button>
 
-            {#if selectedInvoice.status !== 'paid'}
-              <button
-                onclick={() => confirmPayment(selectedInvoice!.id)}
-                disabled={isConfirming}
-                class="flex-1 bg-blue-300 hover:bg-blue-400 text-black border-2 border-black py-2.5 rounded-[6px] text-center text-xs font-black shadow-secondary transition-all flex items-center justify-center gap-1.5 cursor-pointer"
-              >
-                Xác nhận đã nhận tiền (Đóng hóa đơn)
-                {#if isConfirming}
-                  <Loader2 class="h-4 w-4 animate-spin" />
-                {:else}
-                  <Check class="h-4.5 w-4.5" />
-                {/if}
-              </button>
-            {:else}
-              <div class="flex-1 bg-green-200 border-2 border-black text-green-800 text-center py-2.5 rounded-[6px] text-xs font-black flex items-center justify-center gap-1.5 select-none">
-                Hóa đơn đã đóng vào ngày {new Date(selectedInvoice.paidDate!).toLocaleDateString('vi-VN')}
-              </div>
-            {/if}
-          </div>
-        </div>
-      </div>
-    </div>
-  {/if}
-
+						{#if selectedInvoice.status !== 'paid'}
+							<button
+								onclick={() => confirmPayment(selectedInvoice!.id)}
+								disabled={isConfirming}
+								class="flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-[6px] border-2 border-black bg-blue-300 py-2.5 text-center text-xs font-black text-black shadow-secondary transition-all hover:bg-blue-400"
+							>
+								Xác nhận đã nhận tiền (Đóng hóa đơn)
+								{#if isConfirming}
+									<Loader2 class="h-4 w-4 animate-spin" />
+								{:else}
+									<Check class="h-4.5 w-4.5" />
+								{/if}
+							</button>
+						{:else}
+							<div
+								class="flex flex-1 items-center justify-center gap-1.5 rounded-[6px] border-2 border-black bg-green-200 py-2.5 text-center text-xs font-black text-green-800 select-none"
+							>
+								Hóa đơn đã đóng vào ngày {new Date(selectedInvoice.paidDate!).toLocaleDateString(
+									'vi-VN'
+								)}
+							</div>
+						{/if}
+					</div>
+				</div>
+			</div>
+		</div>
+	{/if}
 </div>
 
 <style>
-  @keyframes fade-in {
-    from { opacity: 0; }
-    to { opacity: 1; }
-  }
-  @keyframes scale-up {
-    from { transform: scale(0.95); opacity: 0; }
-    to { transform: scale(1); opacity: 1; }
-  }
+	@keyframes fade-in {
+		from {
+			opacity: 0;
+		}
+		to {
+			opacity: 1;
+		}
+	}
+	@keyframes scale-up {
+		from {
+			transform: scale(0.95);
+			opacity: 0;
+		}
+		to {
+			transform: scale(1);
+			opacity: 1;
+		}
+	}
 </style>

@@ -26,7 +26,12 @@
 
 	let { children } = $props();
 
-	let user = $state<{ name: string; email?: string; role: string; landlordProfileId: string } | null>(null);
+	let user = $state<{
+		name: string;
+		email?: string;
+		role: string;
+		landlordProfileId: string;
+	} | null>(null);
 	let isMobileMenuOpen = $state(false);
 	const activeRoute = $derived(page.url.pathname);
 
@@ -107,16 +112,17 @@
 {#if user}
 	<div class="relative h-screen overflow-hidden bg-white font-sans text-black">
 		<div class="roomio-grid-bg fixed inset-0 -z-10 opacity-50"></div>
-		<div class="pointer-events-none fixed inset-0 -z-10 bg-gradient-to-b from-white/80 via-white/60 to-white/80"></div>
+		<div
+			class="pointer-events-none fixed inset-0 -z-10 bg-gradient-to-b from-white/80 via-white/60 to-white/80"
+		></div>
 
 		<div class="flex h-full">
-			<aside data-tap-zone="plain" class="hidden h-full w-68 shrink-0 flex-col overflow-y-auto border-r-2 border-black bg-white/92 px-5 py-6 backdrop-blur lg:flex">
+			<aside
+				data-tap-zone="plain"
+				class="hidden h-full w-68 shrink-0 flex-col overflow-y-auto border-r-2 border-black bg-white/92 px-5 py-6 backdrop-blur lg:flex"
+			>
 				<div class="mb-7">
-					<img
-						src="/brand/roomio-wordmark-blue600.png"
-						alt="Roomio"
-						class="h-auto w-36"
-					/>
+					<img src="/brand/roomio-wordmark-blue600.png" alt="Roomio" class="h-auto w-36" />
 				</div>
 
 				<nav class="space-y-6">
@@ -149,21 +155,22 @@
 					{#if user.email}
 						<p class="truncate text-xs font-semibold text-zinc-500">{user.email}</p>
 					{/if}
-					<button onclick={handleLogout} class="mt-2 inline-flex items-center gap-1 text-sm font-bold text-blue-500 hover:underline">
+					<button
+						onclick={handleLogout}
+						class="mt-2 inline-flex items-center gap-1 text-sm font-bold text-blue-500 hover:underline"
+					>
 						Đăng xuất <LogOut class="h-3.5 w-3.5" />
 					</button>
 				</div>
 			</aside>
 
 			<div class="flex min-w-0 flex-1 flex-col overflow-y-auto">
-				<header class="sticky top-0 z-30 flex items-center justify-between border-b-2 border-black bg-white/95 px-5 py-3 backdrop-blur lg:hidden">
+				<header
+					class="sticky top-0 z-30 flex items-center justify-between border-b-2 border-black bg-white/95 px-5 py-3 backdrop-blur lg:hidden"
+				>
 					<div class="flex items-center gap-3">
 						<div>
-							<img
-								src="/brand/roomio-wordmark-blue600.png"
-								alt="Roomio"
-								class="h-auto w-28"
-							/>
+							<img src="/brand/roomio-wordmark-blue600.png" alt="Roomio" class="h-auto w-28" />
 						</div>
 					</div>
 					<button
@@ -176,7 +183,7 @@
 				</header>
 
 				<main class="mx-auto w-full max-w-7xl flex-1 px-5 py-6 sm:px-6 sm:py-8">
-				{@render children()}
+					{@render children()}
 				</main>
 			</div>
 		</div>
@@ -189,15 +196,14 @@
 				role="button"
 				tabindex="0"
 			></div>
-			<aside data-tap-zone="plain" class="fixed inset-y-0 left-0 z-50 flex w-[92vw] max-w-sm flex-col overflow-y-auto border-r-2 border-black bg-white px-5 py-5 lg:hidden">
+			<aside
+				data-tap-zone="plain"
+				class="fixed inset-y-0 left-0 z-50 flex w-[92vw] max-w-sm flex-col overflow-y-auto border-r-2 border-black bg-white px-5 py-5 lg:hidden"
+			>
 				<div class="mb-6 flex items-center justify-between gap-3">
 					<div class="flex items-center gap-3">
 						<div>
-							<img
-								src="/brand/roomio-wordmark-blue600.png"
-								alt="Roomio"
-								class="h-auto w-32"
-							/>
+							<img src="/brand/roomio-wordmark-blue600.png" alt="Roomio" class="h-auto w-32" />
 						</div>
 					</div>
 					<button
@@ -240,11 +246,14 @@
 					{#if user.email}
 						<p class="max-w-56 truncate text-xs font-semibold text-zinc-500">{user.email}</p>
 					{/if}
-					<button onclick={handleLogout} class="mt-2 inline-flex items-center gap-1 text-sm font-bold text-blue-500 hover:underline">
+					<button
+						onclick={handleLogout}
+						class="mt-2 inline-flex items-center gap-1 text-sm font-bold text-blue-500 hover:underline"
+					>
 						Đăng xuất <LogOut class="h-3.5 w-3.5" />
 					</button>
 				</div>
 			</aside>
 		{/if}
-		</div>
+	</div>
 {/if}
