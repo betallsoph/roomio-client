@@ -169,6 +169,16 @@
 	let isUploadingProofImage = $state(false);
 	let isCreatingPaymentLink = $state(false);
 	let paymentLinkError = $state('');
+	let paymentProvider = $state<'payos' | 'vietqr' | null>(null);
+	let paymentVietQR = $state<{
+		qrImageUrl: string;
+		bankName: string;
+		bankCode: string;
+		accountNumber: string;
+		accountName: string;
+		amount: number;
+		description: string;
+	} | null>(null);
 
 	// Request form state
 	let reqCategory = $state('maintenance');
@@ -529,6 +539,8 @@
 	async function openPayment(invoice: Invoice) {
 		proofImageUrl = '';
 		paymentLinkError = '';
+		paymentProvider = null;
+		paymentVietQR = null;
 		isCreatingPaymentLink = true;
 		try {
 			const res = await fetch(`/api/invoices/${invoice.id}`);
@@ -542,11 +554,13 @@
 			if (!linkRes.ok) {
 				throw new Error(linkData.error || 'Không tạo được link thanh toán PayOS');
 			}
+			paymentProvider = linkData.provider ?? 'payos';
+			paymentVietQR = linkData.provider === 'vietqr' ? linkData : null;
 			payingInvoice = {
 				...(payingInvoice || invoice),
-				payosCheckoutUrl: linkData.checkoutUrl,
-				payosQrCode: linkData.qrCode,
-				payosStatus: linkData.status
+				payosCheckoutUrl: linkData.checkoutUrl ?? null,
+				payosQrCode: linkData.qrCode ?? null,
+				payosStatus: linkData.status ?? null
 			};
 		} catch (e) {
 			payingInvoice = payingInvoice || invoice;
@@ -1052,7 +1066,11 @@
 									>
 										{#if isCreatingPaymentLink}
 											<Loader2 class="mb-3 h-10 w-10 animate-spin text-black" />
-											<p class="text-xs font-black text-zinc-600">Đang tạo link PayOS...</p>
+											<p class="text-xs font-black text-zinc-600">Đang tạo mã thanh toán...</p>
+										{:else if paymentProvider === 'vietqr' && paymentVietQR}
+											<img src={paymentVietQR.qrImageUrl} alt="VietQR" class="mb-2 h-40 w-40 rounded border-2 border-black bg-white object-contain" />
+											<p class="text-sm font-black text-black">Quét VietQR để chuyển khoản</p>
+											<p class="mt-1 text-xs font-bold text-zinc-600">{paymentVietQR.bankName} · {paymentVietQR.accountNumber}</p>
 										{:else if payingInvoice.payosCheckoutUrl}
 											<QrCode class="mb-3 h-12 w-12 text-black" />
 											<p class="text-sm font-black text-black">Thanh toán qua PayOS</p>
@@ -1069,7 +1087,7 @@
 											</a>
 										{:else}
 											<AlertCircle class="mb-3 h-10 w-10 text-red-500" />
-											<p class="text-sm font-black text-black">Chưa tạo được link PayOS</p>
+											<p class="text-sm font-black text-black">Chưa tạo được mã thanh toán</p>
 											<p class="mt-1 text-xs font-bold text-red-700">{paymentLinkError}</p>
 										{/if}
 									</div>
@@ -1080,7 +1098,13 @@
 											<p class="font-black text-zinc-500">
 												Thông tin thanh toán
 											</p>
-											<p class="text-sm font-black text-black">Cổng thanh toán PayOS</p>
+											{#if paymentProvider === 'vietqr' && paymentVietQR}
+												<p class="text-sm font-black text-black">Chuyển khoản VietQR</p>
+												<p class="font-bold text-zinc-700">{paymentVietQR.accountName}</p>
+												<p class="font-bold text-zinc-700">Nội dung CK: {paymentVietQR.description}</p>
+											{:else}
+												<p class="text-sm font-black text-black">Cổng thanh toán PayOS</p>
+											{/if}
 											<p class="font-black text-indigo-600">
 												Số tiền: {formatCurrency(payingInvoice.totalAmount)}
 											</p>

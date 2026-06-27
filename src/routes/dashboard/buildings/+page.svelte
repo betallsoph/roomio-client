@@ -87,7 +87,7 @@
 
   function propertyLabel(type = rentalType) {
     if (type === 'MOTEL') return 'khu trọ';
-    if (type === 'SERVICED_APARTMENT') return 'cơ sở căn hộ dịch vụ';
+    if (type === 'SERVICED_APARTMENT') return 'tòa nhà căn hộ dịch vụ';
     if (type === 'DORM') return 'khu KTX / sleepbox';
     return 'tòa nhà';
   }
@@ -134,7 +134,7 @@
       const data = await res.json();
       if (res.ok) properties = data;
     } catch (e: any) {
-      toast.error('Không thể tải danh sách cơ sở: ' + e.message);
+      toast.error('Không thể tải danh sách tòa nhà: ' + e.message);
     } finally {
       isLoading = false;
     }
@@ -170,7 +170,7 @@
       });
       const data = await res.json();
 
-      if (!res.ok) throw new Error(data.error || 'Lỗi khi tạo cơ sở');
+      if (!res.ok) throw new Error(data.error || 'Lỗi khi tạo tòa nhà');
 
       toast.success(`Đã thêm ${propertyLabel(rentalType)} ${name} thành công`);
       isAddDialogOpen = false;
@@ -191,8 +191,8 @@
 
   async function handleDeleteProperty(id: string) {
     if (!(await confirmPopup({
-      title: 'Xóa cơ sở',
-      message: 'Bạn có chắc chắn muốn xóa cơ sở này? Tất cả phòng và hóa đơn liên quan sẽ bị xóa!',
+      title: 'Xóa tòa nhà',
+      message: 'Bạn có chắc chắn muốn xóa tòa nhà này? Tất cả phòng và hóa đơn liên quan sẽ bị xóa!',
       confirmLabel: 'Xóa',
       tone: 'danger'
     }))) return;
@@ -203,9 +203,9 @@
       });
       const data = await res.json();
 
-      if (!res.ok) throw new Error(data.error || 'Lỗi khi xóa cơ sở');
+      if (!res.ok) throw new Error(data.error || 'Lỗi khi xóa tòa nhà');
 
-      toast.success('Đã xóa cơ sở thành công');
+      toast.success('Đã xóa tòa nhà thành công');
       isDetailDrawerOpen = false;
       selectedProperty = null;
       if (landlordId) fetchProperties(landlordId);
@@ -251,14 +251,14 @@
   <!-- Header -->
   <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
     <div>
-      <h1 class="text-xl sm:text-2xl font-black text-black">Cơ sở cho thuê</h1>
-      <p class="text-zinc-600 text-sm mt-1 font-bold">{properties.length} cơ sở, {properties.reduce((sum, p) => sum + p.rooms.length, 0)} phòng</p>
+      <h1 class="text-xl sm:text-2xl font-black text-black">Tòa nhà cho thuê</h1>
+      <p class="text-zinc-600 text-sm mt-1 font-bold">{properties.length} tòa nhà, {properties.reduce((sum, p) => sum + p.rooms.length, 0)} phòng</p>
     </div>
     <button 
       onclick={(e) => tapBounce(e, () => (isAddDialogOpen = true))}
       class="w-full sm:w-auto bg-blue-300 text-black border-2 border-black px-4 py-2.5 rounded-[6px] shadow-secondary transition-all flex items-center justify-center gap-1.5 cursor-pointer font-black text-sm"
     >
-      Thêm cơ sở <Plus class="h-4.5 w-4.5" />
+      Thêm tòa nhà <Plus class="h-4.5 w-4.5" />
     </button>
   </div>
 
@@ -266,21 +266,21 @@
     <div class="h-[50vh] w-full flex items-center justify-center">
       <div class="flex flex-col items-center gap-3">
         <Loader2 class="h-10 w-10 text-black animate-spin" />
-        <p class="text-zinc-600 font-bold">Đang tải danh sách cơ sở...</p>
+        <p class="text-zinc-600 font-bold">Đang tải danh sách tòa nhà...</p>
       </div>
     </div>
   {:else if properties.length === 0}
     <div class="bg-white border-2 border-black p-12 rounded-lg text-center max-w-md mx-auto shadow-secondary mt-8">
               <Building2 class="h-8 w-8 text-black" />
-      <h3 class="font-black text-black text-lg">Chưa có cơ sở nào</h3>
+      <h3 class="font-black text-black text-lg">Chưa có tòa nhà nào</h3>
       <p class="text-zinc-600 text-sm mt-2 leading-relaxed font-semibold">
-        Bắt đầu bằng cách thêm cơ sở đầu tiên để thiết lập phòng, dịch vụ và tiền thuê hàng tháng.
+        Bắt đầu bằng cách thêm tòa nhà đầu tiên để thiết lập phòng, dịch vụ và tiền thuê hàng tháng.
       </p>
       <button 
         onclick={(e) => tapBounce(e, () => (isAddDialogOpen = true))}
         class="mt-5 bg-blue-300 text-black border-2 border-black px-5 py-2.5 rounded-[6px] text-sm font-black shadow-secondary transition-all cursor-pointer"
       >
-        Tạo cơ sở mới
+        Tạo tòa nhà mới
       </button>
     </div>
   {:else}
@@ -402,7 +402,7 @@
           <div class="w-2.5 h-2.5 rounded-full bg-red-500 border border-black"></div>
           <div class="w-2.5 h-2.5 rounded-full bg-yellow-500 border border-black"></div>
           <div class="w-2.5 h-2.5 rounded-full bg-green-500 border border-black"></div>
-          <span class="text-xs font-bold text-zinc-500 ml-2">Thêm cơ sở mới</span>
+          <span class="text-xs font-bold text-zinc-500 ml-2">Thêm tòa nhà mới</span>
           <button 
             onclick={() => isAddDialogOpen = false}
             class="ml-auto text-black hover:bg-zinc-200 p-1 border border-transparent rounded-[6px] cursor-pointer"
@@ -610,7 +610,7 @@
           <button
             onclick={() => handleDeleteProperty(selectedProperty!.id)}
             class="border-2 border-black bg-red-200 hover:bg-red-300 text-red-800 p-2.5 rounded-[6px] shadow-secondary transition-all cursor-pointer"
-            title="Xóa cơ sở"
+            title="Xóa tòa nhà"
           >
             <Trash2 class="h-5 w-5" />
           </button>

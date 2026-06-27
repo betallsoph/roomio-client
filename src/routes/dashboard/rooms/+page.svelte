@@ -21,8 +21,10 @@
     LogOut,
     CheckCircle2,
     ArrowRight,
+    ChevronDown,
     LayoutGrid,
-    List
+    List,
+    Search
   } from '@lucide/svelte';
 
   interface Service {
@@ -104,7 +106,9 @@
   // Filtering states
   let selectedPropertyId = $state('');
   let selectedBlockId = $state('all');
+  let searchQuery = $state('');
   let viewMode = $state<'grid' | 'list'>('grid');
+  let openFilterMenu = $state<'property' | 'block' | null>(null);
 
   // Detail Modal / Drawer states
   let selectedRoom = $state<Room | null>(null);
@@ -117,6 +121,7 @@
   let newRoomCode = $state('');
   let newRoomType = $state('standard');
   let newFloor = $state('');
+  let newApartmentUnit = $state('');
   let newMonthlyRent = $state('');
   let newArea = $state('');
   let newBlockId = $state('');
@@ -227,8 +232,27 @@
     e.preventDefault();
     if (!selectedPropertyId || isCreatingRoom) return;
 
-    if (!newRoomNumber || !newMonthlyRent) {
-      toast.error('Vui lòng điền số phòng và giá thuê');
+    if (!newMonthlyRent) {
+      toast.error('Vui lòng điền giá thuê');
+      return;
+    }
+
+    const isApartment = activeRentalType() === 'APARTMENT';
+    const generatedApartmentCode = buildNewApartmentCode();
+    const submittedRoomNumber = isApartment
+      ? getNewRoomDisplayName()
+      : newRoomNumber.trim();
+    const submittedRoomCode = isApartment
+      ? generatedApartmentCode
+      : newRoomCode.trim() || null;
+
+    if (isApartment && (!newBlockId || !newFloor || !newApartmentUnit || !generatedApartmentCode)) {
+      toast.error('Vui lòng chọn block, nhập tầng và số căn hộ');
+      return;
+    }
+
+    if (!submittedRoomNumber) {
+      toast.error('Vui lòng điền số phòng');
       return;
     }
 
@@ -240,8 +264,8 @@
         body: JSON.stringify({
           propertyId: selectedPropertyId,
           blockId: newBlockId || null,
-          roomNumber: newRoomNumber,
-          roomCode: newRoomCode || null,
+          roomNumber: submittedRoomNumber,
+          roomCode: submittedRoomCode,
           roomType: newRoomType,
           floor: newFloor ? Number(newFloor) : null,
           monthlyRent: Number(newMonthlyRent),
@@ -252,12 +276,13 @@
 
       if (!res.ok) throw new Error(data.error || 'Lỗi tạo phòng');
 
-      toast.success(`Đã thêm phòng ${newRoomNumber} thành công`);
+      toast.success(`Đã thêm phòng ${submittedRoomNumber} thành công`);
       isAddDialogOpen = false;
       // Clear forms
       newRoomNumber = '';
       newRoomCode = '';
       newFloor = '';
+      newApartmentUnit = '';
       newMonthlyRent = '';
       newArea = '';
       newBlockId = '';
@@ -446,6 +471,26 @@
     return properties.find(p => p.id === selectedPropertyId);
   }
 
+  function getActiveBlocks() {
+    return getActiveProperty()?.blocks ?? [];
+  }
+
+  function getSelectedBlockName() {
+    if (selectedBlockId === 'all') return `Tất cả ${blockLabel().toLowerCase()}`;
+    return getActiveProperty()?.blocks.find(block => block.id === selectedBlockId)?.name ?? `Tất cả ${blockLabel().toLowerCase()}`;
+  }
+
+  function selectProperty(propertyId: string) {
+    selectedPropertyId = propertyId;
+    selectedBlockId = 'all';
+    openFilterMenu = null;
+  }
+
+  function selectBlock(blockId: string) {
+    selectedBlockId = blockId;
+    openFilterMenu = null;
+  }
+
   function activeRentalType() {
     return getActiveProperty()?.rentalType ?? 'APARTMENT';
   }
@@ -473,6 +518,104 @@
     return 'Mã căn hộ';
   }
 
+  function onlyDigits(value: string) {
+    return value.replace(/\D/g, '');
+  }
+
+  function twoDigit(value: string) {
+    const digits = onlyDigits(value);
+    return digits ? digits.padStart(2, '0') : '';
+  }
+
+  function getBlockTower(blockName: string) {
+    return blockName.match(/[A-Za-z]/)?.[0]?.toUpperCase() ?? '';
+  }
+
+  function buildApartmentCode(blockName: string, floor: string, unit: string) {
+    const tower = getBlockTower(blockName);
+    const floorCode = twoDigit(floor);
+    const unitCode = twoDigit(unit);
+    return tower && floorCode && unitCode ? `${tower}${floorCode}-${unitCode}` : '';
+  }
+
+  function buildNewApartmentCode() {
+    const blockName = getActiveProperty()?.blocks.find(block => block.id === newBlockId)?.name ?? '';
+    return buildApartmentCode(blockName, newFloor, newApartmentUnit);
+  }
+
+  function getNewRoomDisplayName() {
+    return newRoomNumber.trim() || twoDigit(newApartmentUnit) || buildNewApartmentCode();
+  }
+
+  function getRoomBlockName(room: Room) {
+    return getActiveProperty()?.blocks.find(block => block.id === room.blockId)?.name ?? '';
+  }
+
+  function getRoomCode(room: Room) {
+    return room.roomCode || room.roomNumber;
+  }
+
+  function getRoomShortName(room: Room) {
+    const code = getRoomCode(room);
+    const unitMatch = code.match(/^[A-Z]\d{2}-(\d{2})$/);
+    return unitMatch ? unitMatch[1] : room.roomNumber;
+  }
+
+  function getRoomCardMeta(room: Room) {
+    return [getRoomBlockName(room), getRoomCode(room)].filter(Boolean).join(' · ');
+  }
+
+  function getRoomCodeAlias(room: Room) {
+    const match = getRoomCode(room).match(/^([A-Z])(\d{2})-(\d{2})$/);
+    if (!match) return '';
+    return `${getRoomBlockName(room) || match[1]}.${match[2]}.${match[3]}`;
+  }
+
+  function roomStatusLabel(status: string) {
+    if (status === 'empty') return 'Trống';
+    if (status === 'paid') return 'Đã đóng';
+    return 'Còn nợ';
+  }
+
+  function normalizeSearch(value: string) {
+    return value
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/đ/g, 'd')
+      .replace(/Đ/g, 'd')
+      .toLowerCase()
+      .trim();
+  }
+
+  let visibleRooms = $derived.by(() => {
+    const query = normalizeSearch(searchQuery);
+    if (!query) return rooms;
+
+    return rooms.filter(room => {
+      const tenant = room.tenant?.user;
+      const content = [
+        room.roomNumber,
+        room.roomCode ?? '',
+        getRoomShortName(room),
+        getRoomCardMeta(room),
+        getRoomCodeAlias(room),
+        getRoomBlockName(room),
+        getRoomTypeLabel(room.roomType),
+        roomStatusLabel(room.status),
+        room.floor ? `Tầng ${room.floor}` : '',
+        room.area ? `${room.area}m2` : '',
+        String(room.monthlyRent),
+        formatCurrency(room.monthlyRent),
+        String(room.debtAmount),
+        tenant?.name ?? '',
+        tenant?.phone ?? '',
+        tenant?.email ?? ''
+      ].join(' ');
+
+      return normalizeSearch(content).includes(query);
+    });
+  });
+
   function formatCurrency(amount: number) {
     return new Intl.NumberFormat('vi-VN').format(amount) + 'đ';
   }
@@ -486,6 +629,8 @@
     return labels[type] || type;
   }
 </script>
+
+<svelte:window onclick={() => (openFilterMenu = null)} />
 
 <div class="space-y-6">
   <!-- Top Section: Filters and Title -->
@@ -505,40 +650,122 @@
 
   <!-- Filter bar -->
   <div class="space-y-3">
-    <div class="grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]">
+    <div class="grid gap-3 xl:grid-cols-[minmax(220px,0.9fr)_minmax(0,1fr)_minmax(0,1fr)_auto]">
       <div class="space-y-1">
+        <label for="room-search" class="text-[10px] font-black text-zinc-500 block">Tìm phòng</label>
+        <div class="relative">
+          <Search class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-500" />
+          <input
+            id="room-search"
+            type="search"
+            bind:value={searchQuery}
+            placeholder="A16-04, A1, tên khách..."
+            class="h-12 w-full rounded-lg border-2 border-black bg-white pl-9 pr-9 text-sm font-bold text-black placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-300"
+          />
+          {#if searchQuery}
+            <button
+              type="button"
+              onclick={() => (searchQuery = '')}
+              aria-label="Xóa tìm kiếm"
+              class="absolute right-2 top-1/2 -translate-y-1/2 rounded-[6px] p-1 text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-black"
+            >
+              <X class="h-4 w-4" />
+            </button>
+          {/if}
+        </div>
+      </div>
+
+      <div class="relative space-y-1" onclick={(e) => e.stopPropagation()}>
         <span class="text-[10px] font-black text-zinc-500 block">{propertyLabel()}</span>
-        <select 
-          bind:value={selectedPropertyId} 
-          class="w-full border-2 border-black px-3 py-2 text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300 bg-white font-bold text-black"
+        <button
+          type="button"
+          class="flex h-12 w-full items-center justify-between gap-3 rounded-lg border-2 border-black bg-white px-3 text-left text-sm font-bold text-black transition-colors hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-300"
+          aria-haspopup="listbox"
+          aria-expanded={openFilterMenu === 'property'}
+          onclick={() => (openFilterMenu = openFilterMenu === 'property' ? null : 'property')}
         >
-          {#each properties as prop}
-            <option value={prop.id}>{prop.name}</option>
-          {/each}
-        </select>
+          <span class="truncate">{getActiveProperty()?.name ?? 'Chọn tòa nhà'}</span>
+          <ChevronDown class="h-4 w-4 shrink-0 text-zinc-600 transition-transform {openFilterMenu === 'property' ? 'rotate-180' : ''}" />
+        </button>
+        {#if openFilterMenu === 'property'}
+          <div
+            class="absolute left-0 right-0 top-[calc(100%+6px)] z-30 max-h-72 overflow-y-auto rounded-lg border-2 border-black bg-white p-1"
+            role="listbox"
+          >
+            {#each properties as prop}
+              <button
+                type="button"
+                class="flex w-full items-center justify-between gap-3 rounded-[6px] px-3 py-2.5 text-left text-sm font-bold text-black transition-colors hover:bg-blue-100 {selectedPropertyId === prop.id ? 'bg-blue-100' : 'bg-white'}"
+                role="option"
+                aria-selected={selectedPropertyId === prop.id}
+                onclick={() => selectProperty(prop.id)}
+              >
+                <span class="truncate">{prop.name}</span>
+                {#if selectedPropertyId === prop.id}
+                  <Check class="h-4 w-4 shrink-0 text-blue-600" />
+                {/if}
+              </button>
+            {/each}
+          </div>
+        {/if}
       </div>
 
       {#if getActiveProperty() && getActiveProperty()!.blocks.length > 0}
-        <div class="space-y-1">
+        <div class="relative space-y-1" onclick={(e) => e.stopPropagation()}>
           <span class="text-[10px] font-black text-zinc-500 block">{blockLabel()}</span>
-          <select 
-            bind:value={selectedBlockId} 
-            class="w-full border-2 border-black px-3 py-2 text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300 bg-white font-bold text-black"
+          <button
+            type="button"
+            class="flex h-12 w-full items-center justify-between gap-3 rounded-lg border-2 border-black bg-white px-3 text-left text-sm font-bold text-black transition-colors hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-300"
+            aria-haspopup="listbox"
+            aria-expanded={openFilterMenu === 'block'}
+            onclick={() => (openFilterMenu = openFilterMenu === 'block' ? null : 'block')}
           >
-            <option value="all">Tất cả {blockLabel().toLowerCase()}</option>
-            {#each getActiveProperty()!.blocks as block}
-              <option value={block.id}>{block.name}</option>
-            {/each}
-          </select>
+            <span class="truncate">{getSelectedBlockName()}</span>
+            <ChevronDown class="h-4 w-4 shrink-0 text-zinc-600 transition-transform {openFilterMenu === 'block' ? 'rotate-180' : ''}" />
+          </button>
+          {#if openFilterMenu === 'block'}
+            <div
+              class="absolute left-0 right-0 top-[calc(100%+6px)] z-30 max-h-72 overflow-y-auto rounded-lg border-2 border-black bg-white p-1"
+              role="listbox"
+            >
+              <button
+                type="button"
+                class="flex w-full items-center justify-between gap-3 rounded-[6px] px-3 py-2.5 text-left text-sm font-bold text-black transition-colors hover:bg-blue-100 {selectedBlockId === 'all' ? 'bg-blue-100' : 'bg-white'}"
+                role="option"
+                aria-selected={selectedBlockId === 'all'}
+                onclick={() => selectBlock('all')}
+              >
+                <span>Tất cả {blockLabel().toLowerCase()}</span>
+                {#if selectedBlockId === 'all'}
+                  <Check class="h-4 w-4 shrink-0 text-blue-600" />
+                {/if}
+              </button>
+              {#each getActiveProperty()!.blocks as block}
+                <button
+                  type="button"
+                  class="flex w-full items-center justify-between gap-3 rounded-[6px] px-3 py-2.5 text-left text-sm font-bold text-black transition-colors hover:bg-blue-100 {selectedBlockId === block.id ? 'bg-blue-100' : 'bg-white'}"
+                  role="option"
+                  aria-selected={selectedBlockId === block.id}
+                  onclick={() => selectBlock(block.id)}
+                >
+                  <span class="truncate">{block.name}</span>
+                  {#if selectedBlockId === block.id}
+                    <Check class="h-4 w-4 shrink-0 text-blue-600" />
+                  {/if}
+                </button>
+              {/each}
+            </div>
+          {/if}
         </div>
       {/if}
 
-      <div class="lg:self-end">
-        <div class="grid grid-cols-2 rounded-lg border-2 border-black bg-white p-1 shadow-secondary lg:min-w-56">
+      <div class="space-y-1">
+        <span class="block text-[10px] font-black text-zinc-500">Kiểu xem</span>
+        <div class="grid h-12 grid-cols-2 rounded-lg border-2 border-black bg-white p-1 shadow-secondary lg:min-w-56">
           <button
             type="button"
             onclick={(e) => tapBounce(e, () => (viewMode = 'grid'))}
-            class="flex items-center justify-center gap-1.5 rounded-[6px] px-3 py-2 text-xs font-black transition-colors {viewMode === 'grid' ? 'bg-blue-100 text-black' : 'text-zinc-500 hover:bg-zinc-100 hover:text-black'}"
+            class="flex h-full items-center justify-center gap-1.5 rounded-[6px] px-3 text-xs font-black transition-colors {viewMode === 'grid' ? 'bg-blue-100 text-black' : 'text-zinc-500 hover:bg-zinc-100 hover:text-black'}"
             aria-pressed={viewMode === 'grid'}
           >
             <LayoutGrid class="h-4 w-4" />
@@ -547,7 +774,7 @@
           <button
             type="button"
             onclick={(e) => tapBounce(e, () => (viewMode = 'list'))}
-            class="flex items-center justify-center gap-1.5 rounded-[6px] px-3 py-2 text-xs font-black transition-colors {viewMode === 'list' ? 'bg-blue-100 text-black' : 'text-zinc-500 hover:bg-zinc-100 hover:text-black'}"
+            class="flex h-full items-center justify-center gap-1.5 rounded-[6px] px-3 text-xs font-black transition-colors {viewMode === 'list' ? 'bg-blue-100 text-black' : 'text-zinc-500 hover:bg-zinc-100 hover:text-black'}"
             aria-pressed={viewMode === 'list'}
           >
             <List class="h-4 w-4" />
@@ -584,10 +811,16 @@
       <h3 class="font-black text-black text-lg">{propertyLabel()} này chưa có phòng</h3>
       <p class="text-zinc-600 text-sm mt-2 font-semibold">Bắt đầu bằng cách tạo các phòng trọ để thêm thông tin khách thuê.</p>
     </div>
+  {:else if visibleRooms.length === 0}
+    <div class="mx-auto max-w-md rounded-lg border-2 border-black bg-white p-10 text-center">
+      <Search class="mx-auto mb-3 h-10 w-10 text-zinc-500" />
+      <h3 class="text-lg font-black text-black">Không tìm thấy phòng</h3>
+      <p class="mt-2 text-sm font-semibold text-zinc-600">Thử tìm bằng mã căn, block, tên khách hoặc số điện thoại khác.</p>
+    </div>
   {:else}
     {#if viewMode === 'grid'}
       <div class="grid grid-cols-1 min-[430px]:grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-        {#each rooms as room}
+        {#each visibleRooms as room}
           {@const statusColor = room.status === 'empty' ? 'border-black bg-white' : room.status === 'paid' ? 'border-black bg-green-200' : 'border-black bg-red-200'}
           {@const statusBadge = room.status === 'empty' ? 'text-zinc-500' : room.status === 'paid' ? 'text-green-800' : 'text-red-800'}
           
@@ -595,14 +828,17 @@
             onclick={(e) => tapBounce(e, () => openRoomDetail(room))}
             class="room-card border-2 rounded-lg p-4 flex flex-col justify-between items-start text-left shadow-secondary transition-[transform,box-shadow] cursor-pointer h-32 focus:outline-none focus:ring-2 focus:ring-blue-300 {statusColor}"
           >
-            <div>
-              <span class="room-card-number text-xl font-black text-black leading-none">{room.roomNumber}</span>
+            <div class="w-full min-w-0">
+              <span class="room-card-number block max-w-full truncate text-xl font-black text-black leading-none">{getRoomShortName(room)}</span>
               <p class="text-[9px] font-black text-zinc-600 mt-1">{getRoomTypeLabel(room.roomType)}</p>
+              {#if getRoomCardMeta(room)}
+                <p class="mt-0.5 truncate text-[9px] font-black text-zinc-500">{getRoomCardMeta(room)}</p>
+              {/if}
             </div>
             
             <div class="w-full flex justify-between items-end border-t border-black/15 pt-2 mt-2">
               <span class="text-[10px] font-black {statusBadge}">
-                {room.status === 'empty' ? 'Trống' : room.status === 'paid' ? 'Đã đóng' : 'Còn nợ'}
+                {roomStatusLabel(room.status)}
               </span>
               <span class="text-xs font-black text-black">{formatCurrency(room.monthlyRent)}</span>
             </div>
@@ -622,13 +858,16 @@
         </div>
 
         <div class="divide-y-2 divide-black">
-          {#each rooms as room}
+          {#each visibleRooms as room}
             {@const statusBg = room.status === 'empty' ? 'bg-white' : room.status === 'paid' ? 'bg-green-50' : 'bg-red-50'}
             {@const statusPill = room.status === 'empty' ? 'bg-white text-zinc-600' : room.status === 'paid' ? 'bg-green-200 text-green-900' : 'bg-red-200 text-red-900'}
-            {@const statusLabel = room.status === 'empty' ? 'Trống' : room.status === 'paid' ? 'Đã đóng' : 'Còn nợ'}
+            {@const statusLabel = roomStatusLabel(room.status)}
             <div class="grid gap-3 px-4 py-3 text-sm font-bold md:grid-cols-[1fr_1.2fr_1.5fr_1fr_1fr_1fr_90px] md:items-center {statusBg}">
               <div>
-                <p class="text-lg font-black leading-none text-black">Phòng {room.roomNumber}</p>
+                <p class="truncate text-lg font-black leading-none text-black">Phòng {getRoomShortName(room)}</p>
+                {#if getRoomCardMeta(room)}
+                  <p class="mt-1 truncate text-[10px] font-black text-zinc-500">{getRoomCardMeta(room)}</p>
+                {/if}
                 {#if room.floor}
                   <p class="mt-1 text-[10px] font-black text-zinc-500">Tầng {room.floor}</p>
                 {/if}
@@ -692,29 +931,87 @@
         </div>
 
         <form onsubmit={handleAddRoom} class="p-6 space-y-4">
-          <div class="grid grid-cols-2 gap-4">
-            <div class="space-y-1">
-              <label for="r-num" class="text-xs font-bold text-zinc-600 block">Số phòng</label>
-              <input 
-                id="r-num"
-                type="text" 
-                bind:value={newRoomNumber}
-                required
-                placeholder="Ví dụ: 101, A2" 
-                class="w-full border-2 border-black px-3 py-2 text-sm rounded-lg focus:outline-none bg-white font-bold"
-              />
+          {#if activeRentalType() === 'APARTMENT'}
+            <div class="grid grid-cols-2 gap-4">
+              <div class="space-y-1">
+                <label for="r-num" class="text-xs font-bold text-zinc-600 block">Tên phòng hiển thị</label>
+                <input
+                  id="r-num"
+                  type="text"
+                  bind:value={newRoomNumber}
+                  placeholder="Mặc định: số căn"
+                  class="w-full border-2 border-black px-3 py-2 text-sm rounded-lg focus:outline-none bg-white font-bold"
+                />
+              </div>
+              <div class="space-y-1">
+                <label for="r-block" class="text-xs font-bold text-zinc-600 block">Block</label>
+                <select
+                  id="r-block"
+                  bind:value={newBlockId}
+                  required
+                  class="w-full border-2 border-black px-3 py-2 text-sm rounded-lg focus:outline-none bg-white font-bold text-black"
+                >
+                  <option value="">Chọn block</option>
+                  {#each getActiveBlocks() as block}
+                    <option value={block.id}>{block.name}</option>
+                  {/each}
+                </select>
+              </div>
             </div>
-            <div class="space-y-1">
-              <label for="r-code" class="text-xs font-bold text-zinc-600 block">{roomCodeLabel()} (tùy chọn)</label>
-              <input 
-                id="r-code"
-                type="text" 
-                bind:value={newRoomCode}
-                placeholder="Ví dụ: CH-101" 
-                class="w-full border-2 border-black px-3 py-2 text-sm rounded-lg focus:outline-none bg-white font-bold"
-              />
+
+            <div class="grid grid-cols-2 gap-4">
+              <div class="space-y-1">
+                <label for="r-floor" class="text-xs font-bold text-zinc-600 block">Tầng</label>
+                <input
+                  id="r-floor"
+                  type="number"
+                  bind:value={newFloor}
+                  required
+                  placeholder="16"
+                  class="w-full border-2 border-black px-3 py-2 text-sm rounded-lg focus:outline-none bg-white font-bold"
+                />
+              </div>
+              <div class="space-y-1">
+                <label for="r-unit" class="text-xs font-bold text-zinc-600 block">Số căn</label>
+                <input
+                  id="r-unit"
+                  type="number"
+                  bind:value={newApartmentUnit}
+                  required
+                  placeholder="04"
+                  class="w-full border-2 border-black px-3 py-2 text-sm rounded-lg focus:outline-none bg-white font-bold"
+                />
+              </div>
             </div>
-          </div>
+
+            <div class="rounded-lg border-2 border-black bg-blue-50 px-3 py-2 text-xs font-bold text-black">
+              Mã căn hộ chuẩn: <span class="font-black">{buildNewApartmentCode() || '--'}</span>
+            </div>
+          {:else}
+            <div class="grid grid-cols-2 gap-4">
+              <div class="space-y-1">
+                <label for="r-num" class="text-xs font-bold text-zinc-600 block">Số phòng</label>
+                <input
+                  id="r-num"
+                  type="text"
+                  bind:value={newRoomNumber}
+                  required
+                  placeholder="Ví dụ: 101, A2"
+                  class="w-full border-2 border-black px-3 py-2 text-sm rounded-lg focus:outline-none bg-white font-bold"
+                />
+              </div>
+              <div class="space-y-1">
+                <label for="r-code" class="text-xs font-bold text-zinc-600 block">{roomCodeLabel()} (tùy chọn)</label>
+                <input
+                  id="r-code"
+                  type="text"
+                  bind:value={newRoomCode}
+                  placeholder="Ví dụ: CH-101"
+                  class="w-full border-2 border-black px-3 py-2 text-sm rounded-lg focus:outline-none bg-white font-bold"
+                />
+              </div>
+            </div>
+          {/if}
 
           <div class="grid grid-cols-2 gap-4">
             <div class="space-y-1">
@@ -729,16 +1026,18 @@
                 <option value="balcony">Phòng ban công</option>
               </select>
             </div>
-            <div class="space-y-1">
-              <label for="r-floor" class="text-xs font-bold text-zinc-600 block">Tầng</label>
-              <input 
-                id="r-floor"
-                type="number" 
-                bind:value={newFloor}
-                placeholder="1, 2, 3..." 
-                class="w-full border-2 border-black px-3 py-2 text-sm rounded-lg focus:outline-none bg-white font-bold"
-              />
-            </div>
+            {#if activeRentalType() !== 'APARTMENT'}
+              <div class="space-y-1">
+                <label for="r-floor" class="text-xs font-bold text-zinc-600 block">Tầng</label>
+                <input
+                  id="r-floor"
+                  type="number"
+                  bind:value={newFloor}
+                  placeholder="1, 2, 3..."
+                  class="w-full border-2 border-black px-3 py-2 text-sm rounded-lg focus:outline-none bg-white font-bold"
+                />
+              </div>
+            {/if}
           </div>
 
           <div class="grid grid-cols-2 gap-4">
@@ -765,7 +1064,7 @@
             </div>
           </div>
 
-          {#if getActiveProperty() && getActiveProperty()!.blocks.length > 0}
+          {#if activeRentalType() !== 'APARTMENT' && getActiveProperty() && getActiveProperty()!.blocks.length > 0}
             <div class="space-y-1">
               <label for="r-block" class="text-xs font-bold text-zinc-600 block">{blockLabel()}</label>
               <select 

@@ -184,7 +184,7 @@
         href="/dashboard/buildings" 
         class="inline-flex items-center gap-1.5 text-sm font-bold text-blue-500 hover:underline"
       >
-        Cơ sở <ArrowRight class="h-3.5 w-3.5" />
+        Tòa nhà <ArrowRight class="h-3.5 w-3.5" />
       </a>
       <a 
         href="/dashboard/invoices/bulk" 

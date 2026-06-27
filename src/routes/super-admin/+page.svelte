@@ -9,6 +9,7 @@
     Loader2,
     Lock,
     LogOut,
+    Plug,
     Plus,
     Search,
     Sliders,
@@ -86,6 +87,100 @@
     subValidUntil: '',
     enabledRentalTypes: ['APARTMENT']
   });
+
+  // PayOS riêng cho từng chủ trọ — super-admin cấu hình hộ (cầm tay onboarding)
+  let isPayosOpen = $state(false);
+  let payosTarget = $state<Landlord | null>(null);
+  let payosConnected = $state(false);
+  let payosClientIdSaved = $state<string | null>(null);
+  let payosBusy = $state(false);
+  let pClientId = $state('');
+  let pApiKey = $state('');
+  let pChecksumKey = $state('');
+
+  async function openPayosDialog(landlord: Landlord) {
+    payosTarget = landlord;
+    pClientId = '';
+    pApiKey = '';
+    pChecksumKey = '';
+    payosConnected = false;
+    payosClientIdSaved = null;
+    isPayosOpen = true;
+    try {
+      const res = await fetch(`/api/payos-connect?landlordId=${landlord.id}`);
+      const data = await res.json();
+      if (res.ok) {
+        payosConnected = data.connected;
+        payosClientIdSaved = data.clientId;
+      }
+    } catch {
+      // Bỏ qua lỗi tải trạng thái
+    }
+  }
+
+  async function connectPayos() {
+    if (!payosTarget || payosBusy) return;
+    if (!pClientId || !pApiKey || !pChecksumKey) {
+      toast.error('Cần đủ Client ID, API Key và Checksum Key');
+      return;
+    }
+    payosBusy = true;
+    try {
+      const res = await fetch('/api/payos-connect', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'connect',
+          landlordId: payosTarget.id,
+          clientId: pClientId,
+          apiKey: pApiKey,
+          checksumKey: pChecksumKey
+        })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Lỗi kết nối PayOS');
+      payosConnected = true;
+      payosClientIdSaved = pClientId;
+      pApiKey = '';
+      pChecksumKey = '';
+      if (data.webhookRegistered) toast.success('Đã kết nối PayOS & đăng ký webhook');
+      else toast.success('Đã lưu khóa PayOS' + (data.warning ? ` — webhook chưa đăng ký (${data.warning})` : ''));
+    } catch (err: any) {
+      toast.error(err.message);
+    } finally {
+      payosBusy = false;
+    }
+  }
+
+  async function disconnectPayos() {
+    if (!payosTarget) return;
+    if (
+      !(await confirmPopup({
+        title: 'Ngắt kết nối PayOS',
+        message: 'Ngắt PayOS của chủ trọ này? Sẽ quay về VietQR + xác nhận thủ công.',
+        confirmLabel: 'Ngắt kết nối',
+        tone: 'danger'
+      }))
+    )
+      return;
+    payosBusy = true;
+    try {
+      const res = await fetch('/api/payos-connect', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'disconnect', landlordId: payosTarget.id })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Lỗi ngắt kết nối');
+      payosConnected = false;
+      payosClientIdSaved = null;
+      toast.success('Đã ngắt kết nối PayOS');
+    } catch (err: any) {
+      toast.error(err.message);
+    } finally {
+      payosBusy = false;
+    }
+  }
 
   const RENTAL_TYPE_OPTIONS = [
     { value: 'APARTMENT', label: 'Chung cư' },
@@ -424,7 +519,7 @@
         />
       </label>
 
-      <div class="grid grid-cols-4 gap-1 rounded-[6px] border-2 border-black bg-white p-1 text-xs font-black">
+      <div class="grid grid-cols-4 gap-1 rounded-lg border-2 border-black bg-white p-1 text-xs font-black">
         {#each ['all', 'FREE', 'PREMIUM', 'ENTERPRISE'] as plan}
           <button
             onclick={() => (planFilter = plan)}
@@ -435,7 +530,7 @@
         {/each}
       </div>
 
-      <div class="grid grid-cols-4 gap-1 rounded-[6px] border-2 border-black bg-white p-1 text-xs font-black">
+      <div class="grid grid-cols-4 gap-1 rounded-lg border-2 border-black bg-white p-1 text-xs font-black">
         {#each [
           { value: 'all', label: 'Tất cả' },
           { value: 'active', label: 'Đang chạy' },
@@ -460,12 +555,12 @@
       <section class="grid gap-5 lg:grid-cols-[minmax(0,1fr)_420px]">
         <div class="min-w-0">
           {#if filteredLandlords().length === 0}
-            <div class="bg-blue-50 p-10 text-center">
+            <div class="rounded-lg bg-blue-50 p-10 text-center">
               <p class="text-sm font-bold text-zinc-600">Không có chủ trọ nào khớp bộ lọc.</p>
             </div>
           {:else}
-            <div class="overflow-x-auto border-2 border-black">
-              <div class="grid min-w-[680px] grid-cols-[minmax(220px,1.4fr)_120px_100px_120px_120px] bg-zinc-50 px-4 py-3 text-xs font-black text-zinc-500">
+            <div class="overflow-x-auto rounded-lg border-2 border-black">
+              <div class="grid w-full min-w-[760px] grid-cols-[minmax(240px,1fr)_110px_110px_130px_150px] bg-zinc-50 px-4 py-3 text-xs font-black text-zinc-500">
                 <span>Chủ trọ</span>
                 <span>Gói</span>
                 <span>Phòng</span>
@@ -475,7 +570,7 @@
               {#each filteredLandlords() as landlord}
                 <button
                   onclick={() => (selectedLandlord = landlord)}
-                  class="grid min-w-[680px] grid-cols-[minmax(220px,1.4fr)_120px_100px_120px_120px] items-center gap-0 border-t-2 border-black px-4 py-3 text-left text-sm font-bold transition-colors hover:bg-blue-50 {selectedLandlord?.id === landlord.id ? 'bg-blue-50' : 'bg-white'}"
+                  class="grid w-full min-w-[760px] grid-cols-[minmax(240px,1fr)_110px_110px_130px_150px] items-center gap-0 border-t-2 border-black px-4 py-3 text-left text-sm font-bold transition-colors hover:bg-blue-50 {selectedLandlord?.id === landlord.id ? 'bg-blue-50' : 'bg-white'}"
                 >
                   <span class="min-w-0">
                     <span class="block truncate text-base font-black">{landlord.user.name}</span>
@@ -499,7 +594,7 @@
 
         <aside class="lg:sticky lg:top-5 lg:h-fit">
           {#if selectedLandlord}
-            <div class="border-2 border-black bg-white">
+            <div class="overflow-hidden rounded-lg border-2 border-black bg-white">
               <div class="space-y-5 p-5">
                 <div class="flex items-start justify-between gap-3">
                   <div class="min-w-0">
@@ -613,6 +708,13 @@
                   </button>
                 </div>
 
+                <button
+                  onclick={() => openPayosDialog(selectedLandlord!)}
+                  class="inline-flex w-full items-center justify-center gap-1.5 rounded-[6px] border-2 border-black bg-white px-3 py-2 text-xs font-black text-black transition-colors hover:bg-zinc-100"
+                >
+                  <Plug class="h-4 w-4" /> Kết nối PayOS thu tiền thuê
+                </button>
+
                 <div class="bg-blue-50 px-3 py-2 text-xs font-bold text-blue-900">
                   <Eye class="mr-1 inline h-3.5 w-3.5" />
                   Giai đoạn sau nên thêm xem dưới quyền chủ trọ để support, nhưng chưa bật khi backend chưa có audit log.
@@ -624,6 +726,67 @@
       </section>
     {/if}
   </main>
+
+  {#if isPayosOpen && payosTarget}
+    <div
+      class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4 backdrop-blur-sm"
+      onclick={() => (isPayosOpen = false)}
+      onkeydown={(e) => e.key === 'Escape' && (isPayosOpen = false)}
+      role="button"
+      tabindex="0"
+    >
+      <div
+        class="relative flex w-full max-w-md animate-[scale-up_0.2s_ease-out] flex-col gap-4 rounded-lg border-2 border-black bg-white p-6 shadow-primary"
+        onclick={(e) => e.stopPropagation()}
+        onkeydown={(e) => e.stopPropagation()}
+        role="dialog"
+      >
+        <div class="flex items-center justify-between">
+          <h3 class="flex items-center gap-1.5 text-base font-black text-black">
+            <Plug class="h-4.5 w-4.5" /> PayOS — {payosTarget.companyName || payosTarget.user.name}
+          </h3>
+          <button onclick={() => (isPayosOpen = false)} class="cursor-pointer rounded p-1 hover:bg-zinc-100">
+            <X class="h-4.5 w-4.5" />
+          </button>
+        </div>
+        <p class="-mt-2 text-xs font-bold text-zinc-600">
+          Tiền thuê sẽ về thẳng TK ngân hàng của chủ trọ này và tự động đối soát. Chưa kết nối thì dùng VietQR + xác nhận thủ công.
+        </p>
+
+        {#if payosConnected}
+          <div class="flex items-center justify-between gap-3 rounded-lg border-2 border-black bg-green-100 p-3">
+            <div>
+              <p class="text-sm font-black text-green-800">Đã kết nối</p>
+              {#if payosClientIdSaved}
+                <p class="mt-0.5 text-xs font-bold text-zinc-600">Client ID: {payosClientIdSaved}</p>
+              {/if}
+            </div>
+            <button
+              onclick={disconnectPayos}
+              disabled={payosBusy}
+              class="cursor-pointer rounded-[6px] border-2 border-black bg-red-200 px-3 py-2 text-xs font-black text-red-800 disabled:opacity-50"
+            >
+              Ngắt
+            </button>
+          </div>
+        {:else}
+          <div class="space-y-3 font-semibold">
+            <input type="text" bind:value={pClientId} placeholder="Client ID (x-client-id)" class="w-full border-2 border-black px-3 py-2.5 text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300 bg-white text-black font-semibold" />
+            <input type="password" bind:value={pApiKey} placeholder="API Key (x-api-key)" class="w-full border-2 border-black px-3 py-2.5 text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300 bg-white text-black font-semibold" />
+            <input type="password" bind:value={pChecksumKey} placeholder="Checksum Key" class="w-full border-2 border-black px-3 py-2.5 text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300 bg-white text-black font-semibold" />
+            <button
+              onclick={connectPayos}
+              disabled={payosBusy}
+              class="flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-[6px] border-2 border-black bg-blue-300 px-4 py-2.5 text-sm font-black text-black shadow-secondary transition-all hover:bg-blue-400 disabled:opacity-50"
+            >
+              Kết nối & kiểm tra
+              {#if payosBusy}<Loader2 class="h-4 w-4 animate-spin" />{:else}<Plug class="h-4 w-4" />{/if}
+            </button>
+          </div>
+        {/if}
+      </div>
+    </div>
+  {/if}
 
   {#if isEditOpen && selectedLandlord}
     <div

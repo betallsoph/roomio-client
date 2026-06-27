@@ -396,7 +396,7 @@
               </button>
             </div>
             {#if staffList.length === 0}
-              <p class="text-[10px] font-semibold text-zinc-400">Chưa có nhân viên — thêm ở mục "Nhân viên" trên menu.</p>
+              <p class="text-[10px] font-semibold text-zinc-400">Chưa có nhân viên — thêm ở mục Nhân viên trên menu.</p>
             {/if}
           </div>
         </div>

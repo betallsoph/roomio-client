@@ -1,12 +1,14 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { toast } from 'svelte-sonner';
-  import { 
-    Landmark, 
-    User, 
-    Save, 
-    Loader2 
+  import {
+    Landmark,
+    User,
+    Save,
+    Loader2,
+    Plug
   } from '@lucide/svelte';
+  import { confirmPopup } from '$lib/confirm-popup';
 
   let landlordId = $state<string | null>(null);
   let isLoading = $state(true);
@@ -24,12 +26,21 @@
   let bankBranch = $state('');
   let momoNumber = $state('');
 
+  // PayOS riêng của chủ trọ — kết nối để tiền thuê về thẳng TK của mình + tự động đối soát
+  let payosConnected = $state(false);
+  let payosClientIdSaved = $state<string | null>(null);
+  let payosBusy = $state(false);
+  let pClientId = $state('');
+  let pApiKey = $state('');
+  let pChecksumKey = $state('');
+
   onMount(() => {
     const sessionStr = localStorage.getItem('roomio_user');
     if (!sessionStr) return;
     const session = JSON.parse(sessionStr);
     landlordId = session.landlordProfileId;
     fetchSettings(session.landlordProfileId);
+    fetchPayosStatus();
   });
 
   async function fetchSettings(profileId: string) {
@@ -91,6 +102,76 @@
       toast.error(err.message);
     } finally {
       isSubmitting = false;
+    }
+  }
+
+  async function fetchPayosStatus() {
+    try {
+      const res = await fetch('/api/payos-connect');
+      const data = await res.json();
+      if (res.ok) {
+        payosConnected = data.connected;
+        payosClientIdSaved = data.clientId;
+      }
+    } catch {
+      // Bỏ qua lỗi tải trạng thái PayOS
+    }
+  }
+
+  async function connectPayos() {
+    if (payosBusy) return;
+    if (!pClientId || !pApiKey || !pChecksumKey) {
+      toast.error('Cần đủ Client ID, API Key và Checksum Key');
+      return;
+    }
+    payosBusy = true;
+    try {
+      const res = await fetch('/api/payos-connect', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'connect', clientId: pClientId, apiKey: pApiKey, checksumKey: pChecksumKey })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Lỗi kết nối PayOS');
+      payosConnected = true;
+      payosClientIdSaved = pClientId;
+      pApiKey = '';
+      pChecksumKey = '';
+      if (data.webhookRegistered) toast.success('Đã kết nối PayOS & đăng ký webhook tự động');
+      else toast.success('Đã lưu khóa PayOS' + (data.warning ? ` — webhook chưa đăng ký (${data.warning})` : ''));
+    } catch (err: any) {
+      toast.error(err.message);
+    } finally {
+      payosBusy = false;
+    }
+  }
+
+  async function disconnectPayos() {
+    if (
+      !(await confirmPopup({
+        title: 'Ngắt kết nối PayOS',
+        message: 'Ngắt PayOS? Hóa đơn sẽ quay về thu bằng VietQR + xác nhận thủ công.',
+        confirmLabel: 'Ngắt kết nối',
+        tone: 'danger'
+      }))
+    )
+      return;
+    payosBusy = true;
+    try {
+      const res = await fetch('/api/payos-connect', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'disconnect' })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Lỗi ngắt kết nối');
+      payosConnected = false;
+      payosClientIdSaved = null;
+      toast.success('Đã ngắt kết nối PayOS');
+    } catch (err: any) {
+      toast.error(err.message);
+    } finally {
+      payosBusy = false;
     }
   }
 
@@ -276,5 +357,61 @@
       </div>
 
     </form>
+
+    <!-- Section 3: Kết nối PayOS riêng (endpoint riêng /api/payos-connect) -->
+    <section class="space-y-4 text-black border-t-2 border-black/15 pt-8 mt-8">
+      <h2 class="flex items-center gap-2 text-base font-black text-black select-none">
+        3. Kết nối PayOS — tự động đối soát tiền thuê <Plug class="h-5 w-5" />
+      </h2>
+      <p class="-mt-2 text-xs font-bold text-zinc-600">
+        Kết nối tài khoản PayOS riêng của bạn để tiền thuê về thẳng TK ngân hàng của bạn và tự động đối soát qua webhook.
+        Chưa kết nối thì hệ thống vẫn thu được bằng VietQR + xác nhận thủ công.
+      </p>
+
+      {#if payosConnected}
+        <div class="flex items-center justify-between gap-3 rounded-lg border-2 border-black bg-green-100 p-4 shadow-secondary">
+          <div>
+            <p class="text-sm font-black text-green-800">Đã kết nối PayOS</p>
+            {#if payosClientIdSaved}
+              <p class="mt-0.5 text-xs font-bold text-zinc-600">Client ID: {payosClientIdSaved}</p>
+            {/if}
+          </div>
+          <button
+            type="button"
+            onclick={disconnectPayos}
+            disabled={payosBusy}
+            class="cursor-pointer rounded-[6px] border-2 border-black bg-red-200 px-3 py-2 text-xs font-black text-red-800 shadow-secondary transition-all disabled:opacity-50"
+          >
+            Ngắt kết nối
+          </button>
+        </div>
+      {:else}
+        <div class="grid gap-4 font-semibold sm:grid-cols-2">
+          <div class="space-y-1 sm:col-span-2">
+            <label for="p-cid" class="block text-xs font-bold text-zinc-650">PayOS Client ID</label>
+            <input id="p-cid" type="text" bind:value={pClientId} placeholder="x-client-id" class="w-full border-2 border-black px-3 py-2.5 text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300 bg-white text-black font-semibold" />
+          </div>
+          <div class="space-y-1">
+            <label for="p-api" class="block text-xs font-bold text-zinc-650">PayOS API Key</label>
+            <input id="p-api" type="password" bind:value={pApiKey} placeholder="x-api-key" class="w-full border-2 border-black px-3 py-2.5 text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300 bg-white text-black font-semibold" />
+          </div>
+          <div class="space-y-1">
+            <label for="p-cs" class="block text-xs font-bold text-zinc-650">PayOS Checksum Key</label>
+            <input id="p-cs" type="password" bind:value={pChecksumKey} placeholder="checksum key" class="w-full border-2 border-black px-3 py-2.5 text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300 bg-white text-black font-semibold" />
+          </div>
+          <div class="sm:col-span-2">
+            <button
+              type="button"
+              onclick={connectPayos}
+              disabled={payosBusy}
+              class="flex cursor-pointer items-center gap-1.5 rounded-[6px] border-2 border-black bg-blue-300 px-5 py-2.5 text-sm font-black text-black shadow-secondary transition-all hover:bg-blue-400 disabled:opacity-50"
+            >
+              Kết nối & kiểm tra
+              {#if payosBusy}<Loader2 class="h-4 w-4 animate-spin" />{:else}<Plug class="h-4 w-4" />{/if}
+            </button>
+          </div>
+        </div>
+      {/if}
+    </section>
   {/if}
 </div>

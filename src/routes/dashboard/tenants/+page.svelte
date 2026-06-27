@@ -65,6 +65,10 @@
   let initialElectricity = $state('0');
   let initialWater = $state('0');
 
+  // Telegram Link Generation
+  let isGeneratingLink = $state(false);
+  let generatedLink = $state<string | null>(null);
+
   onMount(() => {
     const sessionStr = localStorage.getItem('roomio_user');
     if (!sessionStr) return;
@@ -206,6 +210,35 @@
     }
   }
 
+  async function generateInviteLink(tId: string) {
+    isGeneratingLink = true;
+    try {
+      const res = await fetch('/api/tenant-invites', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tenantId: tId })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Lỗi tạo link');
+      
+      generatedLink = data.link;
+      toast.success('Tạo link mời thành công');
+    } catch (err: any) {
+      toast.error(err.message);
+    } finally {
+      isGeneratingLink = false;
+    }
+  }
+
+  async function copyLink(link: string) {
+    try {
+      await navigator.clipboard.writeText(link);
+      toast.success('Đã copy link mời');
+    } catch (e) {
+      toast.error('Lỗi khi copy link');
+    }
+  }
+
   function formatCurrency(amount: number) {
     return new Intl.NumberFormat('vi-VN').format(amount) + 'đ';
   }
@@ -291,7 +324,7 @@
                 Cọ: {formatCurrency(tenant.deposit)}
               </span>
               <button
-                onclick={() => window.setTimeout(() => { selectedTenant = tenant; isDetailDrawerOpen = true; }, 200)}
+                onclick={() => window.setTimeout(() => { selectedTenant = tenant; generatedLink = null; isDetailDrawerOpen = true; }, 200)}
                 class="px-3 py-1.5 border-2 border-black bg-white text-black rounded-[6px] text-xs font-bold shadow-secondary transition-all cursor-pointer"
               >
                 Hồ sơ
@@ -334,7 +367,7 @@
                 <td class="px-4 py-4 font-mono">{tenant.idNumber}</td>
                 <td class="px-4 py-4 text-right">
                   <button
-                    onclick={() => window.setTimeout(() => { selectedTenant = tenant; isDetailDrawerOpen = true; }, 200)}
+                    onclick={() => window.setTimeout(() => { selectedTenant = tenant; generatedLink = null; isDetailDrawerOpen = true; }, 200)}
                     class="px-3 py-1.5 border-2 border-black bg-white hover:bg-zinc-150 text-black rounded-[6px] text-xs font-bold transition-all shadow-secondary cursor-pointer"
                   >
                     Hồ sơ
@@ -679,6 +712,44 @@
             <h4 class="text-xs font-black text-zinc-500">Ghi chú / Thỏa thuận riêng</h4>
             <div class="bg-white border-2 border-black p-3 rounded-lg shadow-secondary text-xs text-black leading-relaxed font-semibold">
               {selectedTenant.notes || 'Không ghi nhận thỏa thuận đặc biệt nào.'}
+            </div>
+          </div>
+
+          <!-- Telegram Invite Link -->
+          <div class="space-y-2">
+            <h4 class="text-xs font-black text-zinc-500">Trạng thái tài khoản</h4>
+            <div class="text-xs text-black font-semibold flex flex-col gap-2">
+              {#if selectedTenant.telegramUserId}
+                <div class="flex items-center gap-1.5 text-green-600 font-black">
+                  <span class="w-2 h-2 rounded-full bg-green-500"></span> Đã liên kết Telegram
+                </div>
+                <p class="text-[10px] text-zinc-500">ID: {selectedTenant.telegramUserId}</p>
+              {:else}
+                <div class="flex items-center gap-1.5 text-zinc-500 font-bold mb-1">
+                  <span class="w-2 h-2 rounded-full bg-zinc-400"></span> Chưa liên kết Telegram
+                </div>
+                <button
+                  onclick={() => generateInviteLink(selectedTenant!.id)}
+                  disabled={isGeneratingLink}
+                  class="bg-[#2AABEE] hover:bg-[#229ED9] text-white border-2 border-black py-2 rounded-md font-black text-xs transition-all flex items-center justify-center gap-2 cursor-pointer w-full"
+                >
+                  Tạo Link Mời
+                  {#if isGeneratingLink}
+                    <Loader2 class="h-3.5 w-3.5 animate-spin" />
+                  {/if}
+                </button>
+                {#if generatedLink}
+                  <div class="mt-1 p-2 bg-zinc-50 border-2 border-black rounded-md">
+                    <p class="text-[10px] font-mono break-all text-black mb-2 select-all">{generatedLink}</p>
+                    <button 
+                      onclick={() => copyLink(generatedLink!)} 
+                      class="text-[10px] bg-white border border-black px-2 py-1 rounded shadow-primary text-black font-bold cursor-pointer hover:bg-zinc-150 w-full active:translate-y-px"
+                    >
+                      Bấm để Copy
+                    </button>
+                  </div>
+                {/if}
+              {/if}
             </div>
           </div>
         </div>

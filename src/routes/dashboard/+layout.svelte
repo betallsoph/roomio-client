@@ -89,7 +89,7 @@
 		{
 			label: 'Thiết lập & quản trị',
 			items: [
-				{ name: 'Cơ sở', path: '/dashboard/buildings', icon: Building2 },
+				{ name: 'Tòa nhà', path: '/dashboard/buildings', icon: Building2 },
 				{ name: 'Nhân viên', path: '/dashboard/staff', icon: UserCog },
 				{ name: 'Tài chính', path: '/dashboard/finance', icon: TrendingUp },
 				{ name: 'Dịch vụ', path: '/dashboard/services', icon: Plug },

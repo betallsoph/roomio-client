@@ -115,12 +115,12 @@
       const propertiesData = await propertiesRes.json();
       const roomsData = await roomsRes.json();
 
-      if (!propertiesRes.ok) throw new Error(propertiesData.error || 'Không tải được danh sách cơ sở');
+      if (!propertiesRes.ok) throw new Error(propertiesData.error || 'Không tải được danh sách tòa nhà');
       if (!roomsRes.ok) throw new Error(roomsData.error || 'Không tải được danh sách phòng');
 
       property = propertiesData.find((item: Property) => item.id === propertyId) ?? null;
       if (!property) {
-        toast.error('Không tìm thấy cơ sở này');
+        toast.error('Không tìm thấy tòa nhà này');
         goto('/dashboard/buildings');
         return;
       }
@@ -174,7 +174,7 @@
     <section class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
       <div class="min-w-0">
         <a href="/dashboard/buildings" class="inline-flex items-center gap-1.5 text-sm font-bold text-blue-600 hover:underline">
-          <ArrowLeft class="h-4 w-4" /> Cơ sở
+          <ArrowLeft class="h-4 w-4" /> Tòa nhà
         </a>
         <div class="mt-3 flex flex-wrap items-center gap-2">
           <h1 class="text-2xl font-black leading-tight text-black">{property.name}</h1>
@@ -222,7 +222,7 @@
     <section class="grid gap-5 lg:grid-cols-[minmax(0,1fr)_360px]">
       <div class="space-y-5">
         {#if meta().note}
-          <div class="border-2 border-black bg-blue-50 px-4 py-3 text-sm font-bold text-blue-900">
+          <div class="rounded-lg border-2 border-black bg-blue-50 px-4 py-3 text-sm font-bold text-blue-900">
             {meta().note}
           </div>
         {/if}
@@ -232,7 +232,7 @@
             <Building2 class="h-5 w-5 text-blue-500" />
             <h2 class="text-lg font-black text-black">Luồng vận hành</h2>
           </div>
-          <div class="overflow-hidden border-2 border-black">
+          <div class="overflow-hidden rounded-lg border-2 border-black">
             {#each meta().workflows as workflow, index}
               <div class="flex items-center gap-3 border-t-2 border-black px-4 py-3 text-sm font-bold first:border-t-0">
                 <span class="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-zinc-100 text-xs font-black">{index + 1}</span>
@@ -248,11 +248,11 @@
             <h2 class="text-lg font-black text-black">{meta().unitLabel}</h2>
           </div>
           {#if rooms.length === 0}
-            <div class="border-2 border-black bg-white px-4 py-8 text-center text-sm font-bold text-zinc-500">
-              Cơ sở này chưa có đơn vị cho thuê.
+            <div class="rounded-lg border-2 border-black bg-white px-4 py-8 text-center text-sm font-bold text-zinc-500">
+              Tòa nhà này chưa có đơn vị cho thuê.
             </div>
           {:else}
-            <div class="overflow-x-auto border-2 border-black">
+            <div class="overflow-x-auto rounded-lg border-2 border-black">
               <div class="grid min-w-[680px] grid-cols-[120px_minmax(180px,1fr)_120px_140px_120px] bg-zinc-50 px-4 py-3 text-xs font-black text-zinc-500">
                 <span>Đơn vị</span>
                 <span>Khách thuê</span>
@@ -280,7 +280,7 @@
       </div>
 
       <aside class="space-y-5">
-        <div class="border-2 border-black bg-white p-4">
+        <div class="rounded-lg border-2 border-black bg-white p-4">
           <h2 class="text-lg font-black text-black">Cấu trúc</h2>
           <div class="mt-4 space-y-3 text-sm font-bold">
             <div class="flex items-center justify-between gap-3">
@@ -298,7 +298,7 @@
           </div>
         </div>
 
-        <div class="border-2 border-black bg-white p-4">
+        <div class="rounded-lg border-2 border-black bg-white p-4">
           <h2 class="text-lg font-black text-black">Tính tiền</h2>
           <div class="mt-3 space-y-2">
             {#each meta().billing as item}
@@ -310,7 +310,7 @@
           </div>
         </div>
 
-        <div class="border-2 border-black bg-white p-4">
+        <div class="rounded-lg border-2 border-black bg-white p-4">
           <h2 class="text-lg font-black text-black">Đi nhanh</h2>
           <div class="mt-3 grid gap-2">
             <a href="/dashboard/tenants" class="roomio-button-white justify-between px-3 py-2 text-xs">
