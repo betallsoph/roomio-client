@@ -528,11 +528,12 @@
 		return 'Mã căn hộ';
 	}
 
-	function onlyDigits(value: string) {
-		return value.replace(/\D/g, '');
+	function onlyDigits(value: string | number) {
+		if (value == null) return '';
+		return String(value).replace(/\D/g, '');
 	}
 
-	function twoDigit(value: string) {
+	function twoDigit(value: string | number) {
 		const digits = onlyDigits(value);
 		return digits ? digits.padStart(2, '0') : '';
 	}
@@ -541,7 +542,7 @@
 		return blockName.match(/[A-Za-z]/)?.[0]?.toUpperCase() ?? '';
 	}
 
-	function buildApartmentCode(blockName: string, floor: string, unit: string) {
+	function buildApartmentCode(blockName: string, floor: string | number, unit: string | number) {
 		const tower = getBlockTower(blockName);
 		const floorCode = twoDigit(floor);
 		const unitCode = twoDigit(unit);
