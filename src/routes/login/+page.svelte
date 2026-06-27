@@ -13,7 +13,7 @@
 		if (sessionStr) {
 			try {
 				const session = JSON.parse(sessionStr);
-				if (session.role === 'SUPER_ADMIN') goto('/super-admin');
+				if (session.role === 'SUPER_ADMIN') goto('/admin');
 				else if (session.role === 'LANDLORD') goto('/dashboard');
 				else if (session.role === 'STAFF') goto('/staff');
 				else if (session.role === 'TENANT') goto('/tenant');
@@ -55,7 +55,7 @@
 			toast.success(`Chào mừng trở lại, ${data.name}!`);
 			localStorage.setItem('roomio_user', JSON.stringify(data));
 
-			if (data.role === 'SUPER_ADMIN') goto('/super-admin');
+			if (data.role === 'SUPER_ADMIN') goto('/admin');
 			else if (data.role === 'LANDLORD') goto('/dashboard');
 			else if (data.role === 'STAFF') goto('/staff');
 			else if (data.role === 'TENANT') goto('/tenant');
