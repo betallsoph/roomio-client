@@ -102,6 +102,7 @@
 	let isLoading = $state(true);
 	let properties = $state<Property[]>([]);
 	let rooms = $state<Room[]>([]);
+	let enabledRentalTypes = $state<string[]>(['APARTMENT']);
 
 	// Filtering states
 	let selectedPropertyId = $state('');
@@ -119,6 +120,7 @@
 	let isAddDialogOpen = $state(false);
 	let newRoomNumber = $state('');
 	let newRoomCode = $state('');
+	let newUnitNumber = $state('');
 	let newRoomType = $state('standard');
 	let newFloor = $state('');
 	let newMonthlyRent = $state('');
@@ -126,6 +128,12 @@
 	let newBlockId = $state('');
 	let isCreatingRoom = $state(false);
 	let selectedUnitCode = $state(''); // '' = tạo căn mới; khác '' = thêm phòng vào căn đã có
+	let quickPropertyName = $state('');
+	let quickPropertyShortName = $state('');
+	let quickPropertyAddress = $state('');
+	let quickPropertyBlocksText = $state('');
+	let quickPropertyRentalType = $state('APARTMENT');
+	let isCreatingProperty = $state(false);
 
 	// Meter Form states
 	let meterServiceId = $state('');
@@ -142,12 +150,22 @@
 	let editingAssetId = $state<string | null>(null);
 	let isAddingAsset = $state(false);
 	const TAP_ACTION_DELAY = 200;
+	const RENTAL_TYPE_OPTIONS = [
+		{ value: 'APARTMENT', label: 'Chung cư' },
+		{ value: 'MOTEL', label: 'Phòng trọ' },
+		{ value: 'SERVICED_APARTMENT', label: 'Căn hộ dịch vụ' },
+		{ value: 'DORM', label: 'KTX / Sleepbox' }
+	];
 
 	onMount(() => {
 		const sessionStr = localStorage.getItem('roomio_user');
 		if (!sessionStr) return;
 		const session = JSON.parse(sessionStr);
 		landlordId = session.landlordProfileId;
+		if (session.enabledRentalTypes) {
+			enabledRentalTypes = parseRentalTypes(session.enabledRentalTypes);
+			quickPropertyRentalType = enabledRentalTypes[0] ?? 'APARTMENT';
+		}
 
 		// Parse query params (e.g. from building details click)
 		const propertyParam = page.url.searchParams.get('propertyId');
@@ -155,8 +173,31 @@
 			selectedPropertyId = propertyParam;
 		}
 
+		fetchSettings();
 		loadInitialData(session.landlordProfileId);
 	});
+
+	function parseRentalTypes(value: string | null | undefined) {
+		const parsed = (value || 'APARTMENT')
+			.split(',')
+			.map((type) => type.trim())
+			.filter(Boolean);
+		return parsed.length > 0 ? parsed : ['APARTMENT'];
+	}
+
+	async function fetchSettings() {
+		try {
+			const res = await fetch('/api/settings');
+			const data = await res.json();
+			if (!res.ok) return;
+			enabledRentalTypes = parseRentalTypes(data.enabledRentalTypes);
+			if (!enabledRentalTypes.includes(quickPropertyRentalType)) {
+				quickPropertyRentalType = enabledRentalTypes[0] ?? 'APARTMENT';
+			}
+		} catch {
+			// Không chặn màn phòng nếu tải cấu hình tài khoản lỗi.
+		}
+	}
 
 	function tapBounce(event: MouseEvent, callback?: () => void) {
 		const element = event.currentTarget as HTMLElement;
@@ -170,6 +211,12 @@
 		if (callback) {
 			window.setTimeout(callback, TAP_ACTION_DELAY);
 		}
+	}
+
+	function openAddRoomDialog() {
+		selectedUnitCode = '';
+		newBlockId = getActiveProperty()?.blocks[0]?.id ?? '';
+		isAddDialogOpen = true;
 	}
 
 	function openRoomDetail(room: Room) {
@@ -190,6 +237,7 @@
 				if (properties.length > 0 && !selectedPropertyId) {
 					selectedPropertyId = properties[0].id;
 				}
+				newBlockId = getActiveProperty()?.blocks[0]?.id ?? '';
 			}
 
 			if (selectedPropertyId) {
@@ -241,12 +289,13 @@
 		let submittedRoomCode: string | null;
 		let submitBlockId: string | null;
 		let submitFloor: number | null;
+		const isApartmentRoomForm = activeRentalType() === 'APARTMENT';
 
 		if (selectedUnitCode) {
 			// Thêm phòng vào CĂN đã tồn tại — kế thừa block/tầng từ phòng cùng căn
 			submittedRoomNumber = newRoomNumber.trim();
-			submittedRoomCode = selectedUnitCode;
-			const sibling = rooms.find((r) => getRoomCode(r) === selectedUnitCode);
+			const sibling = rooms.find((r) => getRoomUnitKey(r) === selectedUnitCode);
+			submittedRoomCode = sibling?.roomCode ?? null;
 			submitBlockId = sibling?.blockId ?? null;
 			submitFloor = sibling?.floor ?? (newFloor ? Number(newFloor) : null);
 			if (!submittedRoomNumber) {
@@ -254,18 +303,24 @@
 				return;
 			}
 		} else {
-			const isApartment = activeRentalType() === 'APARTMENT';
 			submittedRoomNumber = newRoomNumber.trim();
-			submittedRoomCode = newRoomCode.trim() || null;
+			submittedRoomCode = isApartmentRoomForm
+				? normalizeUnitNumber(newUnitNumber)
+				: newRoomCode.trim() || null;
 			submitBlockId = newBlockId || null;
 			submitFloor = newFloor ? Number(newFloor) : null;
 
-			if (isApartment && (!newBlockId || !newFloor || !submittedRoomCode)) {
-				toast.error('Vui lòng chọn block, nhập mã căn và tầng');
+			if (
+				isApartmentRoomForm &&
+				(!newBlockId || !newFloor || !newUnitNumber || !submittedRoomCode)
+			) {
+				toast.error('Vui lòng chọn block, nhập tầng và số căn');
 				return;
 			}
 			if (!submittedRoomNumber) {
-				toast.error(isApartment ? 'Vui lòng nhập mã phòng trong căn' : 'Vui lòng điền số phòng');
+				toast.error(
+					isApartmentRoomForm ? 'Vui lòng nhập mã phòng trong căn' : 'Vui lòng điền số phòng'
+				);
 				return;
 			}
 		}
@@ -280,6 +335,7 @@
 					blockId: submitBlockId,
 					roomNumber: submittedRoomNumber,
 					roomCode: submittedRoomCode,
+					unitNumber: isApartmentRoomForm ? normalizeUnitNumber(newUnitNumber) : undefined,
 					roomType: newRoomType,
 					floor: submitFloor,
 					monthlyRent: Number(newMonthlyRent),
@@ -295,6 +351,7 @@
 			// Clear forms
 			newRoomNumber = '';
 			newRoomCode = '';
+			newUnitNumber = '';
 			newFloor = '';
 			newMonthlyRent = '';
 			newArea = '';
@@ -500,6 +557,26 @@
 		return getActiveProperty()?.blocks ?? [];
 	}
 
+	function normalizeUnitNumber(value: string) {
+		const raw = value.trim().toUpperCase().replace(/\s+/g, '');
+		if (!raw) return '';
+		return raw;
+	}
+
+	function buildApartmentUnitDisplay(blockId: string, floorValue: string, unitValue: string) {
+		const blockName = getActiveBlocks()
+			.find((block) => block.id === blockId)
+			?.name.trim();
+		const floorNumber = Number(floorValue);
+		const unitNumber = normalizeUnitNumber(unitValue);
+		if (!blockName || !Number.isFinite(floorNumber) || !unitNumber) return null;
+		return `${blockName.toUpperCase()} · Tầng ${Math.trunc(floorNumber)} · Căn ${unitNumber}`;
+	}
+
+	function newApartmentUnitPreview() {
+		return buildApartmentUnitDisplay(newBlockId, newFloor, newUnitNumber);
+	}
+
 	function getSelectedBlockName() {
 		if (selectedBlockId === 'all') return `Tất cả ${blockLabel().toLowerCase()}`;
 		return (
@@ -512,6 +589,7 @@
 		selectedPropertyId = propertyId;
 		selectedBlockId = 'all';
 		selectedUnitCode = '';
+		newBlockId = getActiveProperty()?.blocks[0]?.id ?? '';
 		openFilterMenu = null;
 	}
 
@@ -530,6 +608,86 @@
 		if (type === 'SERVICED_APARTMENT') return 'Căn hộ dịch vụ';
 		if (type === 'DORM') return 'KTX / Sleepbox';
 		return 'Tòa nhà';
+	}
+
+	function quickPropertyLabel(type = quickPropertyRentalType) {
+		if (type === 'MOTEL') return 'khu trọ';
+		if (type === 'SERVICED_APARTMENT') return 'tòa nhà căn hộ dịch vụ';
+		if (type === 'DORM') return 'khu KTX / sleepbox';
+		return 'tòa nhà';
+	}
+
+	function quickBlockLabel(type = quickPropertyRentalType) {
+		if (type === 'MOTEL') return 'Dãy';
+		if (type === 'SERVICED_APARTMENT') return 'Tầng / khu';
+		if (type === 'DORM') return 'Phòng / khu';
+		return 'Block';
+	}
+
+	function quickPropertyNamePlaceholder(type = quickPropertyRentalType) {
+		if (type === 'MOTEL') return 'Ví dụ: Khu trọ An Bình';
+		if (type === 'SERVICED_APARTMENT') return 'Ví dụ: CHDV Nguyễn Trãi';
+		if (type === 'DORM') return 'Ví dụ: Sleepbox Cầu Giấy';
+		return 'Ví dụ: Hoàng Anh Gia Lai 3';
+	}
+
+	function quickBlockPlaceholder(type = quickPropertyRentalType) {
+		if (type === 'MOTEL') return 'Ví dụ: Dãy A, Dãy B';
+		if (type === 'SERVICED_APARTMENT') return 'Ví dụ: Tầng 1, Tầng 2';
+		if (type === 'DORM') return 'Ví dụ: Phòng nam, Phòng nữ';
+		return 'Ví dụ: A1, A2, B1, B2';
+	}
+
+	function resetQuickPropertyForm() {
+		quickPropertyName = '';
+		quickPropertyShortName = '';
+		quickPropertyAddress = '';
+		quickPropertyBlocksText = '';
+		quickPropertyRentalType = enabledRentalTypes[0] ?? 'APARTMENT';
+	}
+
+	async function createQuickPropertyForRoom() {
+		if (!landlordId || isCreatingProperty) return;
+		if (!quickPropertyName || !quickPropertyShortName || !quickPropertyAddress) {
+			toast.error('Vui lòng nhập đủ tên, tên viết tắt và địa chỉ tòa nhà');
+			return;
+		}
+		const blocks = quickPropertyBlocksText
+			.split(',')
+			.map((block) => block.trim())
+			.filter(Boolean);
+		if (quickPropertyRentalType === 'APARTMENT' && blocks.length === 0) {
+			toast.error('Chung cư cần có ít nhất một block');
+			return;
+		}
+
+		isCreatingProperty = true;
+		try {
+			const res = await fetch('/api/properties', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					rentalType: quickPropertyRentalType,
+					name: quickPropertyName,
+					shortName: quickPropertyShortName,
+					address: quickPropertyAddress,
+					blocks
+				})
+			});
+			const data = await res.json();
+			if (!res.ok) throw new Error(data.error || 'Lỗi tạo tòa nhà');
+
+			properties = [...properties, data];
+			selectedPropertyId = data.id;
+			selectedBlockId = 'all';
+			newBlockId = data.blocks?.[0]?.id ?? '';
+			resetQuickPropertyForm();
+			toast.success('Đã tạo tòa nhà, giờ thêm phòng luôn được rồi');
+		} catch (err: any) {
+			toast.error(err.message);
+		} finally {
+			isCreatingProperty = false;
+		}
 	}
 
 	function blockLabel() {
@@ -551,20 +709,24 @@
 	function existingUnits() {
 		const map = new Map<string, Room[]>();
 		for (const r of rooms) {
-			const code = getRoomCode(r);
-			const list = map.get(code) ?? [];
+			const key = getRoomUnitKey(r);
+			const list = map.get(key) ?? [];
 			list.push(r);
-			map.set(code, list);
+			map.set(key, list);
 		}
 		return [...map.entries()]
-			.map(([code, rs]) => ({ code, rooms: rs }))
-			.sort((a, b) => a.code.localeCompare(b.code));
+			.map(([key, rs]) => ({ key, label: getRoomCardMeta(rs[0]) || getRoomCode(rs[0]), rooms: rs }))
+			.sort((a, b) => a.label.localeCompare(b.label));
 	}
 
-	function unitRoomNames(code: string) {
-		return (existingUnits().find((u) => u.code === code)?.rooms ?? [])
+	function unitRoomNames(key: string) {
+		return (existingUnits().find((u) => u.key === key)?.rooms ?? [])
 			.map((r) => r.roomNumber)
 			.join(', ');
+	}
+
+	function selectedUnitLabel() {
+		return existingUnits().find((u) => u.key === selectedUnitCode)?.label ?? selectedUnitCode;
 	}
 
 	function getRoomBlockName(room: Room) {
@@ -575,20 +737,31 @@
 		return room.roomCode || room.roomNumber;
 	}
 
+	function getRoomUnitKey(room: Room) {
+		return [room.blockId || '', room.floor ?? '', getRoomCode(room)].join('|');
+	}
+
 	function getRoomShortName(room: Room) {
-		const code = getRoomCode(room);
-		const unitMatch = code.match(/^[A-Z]\d{2}-(\d{2})$/);
-		return unitMatch ? unitMatch[1] : room.roomNumber;
+		return room.roomNumber;
 	}
 
 	function getRoomCardMeta(room: Room) {
+		if (activeRentalType() === 'APARTMENT') {
+			const code = room.roomCode || '';
+			return [
+				getRoomBlockName(room),
+				room.floor ? `Tầng ${room.floor}` : '',
+				code ? `Căn ${code}` : ''
+			]
+				.filter(Boolean)
+				.join(' · ');
+		}
 		return [getRoomBlockName(room), getRoomCode(room)].filter(Boolean).join(' · ');
 	}
 
 	function getRoomCodeAlias(room: Room) {
-		const match = getRoomCode(room).match(/^([A-Z])(\d{2})-(\d{2})$/);
-		if (!match) return '';
-		return `${getRoomBlockName(room) || match[1]}.${match[2]}.${match[3]}`;
+		if (activeRentalType() !== 'APARTMENT') return '';
+		return [getRoomBlockName(room), room.floor ?? '', room.roomCode ?? ''].filter(Boolean).join('');
 	}
 
 	function roomStatusLabel(status: string) {
@@ -663,7 +836,7 @@
 		</div>
 
 		<button
-			onclick={(e) => tapBounce(e, () => (isAddDialogOpen = true))}
+			onclick={(e) => tapBounce(e, openAddRoomDialog)}
 			class="flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-[6px] border-2 border-black bg-blue-300 px-4 py-2.5 text-sm font-bold text-black shadow-secondary transition-all hover:bg-blue-400 sm:w-auto"
 		>
 			Thêm phòng <Plus class="h-4.5 w-4.5" />
@@ -684,7 +857,7 @@
 						id="room-search"
 						type="search"
 						bind:value={searchQuery}
-						placeholder="A16-04, A1, tên khách..."
+						placeholder="A1, tầng 16, căn 04, tên khách..."
 						class="h-12 w-full rounded-lg border-2 border-black bg-white pr-9 pl-9 text-sm font-bold text-black placeholder:text-zinc-400 focus:ring-2 focus:ring-blue-300 focus:outline-none"
 					/>
 					{#if searchQuery}
@@ -855,6 +1028,14 @@
 	{#if isLoading}
 		<div class="flex h-[40vh] w-full items-center justify-center">
 			<Loader2 class="h-10 w-10 animate-spin text-black" />
+		</div>
+	{:else if properties.length === 0}
+		<div class="mx-auto max-w-md rounded-lg border-2 border-black bg-white p-10 text-center">
+			<Building2 class="mx-auto mb-3 h-12 w-12 text-black" />
+			<h3 class="text-lg font-black text-black">Chưa có tòa nhà</h3>
+			<p class="mt-2 text-sm font-semibold text-zinc-600">
+				Bấm thêm phòng để tạo nhanh tòa nhà trước, rồi thêm phòng ngay trong cùng cửa sổ.
+			</p>
 		</div>
 	{:else if rooms.length === 0}
 		<div
@@ -1035,218 +1216,334 @@
 					</button>
 				</div>
 
-				<form onsubmit={handleAddRoom} class="space-y-4 p-6">
-					{#if existingUnits().length > 0}
-						<div class="space-y-1">
-							<label for="r-unit-sel" class="block text-xs font-bold text-zinc-600">Căn hộ</label>
-							<select
-								id="r-unit-sel"
-								bind:value={selectedUnitCode}
-								class="w-full rounded-lg border-2 border-black bg-white px-3 py-2 text-sm font-bold text-black focus:outline-none"
-							>
-								<option value="">➕ Tạo căn mới</option>
-								{#each existingUnits() as u}
-									<option value={u.code}>{u.code} · {u.rooms.length} phòng</option>
-								{/each}
-							</select>
+				{#if properties.length === 0}
+					<div class="space-y-4 p-6">
+						<div class="rounded-lg border-2 border-black bg-blue-50 p-3">
+							<p class="text-sm font-black text-black">Tạo tòa nhà trước trong cùng flow</p>
+							<p class="mt-1 text-xs font-bold text-zinc-600">
+								Tạo xong, form thêm phòng sẽ hiện ngay ở bước kế tiếp.
+							</p>
 						</div>
-					{/if}
 
-					{#if selectedUnitCode}
-						<div class="space-y-1">
-							<label for="r-name" class="block text-xs font-bold text-zinc-600"
-								>Tên phòng mới trong căn {selectedUnitCode}</label
-							>
-							<input
-								id="r-name"
-								type="text"
-								bind:value={newRoomNumber}
-								required
-								placeholder="Ví dụ: Phòng 2, Master, Giường A..."
-								class="w-full rounded-lg border-2 border-black bg-white px-3 py-2 text-sm font-bold focus:outline-none"
-							/>
-						</div>
-						<div
-							class="rounded-lg border-2 border-black bg-blue-50 px-3 py-2 text-xs font-bold text-black"
-						>
-							Phòng đang có trong căn: {unitRoomNames(selectedUnitCode) || '--'}
-						</div>
-					{:else if activeRentalType() === 'APARTMENT'}
+						{#if enabledRentalTypes.length > 1}
+							<div class="space-y-2">
+								<p class="text-xs font-bold text-zinc-600">Loại hình</p>
+								<div class="grid grid-cols-2 gap-2">
+									{#each RENTAL_TYPE_OPTIONS.filter( (option) => enabledRentalTypes.includes(option.value) ) as option}
+										<button
+											type="button"
+											onclick={() => (quickPropertyRentalType = option.value)}
+											class="rounded-[6px] border-2 border-black px-3 py-2 text-xs font-black transition-colors {quickPropertyRentalType ===
+											option.value
+												? 'bg-blue-300 text-black'
+												: 'bg-white text-zinc-500 hover:bg-zinc-100'}"
+										>
+											{option.label}
+										</button>
+									{/each}
+								</div>
+							</div>
+						{/if}
+
 						<div class="grid grid-cols-2 gap-4">
 							<div class="space-y-1">
-								<label for="r-num" class="block text-xs font-bold text-zinc-600"
-									>Mã phòng trong căn</label
+								<label for="quick-p-name" class="block text-xs font-bold text-zinc-600"
+									>Tên {quickPropertyLabel()}</label
 								>
 								<input
-									id="r-num"
+									id="quick-p-name"
 									type="text"
-									bind:value={newRoomNumber}
-									required
-									placeholder="Ví dụ: Master, Phòng 2, Bed A"
+									bind:value={quickPropertyName}
+									placeholder={quickPropertyNamePlaceholder()}
 									class="w-full rounded-lg border-2 border-black bg-white px-3 py-2 text-sm font-bold focus:outline-none"
 								/>
 							</div>
 							<div class="space-y-1">
-								<label for="r-block" class="block text-xs font-bold text-zinc-600">Block</label>
+								<label for="quick-p-short" class="block text-xs font-bold text-zinc-600"
+									>Tên viết tắt</label
+								>
+								<input
+									id="quick-p-short"
+									type="text"
+									bind:value={quickPropertyShortName}
+									placeholder="Ví dụ: HAGL3"
+									class="w-full rounded-lg border-2 border-black bg-white px-3 py-2 text-sm font-bold focus:outline-none"
+								/>
+							</div>
+						</div>
+
+						<div class="space-y-1">
+							<label for="quick-p-address" class="block text-xs font-bold text-zinc-600"
+								>Địa chỉ</label
+							>
+							<input
+								id="quick-p-address"
+								type="text"
+								bind:value={quickPropertyAddress}
+								placeholder="Nhập địa chỉ chi tiết"
+								class="w-full rounded-lg border-2 border-black bg-white px-3 py-2 text-sm font-bold focus:outline-none"
+							/>
+						</div>
+
+						<div class="space-y-1">
+							<label for="quick-p-blocks" class="block text-xs font-bold text-zinc-600"
+								>{quickBlockLabel()}{quickPropertyRentalType === 'APARTMENT'
+									? ''
+									: ' (tùy chọn)'}</label
+							>
+							<input
+								id="quick-p-blocks"
+								type="text"
+								bind:value={quickPropertyBlocksText}
+								placeholder={quickBlockPlaceholder()}
+								class="w-full rounded-lg border-2 border-black bg-white px-3 py-2 text-sm font-bold focus:outline-none"
+							/>
+						</div>
+
+						<div class="flex justify-end gap-3 border-t-2 border-black pt-3">
+							<button
+								type="button"
+								onclick={(e) => tapBounce(e, () => (isAddDialogOpen = false))}
+								class="hover:bg-zinc-150 cursor-pointer rounded-[6px] border-2 border-black bg-white px-4 py-2 text-xs font-bold text-black transition-all"
+							>
+								Hủy
+							</button>
+							<button
+								type="button"
+								disabled={isCreatingProperty}
+								onclick={(e) => tapBounce(e, createQuickPropertyForRoom)}
+								class="flex cursor-pointer items-center gap-1.5 rounded-[6px] border-2 border-black bg-blue-300 px-4 py-2 text-xs font-bold text-black shadow-secondary transition-all hover:bg-blue-400 disabled:opacity-50"
+							>
+								Tạo tòa nhà
+								{#if isCreatingProperty}
+									<Loader2 class="h-4 w-4 animate-spin" />
+								{/if}
+							</button>
+						</div>
+					</div>
+				{:else}
+					<form onsubmit={handleAddRoom} class="space-y-4 p-6">
+						{#if existingUnits().length > 0}
+							<div class="space-y-1">
+								<label for="r-unit-sel" class="block text-xs font-bold text-zinc-600">Căn hộ</label>
+								<select
+									id="r-unit-sel"
+									bind:value={selectedUnitCode}
+									class="w-full rounded-lg border-2 border-black bg-white px-3 py-2 text-sm font-bold text-black focus:outline-none"
+								>
+									<option value="">➕ Tạo căn mới</option>
+									{#each existingUnits() as u}
+										<option value={u.key}>{u.label} · {u.rooms.length} phòng</option>
+									{/each}
+								</select>
+							</div>
+						{/if}
+
+						{#if selectedUnitCode}
+							<div class="space-y-1">
+								<label for="r-name" class="block text-xs font-bold text-zinc-600"
+									>Tên phòng mới trong căn {selectedUnitLabel()}</label
+								>
+								<input
+									id="r-name"
+									type="text"
+									bind:value={newRoomNumber}
+									required
+									placeholder="Ví dụ: Phòng 2, Master, Giường A..."
+									class="w-full rounded-lg border-2 border-black bg-white px-3 py-2 text-sm font-bold focus:outline-none"
+								/>
+							</div>
+							<div
+								class="rounded-lg border-2 border-black bg-blue-50 px-3 py-2 text-xs font-bold text-black"
+							>
+								Phòng đang có trong căn: {unitRoomNames(selectedUnitCode) || '--'}
+							</div>
+						{:else if activeRentalType() === 'APARTMENT'}
+							<div class="grid grid-cols-2 gap-4">
+								<div class="space-y-1">
+									<label for="r-num" class="block text-xs font-bold text-zinc-600"
+										>Mã phòng trong căn</label
+									>
+									<input
+										id="r-num"
+										type="text"
+										bind:value={newRoomNumber}
+										required
+										placeholder="Ví dụ: Master, Phòng 2, Bed A"
+										class="w-full rounded-lg border-2 border-black bg-white px-3 py-2 text-sm font-bold focus:outline-none"
+									/>
+								</div>
+								<div class="space-y-1">
+									<label for="r-block" class="block text-xs font-bold text-zinc-600">Block</label>
+									<select
+										id="r-block"
+										bind:value={newBlockId}
+										required
+										class="w-full rounded-lg border-2 border-black bg-white px-3 py-2 text-sm font-bold text-black focus:outline-none"
+									>
+										<option value="">Chọn block</option>
+										{#each getActiveBlocks() as block}
+											<option value={block.id}>{block.name}</option>
+										{/each}
+									</select>
+								</div>
+							</div>
+
+							<div class="grid grid-cols-2 gap-4">
+								<div class="space-y-1">
+									<label for="r-unit" class="block text-xs font-bold text-zinc-600">Số căn</label>
+									<input
+										id="r-unit"
+										type="text"
+										inputmode="text"
+										bind:value={newUnitNumber}
+										required
+										placeholder="Ví dụ: 04"
+										class="w-full rounded-lg border-2 border-black bg-white px-3 py-2 text-sm font-bold focus:outline-none"
+									/>
+								</div>
+								<div class="space-y-1">
+									<label for="r-floor" class="block text-xs font-bold text-zinc-600">Tầng</label>
+									<input
+										id="r-floor"
+										type="number"
+										bind:value={newFloor}
+										required
+										placeholder="16"
+										class="w-full rounded-lg border-2 border-black bg-white px-3 py-2 text-sm font-bold focus:outline-none"
+									/>
+								</div>
+							</div>
+							<div
+								class="rounded-lg border-2 border-black bg-blue-50 px-3 py-2 text-xs font-bold text-black"
+							>
+								Vị trí căn:
+								<span class="font-black"
+									>{newApartmentUnitPreview() || 'Chọn block, tầng và số căn'}</span
+								>
+							</div>
+						{:else}
+							<div class="grid grid-cols-2 gap-4">
+								<div class="space-y-1">
+									<label for="r-num" class="block text-xs font-bold text-zinc-600">Số phòng</label>
+									<input
+										id="r-num"
+										type="text"
+										bind:value={newRoomNumber}
+										required
+										placeholder="Ví dụ: 101, A2"
+										class="w-full rounded-lg border-2 border-black bg-white px-3 py-2 text-sm font-bold focus:outline-none"
+									/>
+								</div>
+								<div class="space-y-1">
+									<label for="r-code" class="block text-xs font-bold text-zinc-600"
+										>{roomCodeLabel()} (tùy chọn)</label
+									>
+									<input
+										id="r-code"
+										type="text"
+										bind:value={newRoomCode}
+										placeholder="Ví dụ: CH-101"
+										class="w-full rounded-lg border-2 border-black bg-white px-3 py-2 text-sm font-bold focus:outline-none"
+									/>
+								</div>
+							</div>
+						{/if}
+
+						<div class="grid grid-cols-2 gap-4">
+							<div class="space-y-1">
+								<label for="r-type" class="block text-xs font-bold text-zinc-600">Loại phòng</label>
+								<select
+									id="r-type"
+									bind:value={newRoomType}
+									class="w-full rounded-lg border-2 border-black bg-white px-3 py-2 text-sm font-bold text-black focus:outline-none"
+								>
+									<option value="standard">Phòng thường</option>
+									<option value="master">Phòng master</option>
+									<option value="balcony">Phòng ban công</option>
+								</select>
+							</div>
+							{#if activeRentalType() !== 'APARTMENT'}
+								<div class="space-y-1">
+									<label for="r-floor" class="block text-xs font-bold text-zinc-600">Tầng</label>
+									<input
+										id="r-floor"
+										type="number"
+										bind:value={newFloor}
+										placeholder="1, 2, 3..."
+										class="w-full rounded-lg border-2 border-black bg-white px-3 py-2 text-sm font-bold focus:outline-none"
+									/>
+								</div>
+							{/if}
+						</div>
+
+						<div class="grid grid-cols-2 gap-4">
+							<div class="space-y-1">
+								<label for="r-rent" class="block text-xs font-bold text-zinc-600"
+									>Giá thuê tháng (đ)</label
+								>
+								<input
+									id="r-rent"
+									type="number"
+									bind:value={newMonthlyRent}
+									required
+									placeholder="Ví dụ: 3000000"
+									class="w-full rounded-lg border-2 border-black bg-white px-3 py-2 text-sm font-bold focus:outline-none"
+								/>
+							</div>
+							<div class="space-y-1">
+								<label for="r-area" class="block text-xs font-bold text-zinc-600"
+									>Diện tích (m²)</label
+								>
+								<input
+									id="r-area"
+									type="number"
+									bind:value={newArea}
+									placeholder="Ví dụ: 25"
+									class="w-full rounded-lg border-2 border-black bg-white px-3 py-2 text-sm font-bold focus:outline-none"
+								/>
+							</div>
+						</div>
+
+						{#if activeRentalType() !== 'APARTMENT' && getActiveProperty() && getActiveProperty()!.blocks.length > 0}
+							<div class="space-y-1">
+								<label for="r-block" class="block text-xs font-bold text-zinc-600"
+									>{blockLabel()}</label
+								>
 								<select
 									id="r-block"
 									bind:value={newBlockId}
-									required
 									class="w-full rounded-lg border-2 border-black bg-white px-3 py-2 text-sm font-bold text-black focus:outline-none"
 								>
-									<option value="">Chọn block</option>
-									{#each getActiveBlocks() as block}
+									<option value="">Không có {blockLabel().toLowerCase()}</option>
+									{#each getActiveProperty()!.blocks as block}
 										<option value={block.id}>{block.name}</option>
 									{/each}
 								</select>
 							</div>
-						</div>
-
-						<div class="grid grid-cols-2 gap-4">
-							<div class="space-y-1">
-								<label for="r-code" class="block text-xs font-bold text-zinc-600">Mã căn</label>
-								<input
-									id="r-code"
-									type="text"
-									bind:value={newRoomCode}
-									required
-									placeholder="Ví dụ: A16-04"
-									class="w-full rounded-lg border-2 border-black bg-white px-3 py-2 text-sm font-bold focus:outline-none"
-								/>
-							</div>
-							<div class="space-y-1">
-								<label for="r-floor" class="block text-xs font-bold text-zinc-600">Tầng</label>
-								<input
-									id="r-floor"
-									type="number"
-									bind:value={newFloor}
-									required
-									placeholder="16"
-									class="w-full rounded-lg border-2 border-black bg-white px-3 py-2 text-sm font-bold focus:outline-none"
-								/>
-							</div>
-						</div>
-					{:else}
-						<div class="grid grid-cols-2 gap-4">
-							<div class="space-y-1">
-								<label for="r-num" class="block text-xs font-bold text-zinc-600">Số phòng</label>
-								<input
-									id="r-num"
-									type="text"
-									bind:value={newRoomNumber}
-									required
-									placeholder="Ví dụ: 101, A2"
-									class="w-full rounded-lg border-2 border-black bg-white px-3 py-2 text-sm font-bold focus:outline-none"
-								/>
-							</div>
-							<div class="space-y-1">
-								<label for="r-code" class="block text-xs font-bold text-zinc-600"
-									>{roomCodeLabel()} (tùy chọn)</label
-								>
-								<input
-									id="r-code"
-									type="text"
-									bind:value={newRoomCode}
-									placeholder="Ví dụ: CH-101"
-									class="w-full rounded-lg border-2 border-black bg-white px-3 py-2 text-sm font-bold focus:outline-none"
-								/>
-							</div>
-						</div>
-					{/if}
-
-					<div class="grid grid-cols-2 gap-4">
-						<div class="space-y-1">
-							<label for="r-type" class="block text-xs font-bold text-zinc-600">Loại phòng</label>
-							<select
-								id="r-type"
-								bind:value={newRoomType}
-								class="w-full rounded-lg border-2 border-black bg-white px-3 py-2 text-sm font-bold text-black focus:outline-none"
-							>
-								<option value="standard">Phòng thường</option>
-								<option value="master">Phòng master</option>
-								<option value="balcony">Phòng ban công</option>
-							</select>
-						</div>
-						{#if activeRentalType() !== 'APARTMENT'}
-							<div class="space-y-1">
-								<label for="r-floor" class="block text-xs font-bold text-zinc-600">Tầng</label>
-								<input
-									id="r-floor"
-									type="number"
-									bind:value={newFloor}
-									placeholder="1, 2, 3..."
-									class="w-full rounded-lg border-2 border-black bg-white px-3 py-2 text-sm font-bold focus:outline-none"
-								/>
-							</div>
 						{/if}
-					</div>
 
-					<div class="grid grid-cols-2 gap-4">
-						<div class="space-y-1">
-							<label for="r-rent" class="block text-xs font-bold text-zinc-600"
-								>Giá thuê tháng (đ)</label
+						<div class="flex justify-end gap-3 border-t-2 border-black pt-3">
+							<button
+								type="button"
+								onclick={(e) => tapBounce(e, () => (isAddDialogOpen = false))}
+								class="hover:bg-zinc-150 cursor-pointer rounded-[6px] border-2 border-black bg-white px-4 py-2 text-xs font-bold text-black transition-all"
 							>
-							<input
-								id="r-rent"
-								type="number"
-								bind:value={newMonthlyRent}
-								required
-								placeholder="Ví dụ: 3000000"
-								class="w-full rounded-lg border-2 border-black bg-white px-3 py-2 text-sm font-bold focus:outline-none"
-							/>
+								Hủy
+							</button>
+							<button
+								type="submit"
+								disabled={isCreatingRoom}
+								class="flex cursor-pointer items-center gap-1.5 rounded-[6px] border-2 border-black bg-blue-300 px-4 py-2 text-xs font-bold text-black shadow-secondary transition-all hover:bg-blue-400 disabled:opacity-50"
+							>
+								Thêm phòng
+								{#if isCreatingRoom}
+									<Loader2 class="h-4 w-4 animate-spin" />
+								{/if}
+							</button>
 						</div>
-						<div class="space-y-1">
-							<label for="r-area" class="block text-xs font-bold text-zinc-600"
-								>Diện tích (m²)</label
-							>
-							<input
-								id="r-area"
-								type="number"
-								bind:value={newArea}
-								placeholder="Ví dụ: 25"
-								class="w-full rounded-lg border-2 border-black bg-white px-3 py-2 text-sm font-bold focus:outline-none"
-							/>
-						</div>
-					</div>
-
-					{#if activeRentalType() !== 'APARTMENT' && getActiveProperty() && getActiveProperty()!.blocks.length > 0}
-						<div class="space-y-1">
-							<label for="r-block" class="block text-xs font-bold text-zinc-600"
-								>{blockLabel()}</label
-							>
-							<select
-								id="r-block"
-								bind:value={newBlockId}
-								class="w-full rounded-lg border-2 border-black bg-white px-3 py-2 text-sm font-bold text-black focus:outline-none"
-							>
-								<option value="">Không có {blockLabel().toLowerCase()}</option>
-								{#each getActiveProperty()!.blocks as block}
-									<option value={block.id}>{block.name}</option>
-								{/each}
-							</select>
-						</div>
-					{/if}
-
-					<div class="flex justify-end gap-3 border-t-2 border-black pt-3">
-						<button
-							type="button"
-							onclick={(e) => tapBounce(e, () => (isAddDialogOpen = false))}
-							class="hover:bg-zinc-150 cursor-pointer rounded-[6px] border-2 border-black bg-white px-4 py-2 text-xs font-bold text-black transition-all"
-						>
-							Hủy
-						</button>
-						<button
-							type="submit"
-							disabled={isCreatingRoom}
-							class="flex cursor-pointer items-center gap-1.5 rounded-[6px] border-2 border-black bg-blue-300 px-4 py-2 text-xs font-bold text-black shadow-secondary transition-all hover:bg-blue-400 disabled:opacity-50"
-						>
-							Thêm phòng
-							{#if isCreatingRoom}
-								<Loader2 class="h-4 w-4 animate-spin" />
-							{/if}
-						</button>
-					</div>
-				</form>
+					</form>
+				{/if}
 			</div>
 		</div>
 	{/if}
@@ -1296,7 +1593,8 @@
 									Phòng {selectedRoom.roomNumber}
 								</h3>
 								<p class="mt-1.5 text-xs font-bold text-zinc-600">
-									Loại: {getRoomTypeLabel(selectedRoom.roomType)} | Diện tích: {selectedRoom.area ||
+									{getRoomCardMeta(selectedRoom) ? `${getRoomCardMeta(selectedRoom)} | ` : ''}Loại:
+									{getRoomTypeLabel(selectedRoom.roomType)} | Diện tích: {selectedRoom.area ||
 										'--'}m² | Tầng: {selectedRoom.floor || '--'}
 								</p>
 							</div>

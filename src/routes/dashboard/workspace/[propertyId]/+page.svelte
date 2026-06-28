@@ -38,8 +38,10 @@
 
 	interface Room {
 		id: string;
+		blockId: string | null;
 		roomNumber: string;
 		roomCode: string | null;
+		block?: Block | null;
 		roomType: string;
 		floor: number | null;
 		status: string;
@@ -176,6 +178,18 @@
 		if (status === 'paid') return 'bg-green-100 text-green-800';
 		if (status === 'debt') return 'bg-red-100 text-red-800';
 		return 'bg-zinc-100 text-zinc-600';
+	}
+
+	function roomUnitLabel(room: Room) {
+		if (property?.rentalType === 'APARTMENT' && room.roomCode) {
+			const parts = [
+				room.block?.name,
+				room.floor ? `Tầng ${room.floor}` : '',
+				room.roomCode ? `Căn ${room.roomCode}` : ''
+			].filter(Boolean);
+			return parts.length > 0 ? `${room.roomNumber} · ${parts.join(' · ')}` : room.roomNumber;
+		}
+		return room.roomCode ? `${room.roomNumber} · ${room.roomCode}` : room.roomNumber;
 	}
 
 	const stats = $derived(() => {
@@ -315,7 +329,7 @@
 									href="/dashboard/rooms?propertyId={property.id}"
 									class="grid min-w-[680px] grid-cols-[120px_minmax(180px,1fr)_120px_140px_120px] items-center border-t-2 border-black px-4 py-3 text-sm font-bold hover:bg-blue-50"
 								>
-									<span class="font-black">{room.roomNumber}</span>
+									<span class="truncate font-black">{roomUnitLabel(room)}</span>
 									<span class="truncate"
 										>{room.tenant
 											? `${room.tenant.user.name} · ${room.tenant.user.phone}`

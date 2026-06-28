@@ -22,8 +22,11 @@
 
 	interface Room {
 		id: string;
+		blockId?: string | null;
 		roomNumber: string;
 		roomCode?: string | null;
+		floor?: number | null;
+		block?: Block | null;
 		property: {
 			name: string;
 			shortName: string;
@@ -77,6 +80,7 @@
 	let tenants = $state<Tenant[]>([]);
 	let emptyRooms = $state<Room[]>([]);
 	let properties = $state<PropertyOption[]>([]);
+	let enabledRentalTypes = $state<string[]>(['APARTMENT']);
 	let selectedTenant = $state<Tenant | null>(null);
 
 	// Hợp đồng của khách đang xem (gộp từ trang Hợp đồng cũ vào tenant detail)
@@ -117,11 +121,24 @@
 	let quickPropertyId = $state('');
 	let quickBlockId = $state('');
 	let quickRoomCode = $state('');
+	let quickUnitNumber = $state('');
 	let quickRoomNumber = $state('');
 	let quickFloor = $state('');
 	let quickMonthlyRent = $state('');
 	let quickArea = $state('');
 	let quickRoomType = $state('standard');
+	let quickPropertyName = $state('');
+	let quickPropertyShortName = $state('');
+	let quickPropertyAddress = $state('');
+	let quickPropertyBlocksText = $state('');
+	let quickPropertyRentalType = $state('APARTMENT');
+	let isCreatingProperty = $state(false);
+	const RENTAL_TYPE_OPTIONS = [
+		{ value: 'APARTMENT', label: 'Chung cư' },
+		{ value: 'MOTEL', label: 'Phòng trọ' },
+		{ value: 'SERVICED_APARTMENT', label: 'Căn hộ dịch vụ' },
+		{ value: 'DORM', label: 'KTX / Sleepbox' }
+	];
 
 	// Telegram Link Generation
 	let isGeneratingLink = $state(false);
@@ -132,9 +149,36 @@
 		if (!sessionStr) return;
 		const session = JSON.parse(sessionStr);
 		landlordId = session.landlordProfileId;
+		if (session.enabledRentalTypes) {
+			enabledRentalTypes = parseRentalTypes(session.enabledRentalTypes);
+			quickPropertyRentalType = enabledRentalTypes[0] ?? 'APARTMENT';
+		}
+		fetchSettings();
 		fetchTenants(session.landlordProfileId);
 		fetchEmptyRooms(session.landlordProfileId);
 	});
+
+	function parseRentalTypes(value: string | null | undefined) {
+		const parsed = (value || 'APARTMENT')
+			.split(',')
+			.map((type) => type.trim())
+			.filter(Boolean);
+		return parsed.length > 0 ? parsed : ['APARTMENT'];
+	}
+
+	async function fetchSettings() {
+		try {
+			const res = await fetch('/api/settings');
+			const data = await res.json();
+			if (!res.ok) return;
+			enabledRentalTypes = parseRentalTypes(data.enabledRentalTypes);
+			if (!enabledRentalTypes.includes(quickPropertyRentalType)) {
+				quickPropertyRentalType = enabledRentalTypes[0] ?? 'APARTMENT';
+			}
+		} catch {
+			// Không chặn trang khách thuê nếu tải cấu hình tài khoản lỗi.
+		}
+	}
 
 	async function fetchTenants(profileId: string) {
 		isLoading = true;
@@ -177,8 +221,11 @@
 							.forEach((r: any) => {
 								roomsList.push({
 									id: r.id,
+									blockId: r.blockId,
 									roomNumber: r.roomNumber,
 									roomCode: r.roomCode,
+									floor: r.floor,
+									block: r.block,
 									property: {
 										name: prop.name,
 										shortName: prop.shortName,
@@ -210,6 +257,22 @@
 		return selectedQuickProperty()?.rentalType === 'APARTMENT';
 	}
 
+	function normalizeUnitNumber(value: string) {
+		const raw = value.trim().toUpperCase().replace(/\s+/g, '');
+		if (!raw) return '';
+		return raw;
+	}
+
+	function buildQuickApartmentUnitDisplay() {
+		const blockName = selectedQuickProperty()?.blocks.find(
+			(block) => block.id === quickBlockId
+		)?.name;
+		const floorNumber = Number(quickFloor);
+		const unitNumber = normalizeUnitNumber(quickUnitNumber);
+		if (!blockName || !Number.isFinite(floorNumber) || !unitNumber) return null;
+		return `${blockName.trim().toUpperCase()} · Tầng ${Math.trunc(floorNumber)} · Căn ${unitNumber}`;
+	}
+
 	function selectQuickProperty(propertyId: string) {
 		quickPropertyId = propertyId;
 		const property = selectedQuickProperty();
@@ -217,8 +280,23 @@
 	}
 
 	function roomOptionLabel(room: Room) {
-		const unit = room.roomCode ? ` · ${room.roomCode}` : '';
-		return `${room.property.shortName} - Phòng ${room.roomNumber}${unit}`;
+		return `${room.property.shortName} - Phòng ${room.roomNumber}${roomLocationLabel(room)}`;
+	}
+
+	function tenantRoomLabel(room: Room) {
+		return `${room.property.shortName} - Phòng ${room.roomNumber}${roomLocationLabel(room)}`;
+	}
+
+	function roomLocationLabel(room: Room) {
+		if (room.property.rentalType === 'APARTMENT') {
+			const parts = [
+				room.block?.name,
+				room.floor ? `Tầng ${room.floor}` : '',
+				room.roomCode ? `Căn ${room.roomCode}` : ''
+			].filter(Boolean);
+			return parts.length > 0 ? ` · ${parts.join(' · ')}` : '';
+		}
+		return room.roomCode ? ` · ${room.roomCode}` : '';
 	}
 
 	function resetTenantForm() {
@@ -232,11 +310,92 @@
 		initialElectricity = '0';
 		initialWater = '0';
 		quickRoomCode = '';
+		quickUnitNumber = '';
 		quickRoomNumber = '';
 		quickFloor = '';
 		quickMonthlyRent = '';
 		quickArea = '';
 		quickRoomType = 'standard';
+	}
+
+	function quickPropertyLabel(type = quickPropertyRentalType) {
+		if (type === 'MOTEL') return 'khu trọ';
+		if (type === 'SERVICED_APARTMENT') return 'tòa nhà căn hộ dịch vụ';
+		if (type === 'DORM') return 'khu KTX / sleepbox';
+		return 'tòa nhà';
+	}
+
+	function quickBlockLabel(type = quickPropertyRentalType) {
+		if (type === 'MOTEL') return 'Dãy';
+		if (type === 'SERVICED_APARTMENT') return 'Tầng / khu';
+		if (type === 'DORM') return 'Phòng / khu';
+		return 'Block';
+	}
+
+	function quickPropertyNamePlaceholder(type = quickPropertyRentalType) {
+		if (type === 'MOTEL') return 'Ví dụ: Khu trọ An Bình';
+		if (type === 'SERVICED_APARTMENT') return 'Ví dụ: CHDV Nguyễn Trãi';
+		if (type === 'DORM') return 'Ví dụ: Sleepbox Cầu Giấy';
+		return 'Ví dụ: Hoàng Anh Gia Lai 3';
+	}
+
+	function quickBlockPlaceholder(type = quickPropertyRentalType) {
+		if (type === 'MOTEL') return 'Ví dụ: Dãy A, Dãy B';
+		if (type === 'SERVICED_APARTMENT') return 'Ví dụ: Tầng 1, Tầng 2';
+		if (type === 'DORM') return 'Ví dụ: Phòng nam, Phòng nữ';
+		return 'Ví dụ: A1, A2, B1, B2';
+	}
+
+	function resetQuickPropertyForm() {
+		quickPropertyName = '';
+		quickPropertyShortName = '';
+		quickPropertyAddress = '';
+		quickPropertyBlocksText = '';
+		quickPropertyRentalType = enabledRentalTypes[0] ?? 'APARTMENT';
+	}
+
+	async function createQuickPropertyForTenant() {
+		if (!landlordId || isCreatingProperty) return;
+		if (!quickPropertyName || !quickPropertyShortName || !quickPropertyAddress) {
+			toast.error('Vui lòng nhập đủ tên, tên viết tắt và địa chỉ tòa nhà');
+			return;
+		}
+		const blocks = quickPropertyBlocksText
+			.split(',')
+			.map((block) => block.trim())
+			.filter(Boolean);
+		if (quickPropertyRentalType === 'APARTMENT' && blocks.length === 0) {
+			toast.error('Chung cư cần có ít nhất một block');
+			return;
+		}
+
+		isCreatingProperty = true;
+		try {
+			const res = await fetch('/api/properties', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					rentalType: quickPropertyRentalType,
+					name: quickPropertyName,
+					shortName: quickPropertyShortName,
+					address: quickPropertyAddress,
+					blocks
+				})
+			});
+			const data = await res.json();
+			if (!res.ok) throw new Error(data.error || 'Lỗi tạo tòa nhà');
+
+			properties = [...properties, data];
+			quickPropertyId = data.id;
+			quickBlockId = data.blocks?.[0]?.id ?? '';
+			roomAssignMode = 'new';
+			resetQuickPropertyForm();
+			toast.success('Đã tạo tòa nhà, giờ tạo phòng cho khách luôn được rồi');
+		} catch (err: any) {
+			toast.error(err.message);
+		} finally {
+			isCreatingProperty = false;
+		}
 	}
 
 	async function handleAddTenant(e: SubmitEvent) {
@@ -256,8 +415,11 @@
 				toast.error('Vui lòng nhập đủ tòa nhà, mã phòng và giá thuê để tạo phòng');
 				return;
 			}
-			if (quickPropertyIsApartment() && (!quickBlockId || !quickRoomCode || !quickFloor)) {
-				toast.error('Chung cư cần chọn block, nhập mã căn và tầng');
+			if (
+				quickPropertyIsApartment() &&
+				(!quickBlockId || !quickUnitNumber || !quickFloor || !buildQuickApartmentUnitDisplay())
+			) {
+				toast.error('Chung cư cần chọn block, nhập tầng và số căn');
 				return;
 			}
 		}
@@ -267,6 +429,9 @@
 		try {
 			let targetRoomId = roomId;
 			if (roomAssignMode === 'new') {
+				const apartmentUnit = quickPropertyIsApartment()
+					? normalizeUnitNumber(quickUnitNumber)
+					: null;
 				const createRoomRes = await fetch('/api/rooms', {
 					method: 'POST',
 					headers: { 'Content-Type': 'application/json' },
@@ -274,7 +439,10 @@
 						propertyId: quickPropertyId,
 						blockId: quickBlockId || null,
 						roomNumber: quickRoomNumber,
-						roomCode: quickRoomCode || null,
+						roomCode: apartmentUnit || quickRoomCode || null,
+						unitNumber: quickPropertyIsApartment()
+							? normalizeUnitNumber(quickUnitNumber)
+							: undefined,
 						roomType: quickRoomType,
 						floor: quickFloor ? Number(quickFloor) : null,
 						monthlyRent: Number(quickMonthlyRent),
@@ -608,8 +776,8 @@
 								<p class="mt-0.5 text-xs font-bold text-zinc-500">{tenant.user.phone}</p>
 							</div>
 							{#if activeRoom}
-								<span class="shrink-0 text-xs font-black text-blue-600">
-									{activeRoom.property.shortName} - P.{activeRoom.roomNumber}
+								<span class="max-w-[48%] shrink-0 truncate text-xs font-black text-blue-600">
+									{tenantRoomLabel(activeRoom)}
 								</span>
 							{:else}
 								<span class="shrink-0 text-xs font-black text-red-500">Chưa có phòng</span>
@@ -659,7 +827,7 @@
 								<td class="px-4 py-4">
 									{#if activeRoom}
 										<span class="font-black text-blue-600">
-											{activeRoom.property.shortName} - Phòng {activeRoom.roomNumber}
+											{tenantRoomLabel(activeRoom)}
 										</span>
 									{:else}
 										<span class="font-black text-red-500">Chưa nhận phòng</span>
@@ -836,7 +1004,7 @@
 										{/each}
 									</select>
 								</div>
-							{:else}
+							{:else if properties.length > 0}
 								<div class="space-y-1">
 									<label for="t-property" class="block text-[10px] font-bold text-zinc-600"
 										>Tòa nhà</label
@@ -852,6 +1020,68 @@
 											<option value={property.id}>{property.shortName} - {property.name}</option>
 										{/each}
 									</select>
+								</div>
+							{:else}
+								<div class="col-span-2 space-y-3 rounded-lg border-2 border-black bg-blue-50 p-3">
+									<div>
+										<p class="text-xs font-black text-black">Chưa có tòa nhà</p>
+										<p class="mt-0.5 text-[10px] font-bold text-zinc-600">
+											Tạo nhanh tòa nhà ở đây rồi tiếp tục tạo phòng cho khách.
+										</p>
+									</div>
+									{#if enabledRentalTypes.length > 1}
+										<div class="grid grid-cols-2 gap-2">
+											{#each RENTAL_TYPE_OPTIONS.filter( (option) => enabledRentalTypes.includes(option.value) ) as option}
+												<button
+													type="button"
+													onclick={() => (quickPropertyRentalType = option.value)}
+													class="rounded-[6px] border-2 border-black px-2 py-1.5 text-[10px] font-black transition-colors {quickPropertyRentalType ===
+													option.value
+														? 'bg-blue-300 text-black'
+														: 'bg-white text-zinc-500 hover:bg-zinc-100'}"
+												>
+													{option.label}
+												</button>
+											{/each}
+										</div>
+									{/if}
+									<div class="grid grid-cols-2 gap-2">
+										<input
+											type="text"
+											bind:value={quickPropertyName}
+											placeholder={quickPropertyNamePlaceholder()}
+											class="rounded-lg border-2 border-black bg-white px-2.5 py-1.5 text-xs font-semibold text-black focus:ring-2 focus:ring-blue-300 focus:outline-none"
+										/>
+										<input
+											type="text"
+											bind:value={quickPropertyShortName}
+											placeholder="Tên viết tắt"
+											class="rounded-lg border-2 border-black bg-white px-2.5 py-1.5 text-xs font-semibold text-black focus:ring-2 focus:ring-blue-300 focus:outline-none"
+										/>
+										<input
+											type="text"
+											bind:value={quickPropertyAddress}
+											placeholder="Địa chỉ"
+											class="col-span-2 rounded-lg border-2 border-black bg-white px-2.5 py-1.5 text-xs font-semibold text-black focus:ring-2 focus:ring-blue-300 focus:outline-none"
+										/>
+										<input
+											type="text"
+											bind:value={quickPropertyBlocksText}
+											placeholder={`${quickBlockLabel()} - ${quickBlockPlaceholder()}`}
+											class="col-span-2 rounded-lg border-2 border-black bg-white px-2.5 py-1.5 text-xs font-semibold text-black focus:ring-2 focus:ring-blue-300 focus:outline-none"
+										/>
+									</div>
+									<button
+										type="button"
+										disabled={isCreatingProperty}
+										onclick={createQuickPropertyForTenant}
+										class="flex w-full items-center justify-center gap-1.5 rounded-[6px] border-2 border-black bg-blue-300 px-3 py-2 text-xs font-black text-black shadow-secondary transition-colors hover:bg-blue-400 disabled:opacity-50"
+									>
+										Tạo {quickPropertyLabel()}
+										{#if isCreatingProperty}
+											<Loader2 class="h-4 w-4 animate-spin" />
+										{/if}
+									</button>
 								</div>
 							{/if}
 							<div class="space-y-1">
@@ -888,15 +1118,16 @@
 										</select>
 									</div>
 									<div class="space-y-1">
-										<label for="t-room-code" class="block text-[10px] font-bold text-zinc-600"
-											>Mã căn</label
+										<label for="t-unit-number" class="block text-[10px] font-bold text-zinc-600"
+											>Số căn</label
 										>
 										<input
-											id="t-room-code"
+											id="t-unit-number"
 											type="text"
-											bind:value={quickRoomCode}
+											inputmode="text"
+											bind:value={quickUnitNumber}
 											required
-											placeholder="A16-04"
+											placeholder="04"
 											class="w-full rounded-lg border-2 border-black bg-white px-2.5 py-1.5 text-xs font-semibold text-black focus:ring-2 focus:ring-blue-300 focus:outline-none"
 										/>
 									</div>
@@ -914,6 +1145,16 @@
 										class="w-full rounded-lg border-2 border-black bg-white px-2.5 py-1.5 text-xs font-semibold text-black focus:ring-2 focus:ring-blue-300 focus:outline-none"
 									/>
 								</div>
+								{#if quickPropertyIsApartment()}
+									<div
+										class="col-span-2 rounded-lg border-2 border-black bg-blue-50 px-3 py-2 text-xs font-bold text-black"
+									>
+										Vị trí căn:
+										<span class="font-black">
+											{buildQuickApartmentUnitDisplay() || 'Chọn block, tầng và số căn'}
+										</span>
+									</div>
+								{/if}
 								<div class="space-y-1">
 									<label for="t-room-floor" class="block text-[10px] font-bold text-zinc-600"
 										>Tầng</label
@@ -1156,8 +1397,7 @@
 								</span>
 								{#if selectedTenant.rooms[0]}
 									<span class="font-black text-blue-600">
-										{selectedTenant.rooms[0].property.shortName} - Phòng {selectedTenant.rooms[0]
-											.roomNumber}
+										{tenantRoomLabel(selectedTenant.rooms[0])}
 									</span>
 								{:else}
 									<span class="font-black text-red-500">Chưa ở phòng nào</span>
