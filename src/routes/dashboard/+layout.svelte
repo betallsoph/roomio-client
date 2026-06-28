@@ -11,7 +11,6 @@
 		Users,
 		Wrench,
 		Settings,
-		Bell,
 		LogOut,
 		Menu,
 		X,
@@ -85,8 +84,7 @@
 			items: [
 				{ name: 'Chốt số', path: '/dashboard/meters', icon: Gauge },
 				{ name: 'Sự cố', path: '/dashboard/requests', icon: Wrench },
-				{ name: 'Tin nhắn', path: '/dashboard/messages', icon: MessageSquare },
-				{ name: 'Bảng tin', path: '/dashboard/notifications', icon: Bell }
+				{ name: 'Liên lạc', path: '/dashboard/messages', icon: MessageSquare }
 			]
 		},
 		{

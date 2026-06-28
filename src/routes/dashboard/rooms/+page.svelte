@@ -823,7 +823,7 @@
 	}
 </script>
 
-<svelte:window onclick={() => (openFilterMenu = null)} />
+<svelte:window onpointerdown={() => (openFilterMenu = null)} />
 
 <div class="space-y-6">
 	<!-- Top Section: Filters and Title -->
@@ -873,13 +873,14 @@
 				</div>
 			</div>
 
-			<div class="relative space-y-1" onclick={(e) => e.stopPropagation()}>
+			<div class="relative space-y-1">
 				<span class="block text-[10px] font-black text-zinc-500">{propertyLabel()}</span>
 				<button
 					type="button"
 					class="flex h-12 w-full items-center justify-between gap-3 rounded-lg border-2 border-black bg-white px-3 text-left text-sm font-bold text-black transition-colors hover:bg-blue-50 focus:ring-2 focus:ring-blue-300 focus:outline-none"
 					aria-haspopup="listbox"
 					aria-expanded={openFilterMenu === 'property'}
+					onpointerdown={(e) => e.stopPropagation()}
 					onclick={() => (openFilterMenu = openFilterMenu === 'property' ? null : 'property')}
 				>
 					<span class="truncate">{getActiveProperty()?.name ?? 'Chọn tòa nhà'}</span>
@@ -894,6 +895,8 @@
 					<div
 						class="absolute top-[calc(100%+6px)] right-0 left-0 z-30 max-h-72 overflow-y-auto rounded-lg border-2 border-black bg-white p-1"
 						role="listbox"
+						tabindex="-1"
+						onpointerdown={(e) => e.stopPropagation()}
 					>
 						{#each properties as prop}
 							<button
@@ -917,13 +920,14 @@
 			</div>
 
 			{#if getActiveProperty() && getActiveProperty()!.blocks.length > 0}
-				<div class="relative space-y-1" onclick={(e) => e.stopPropagation()}>
+				<div class="relative space-y-1">
 					<span class="block text-[10px] font-black text-zinc-500">{blockLabel()}</span>
 					<button
 						type="button"
 						class="flex h-12 w-full items-center justify-between gap-3 rounded-lg border-2 border-black bg-white px-3 text-left text-sm font-bold text-black transition-colors hover:bg-blue-50 focus:ring-2 focus:ring-blue-300 focus:outline-none"
 						aria-haspopup="listbox"
 						aria-expanded={openFilterMenu === 'block'}
+						onpointerdown={(e) => e.stopPropagation()}
 						onclick={() => (openFilterMenu = openFilterMenu === 'block' ? null : 'block')}
 					>
 						<span class="truncate">{getSelectedBlockName()}</span>
@@ -937,6 +941,8 @@
 						<div
 							class="absolute top-[calc(100%+6px)] right-0 left-0 z-30 max-h-72 overflow-y-auto rounded-lg border-2 border-black bg-white p-1"
 							role="listbox"
+							tabindex="-1"
+							onpointerdown={(e) => e.stopPropagation()}
 						>
 							<button
 								type="button"
@@ -1199,6 +1205,7 @@
 				onclick={(e) => e.stopPropagation()}
 				onkeydown={(e) => e.stopPropagation()}
 				role="dialog"
+				tabindex="-1"
 			>
 				<!-- macOS Style Header -->
 				<div
@@ -1564,6 +1571,7 @@
 				onclick={(e) => e.stopPropagation()}
 				onkeydown={(e) => e.stopPropagation()}
 				role="dialog"
+				tabindex="-1"
 			>
 				<!-- macOS Style Header -->
 				<div

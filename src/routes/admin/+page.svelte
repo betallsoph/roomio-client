@@ -792,6 +792,7 @@
 				onclick={(e) => e.stopPropagation()}
 				onkeydown={(e) => e.stopPropagation()}
 				role="dialog"
+				tabindex="-1"
 			>
 				<div class="flex items-center justify-between">
 					<h3 class="flex items-center gap-1.5 text-base font-black text-black">
