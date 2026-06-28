@@ -262,7 +262,10 @@
 			submitBlockId = newBlockId || null;
 			submitFloor = newFloor ? Number(newFloor) : null;
 
-			if (isApartment && (!newBlockId || !newFloor || !newApartmentUnit || !generatedApartmentCode)) {
+			if (
+				isApartment &&
+				(!newBlockId || !newFloor || !newApartmentUnit || !generatedApartmentCode)
+			) {
 				toast.error('Vui lòng chọn block, nhập tầng và số căn hộ');
 				return;
 			}
@@ -1099,7 +1102,9 @@
 								class="w-full rounded-lg border-2 border-black bg-white px-3 py-2 text-sm font-bold focus:outline-none"
 							/>
 						</div>
-						<div class="rounded-lg border-2 border-black bg-blue-50 px-3 py-2 text-xs font-bold text-black">
+						<div
+							class="rounded-lg border-2 border-black bg-blue-50 px-3 py-2 text-xs font-bold text-black"
+						>
 							Phòng đang có trong căn: {unitRoomNames(selectedUnitCode) || '--'}
 						</div>
 					{:else if activeRentalType() === 'APARTMENT'}

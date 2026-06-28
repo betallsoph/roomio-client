@@ -69,7 +69,14 @@
 	let showContractForm = $state(false);
 	let savingContract = $state(false);
 	let uploadingContractFile = $state(false);
-	let cForm = $state({ startDate: '', endDate: '', monthlyRent: 0, deposit: 0, fileUrl: '', notes: '' });
+	let cForm = $state({
+		startDate: '',
+		endDate: '',
+		monthlyRent: 0,
+		deposit: 0,
+		fileUrl: '',
+		notes: ''
+	});
 	const todayStr = new Date().toISOString().split('T')[0];
 	const in30DaysStr = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
 
@@ -966,7 +973,8 @@
 									{@const badge = contractBadge(c)}
 									<div class="rounded-lg border-2 border-black bg-white p-3 shadow-secondary">
 										<div class="flex items-center justify-between gap-2">
-											<span class="rounded border-2 border-black px-1.5 text-[10px] font-black {badge.cls}"
+											<span
+												class="rounded border-2 border-black px-1.5 text-[10px] font-black {badge.cls}"
 												>{badge.text}</span
 											>
 											<div class="flex items-center gap-1.5">
@@ -1060,7 +1068,11 @@
 										<Loader2 class="h-3 w-3 animate-spin" /> Đang tải...
 									</p>
 								{:else if cForm.fileUrl}
-									<img src={cForm.fileUrl} alt="File HĐ" class="h-16 rounded border-2 border-black" />
+									<img
+										src={cForm.fileUrl}
+										alt="File HĐ"
+										class="h-16 rounded border-2 border-black"
+									/>
 								{/if}
 								<label class="block text-[10px] font-black text-zinc-500"
 									>Ghi chú
@@ -1079,7 +1091,8 @@
 									>
 									<button
 										onclick={() => (showContractForm = false)}
-										class="rounded-[6px] border-2 border-black bg-white px-3 py-2 text-xs font-black">Hủy</button
+										class="rounded-[6px] border-2 border-black bg-white px-3 py-2 text-xs font-black"
+										>Hủy</button
 									>
 								</div>
 							</div>
