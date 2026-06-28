@@ -41,7 +41,7 @@
 	let name = $state('');
 	let shortName = $state('');
 	let address = $state('');
-	let blocksText = $state(''); // e.g. "Block A, Block B"
+	let blocksText = $state(''); // e.g. "A1, A2, B1, B2"
 	let rentalType = $state('APARTMENT');
 	let isSubmitting = $state(false);
 	const TAP_ACTION_DELAY = 200;
@@ -102,7 +102,7 @@
 		if (type === 'MOTEL') return 'Ví dụ: Dãy A, Dãy B, Dãy sau';
 		if (type === 'SERVICED_APARTMENT') return 'Ví dụ: Tầng 1, Tầng 2, Khu sau';
 		if (type === 'DORM') return 'Ví dụ: Phòng nam, Phòng nữ, Khu yên tĩnh';
-		return 'Ví dụ: Block A, Block B';
+		return 'Ví dụ: A1, A2, B1, B2';
 	}
 
 	async function fetchSettings() {
@@ -146,6 +146,11 @@
 			.split(',')
 			.map((b) => b.trim())
 			.filter(Boolean);
+		if (rentalType === 'APARTMENT' && blocksArray.length === 0) {
+			toast.error('Chung cư cần có ít nhất một block');
+			isSubmitting = false;
+			return;
+		}
 
 		try {
 			const res = await fetch('/api/properties', {
@@ -497,12 +502,13 @@
 
 					<div class="space-y-1">
 						<label for="p-blocks" class="block text-xs font-bold text-zinc-600"
-							>{blockLabel(rentalType)} (tùy chọn)</label
+							>{blockLabel(rentalType)}{rentalType === 'APARTMENT' ? '' : ' (tùy chọn)'}</label
 						>
 						<input
 							id="p-blocks"
 							type="text"
 							bind:value={blocksText}
+							required={rentalType === 'APARTMENT'}
 							placeholder={blockPlaceholder(rentalType)}
 							class="w-full rounded-lg border-2 border-black bg-white px-3 py-2 text-sm font-semibold text-black focus:ring-2 focus:ring-blue-300 focus:outline-none"
 						/>

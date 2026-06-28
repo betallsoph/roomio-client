@@ -23,10 +23,25 @@
 	interface Room {
 		id: string;
 		roomNumber: string;
+		roomCode?: string | null;
 		property: {
 			name: string;
 			shortName: string;
+			rentalType?: string;
 		};
+	}
+
+	interface Block {
+		id: string;
+		name: string;
+	}
+
+	interface PropertyOption {
+		id: string;
+		name: string;
+		shortName: string;
+		rentalType: string;
+		blocks: Block[];
 	}
 
 	interface Tenant {
@@ -61,6 +76,7 @@
 	let isLoading = $state(true);
 	let tenants = $state<Tenant[]>([]);
 	let emptyRooms = $state<Room[]>([]);
+	let properties = $state<PropertyOption[]>([]);
 	let selectedTenant = $state<Tenant | null>(null);
 
 	// Hợp đồng của khách đang xem (gộp từ trang Hợp đồng cũ vào tenant detail)
@@ -97,6 +113,15 @@
 	let notes = $state('');
 	let initialElectricity = $state('0');
 	let initialWater = $state('0');
+	let roomAssignMode = $state<'existing' | 'new'>('existing');
+	let quickPropertyId = $state('');
+	let quickBlockId = $state('');
+	let quickRoomCode = $state('');
+	let quickRoomNumber = $state('');
+	let quickFloor = $state('');
+	let quickMonthlyRent = $state('');
+	let quickArea = $state('');
+	let quickRoomType = $state('standard');
 
 	// Telegram Link Generation
 	let isGeneratingLink = $state(false);
@@ -130,6 +155,18 @@
 			const propData = await propRes.json();
 
 			if (propRes.ok) {
+				properties = propData.map((prop: any) => ({
+					id: prop.id,
+					name: prop.name,
+					shortName: prop.shortName,
+					rentalType: prop.rentalType ?? 'APARTMENT',
+					blocks: prop.blocks ?? []
+				}));
+				if (!quickPropertyId && properties.length > 0) {
+					quickPropertyId = properties[0].id;
+					quickBlockId = properties[0].blocks[0]?.id ?? '';
+				}
+
 				const roomsList: Room[] = [];
 				for (const prop of propData) {
 					const roomRes = await fetch(`/api/rooms?propertyId=${prop.id}`);
@@ -141,9 +178,11 @@
 								roomsList.push({
 									id: r.id,
 									roomNumber: r.roomNumber,
+									roomCode: r.roomCode,
 									property: {
 										name: prop.name,
-										shortName: prop.shortName
+										shortName: prop.shortName,
+										rentalType: prop.rentalType
 									}
 								});
 							});
@@ -152,6 +191,10 @@
 				emptyRooms = roomsList;
 				if (emptyRooms.length > 0) {
 					roomId = emptyRooms[0].id;
+					roomAssignMode = 'existing';
+				} else {
+					roomId = '';
+					roomAssignMode = 'new';
 				}
 			}
 		} catch (e) {
@@ -159,17 +202,91 @@
 		}
 	}
 
+	function selectedQuickProperty() {
+		return properties.find((property) => property.id === quickPropertyId) ?? null;
+	}
+
+	function quickPropertyIsApartment() {
+		return selectedQuickProperty()?.rentalType === 'APARTMENT';
+	}
+
+	function selectQuickProperty(propertyId: string) {
+		quickPropertyId = propertyId;
+		const property = selectedQuickProperty();
+		quickBlockId = property?.blocks[0]?.id ?? '';
+	}
+
+	function roomOptionLabel(room: Room) {
+		const unit = room.roomCode ? ` · ${room.roomCode}` : '';
+		return `${room.property.shortName} - Phòng ${room.roomNumber}${unit}`;
+	}
+
+	function resetTenantForm() {
+		email = '';
+		phone = '';
+		name = '';
+		password = '123456';
+		idNumber = '';
+		deposit = '';
+		notes = '';
+		initialElectricity = '0';
+		initialWater = '0';
+		quickRoomCode = '';
+		quickRoomNumber = '';
+		quickFloor = '';
+		quickMonthlyRent = '';
+		quickArea = '';
+		quickRoomType = 'standard';
+	}
+
 	async function handleAddTenant(e: SubmitEvent) {
 		e.preventDefault();
 		if (!landlordId || isSubmitting) return;
 
-		if (!email || !phone || !name || !roomId || !idNumber || !moveInDate || deposit === '') {
+		if (!email || !phone || !name || !idNumber || !moveInDate || deposit === '') {
 			toast.error('Vui lòng nhập đầy đủ các trường thông tin bắt buộc');
 			return;
 		}
+		if (roomAssignMode === 'existing' && !roomId) {
+			toast.error('Vui lòng chọn phòng nhận bàn giao');
+			return;
+		}
+		if (roomAssignMode === 'new') {
+			if (!quickPropertyId || !quickRoomNumber || !quickMonthlyRent) {
+				toast.error('Vui lòng nhập đủ tòa nhà, mã phòng và giá thuê để tạo phòng');
+				return;
+			}
+			if (quickPropertyIsApartment() && (!quickBlockId || !quickRoomCode || !quickFloor)) {
+				toast.error('Chung cư cần chọn block, nhập mã căn và tầng');
+				return;
+			}
+		}
 
 		isSubmitting = true;
+		let createdRoomIdForRollback: string | null = null;
 		try {
+			let targetRoomId = roomId;
+			if (roomAssignMode === 'new') {
+				const createRoomRes = await fetch('/api/rooms', {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({
+						propertyId: quickPropertyId,
+						blockId: quickBlockId || null,
+						roomNumber: quickRoomNumber,
+						roomCode: quickRoomCode || null,
+						roomType: quickRoomType,
+						floor: quickFloor ? Number(quickFloor) : null,
+						monthlyRent: Number(quickMonthlyRent),
+						area: quickArea ? Number(quickArea) : null
+					})
+				});
+				const createdRoom = await createRoomRes.json();
+				if (!createRoomRes.ok) throw new Error(createdRoom.error || 'Lỗi tạo phòng');
+				targetRoomId = createdRoom.id;
+				createdRoomIdForRollback = createdRoom.id;
+			}
+
 			const res = await fetch('/api/tenants', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
@@ -178,7 +295,7 @@
 					phone,
 					password,
 					name,
-					roomId,
+					roomId: targetRoomId,
 					idNumber,
 					moveInDate,
 					deposit: Number(deposit),
@@ -190,25 +307,22 @@
 			const data = await res.json();
 
 			if (!res.ok) throw new Error(data.error || 'Lỗi thêm khách thuê');
+			createdRoomIdForRollback = null;
 
 			toast.success(`Đã đăng ký và bàn giao phòng cho khách ${name}`);
 			isAddDialogOpen = false;
 
-			// Clear forms
-			email = '';
-			phone = '';
-			name = '';
-			password = '123456';
-			idNumber = '';
-			deposit = '';
-			notes = '';
-			initialElectricity = '0';
-			initialWater = '0';
+			resetTenantForm();
 
 			// Refresh
 			fetchTenants(landlordId);
 			fetchEmptyRooms(landlordId);
 		} catch (err: any) {
+			if (createdRoomIdForRollback) {
+				await fetch(`/api/rooms?id=${createdRoomIdForRollback}`, { method: 'DELETE' }).catch(
+					() => {}
+				);
+			}
 			toast.error(err.message);
 		} finally {
 			isSubmitting = false;
@@ -610,91 +724,101 @@
 					</button>
 				</div>
 
-				{#if emptyRooms.length === 0}
-					<div class="space-y-3 p-8 text-center">
-						<p class="text-zinc-650 font-bold">Tòa nhà của bạn không có phòng nào trống!</p>
-						<p class="text-xs font-semibold text-zinc-500">
-							Vui lòng tạo phòng trọ trống trước hoặc trả phòng phòng hiện tại.
-						</p>
-						<button
-							onclick={() => (isAddDialogOpen = false)}
-							class="cursor-pointer rounded-[6px] border-2 border-black bg-white px-4 py-2 text-xs font-bold shadow-secondary transition-all"
-						>
-							Quay lại
-						</button>
-					</div>
-				{:else}
-					<form onsubmit={handleAddTenant} class="max-h-[70vh] space-y-4 overflow-y-auto p-6">
-						<!-- Account Info section -->
-						<div class="space-y-3">
-							<h3 class="border-b border-black/15 pb-1.5 text-xs font-black text-zinc-500">
-								1. Thông tin đăng nhập tài khoản
-							</h3>
-							<div class="grid grid-cols-2 gap-3">
-								<div class="space-y-1">
-									<label for="t-name" class="block text-[10px] font-bold text-zinc-600"
-										>Họ và tên khách</label
-									>
-									<input
-										id="t-name"
-										type="text"
-										bind:value={name}
-										required
-										placeholder="Nguyễn Văn A"
-										class="w-full rounded-lg border-2 border-black bg-white px-2.5 py-1.5 text-xs font-semibold text-black focus:ring-2 focus:ring-blue-300 focus:outline-none"
-									/>
-								</div>
-								<div class="space-y-1">
-									<label for="t-phone" class="block text-[10px] font-bold text-zinc-600"
-										>Số điện thoại</label
-									>
-									<input
-										id="t-phone"
-										type="tel"
-										bind:value={phone}
-										required
-										placeholder="SĐT đăng nhập"
-										class="w-full rounded-lg border-2 border-black bg-white px-2.5 py-1.5 text-xs font-semibold text-black focus:ring-2 focus:ring-blue-300 focus:outline-none"
-									/>
-								</div>
+				<form onsubmit={handleAddTenant} class="max-h-[70vh] space-y-4 overflow-y-auto p-6">
+					<!-- Account Info section -->
+					<div class="space-y-3">
+						<h3 class="border-b border-black/15 pb-1.5 text-xs font-black text-zinc-500">
+							1. Thông tin đăng nhập tài khoản
+						</h3>
+						<div class="grid grid-cols-2 gap-3">
+							<div class="space-y-1">
+								<label for="t-name" class="block text-[10px] font-bold text-zinc-600"
+									>Họ và tên khách</label
+								>
+								<input
+									id="t-name"
+									type="text"
+									bind:value={name}
+									required
+									placeholder="Nguyễn Văn A"
+									class="w-full rounded-lg border-2 border-black bg-white px-2.5 py-1.5 text-xs font-semibold text-black focus:ring-2 focus:ring-blue-300 focus:outline-none"
+								/>
 							</div>
-
-							<div class="grid grid-cols-2 gap-3">
-								<div class="space-y-1">
-									<label for="t-email" class="block text-[10px] font-bold text-zinc-600"
-										>Email liên hệ</label
-									>
-									<input
-										id="t-email"
-										type="email"
-										bind:value={email}
-										required
-										placeholder="email@gmail.com"
-										class="w-full rounded-lg border-2 border-black bg-white px-2.5 py-1.5 text-xs font-semibold text-black focus:ring-2 focus:ring-blue-300 focus:outline-none"
-									/>
-								</div>
-								<div class="space-y-1">
-									<label for="t-pass" class="block text-[10px] font-bold text-zinc-600"
-										>Mật khẩu truy cập</label
-									>
-									<input
-										id="t-pass"
-										type="password"
-										bind:value={password}
-										required
-										placeholder="Mật khẩu mặc định"
-										class="w-full rounded-lg border-2 border-black bg-white px-2.5 py-1.5 text-xs font-semibold text-black focus:ring-2 focus:ring-blue-300 focus:outline-none"
-									/>
-								</div>
+							<div class="space-y-1">
+								<label for="t-phone" class="block text-[10px] font-bold text-zinc-600"
+									>Số điện thoại</label
+								>
+								<input
+									id="t-phone"
+									type="tel"
+									bind:value={phone}
+									required
+									placeholder="SĐT đăng nhập"
+									class="w-full rounded-lg border-2 border-black bg-white px-2.5 py-1.5 text-xs font-semibold text-black focus:ring-2 focus:ring-blue-300 focus:outline-none"
+								/>
 							</div>
 						</div>
 
-						<!-- Profile Info section -->
-						<div class="space-y-3">
-							<h3 class="border-b border-black/15 pb-1.5 text-xs font-black text-zinc-500">
-								2. Hồ sơ hợp đồng & cọc
-							</h3>
-							<div class="grid grid-cols-2 gap-3">
+						<div class="grid grid-cols-2 gap-3">
+							<div class="space-y-1">
+								<label for="t-email" class="block text-[10px] font-bold text-zinc-600"
+									>Email liên hệ</label
+								>
+								<input
+									id="t-email"
+									type="email"
+									bind:value={email}
+									required
+									placeholder="email@gmail.com"
+									class="w-full rounded-lg border-2 border-black bg-white px-2.5 py-1.5 text-xs font-semibold text-black focus:ring-2 focus:ring-blue-300 focus:outline-none"
+								/>
+							</div>
+							<div class="space-y-1">
+								<label for="t-pass" class="block text-[10px] font-bold text-zinc-600"
+									>Mật khẩu truy cập</label
+								>
+								<input
+									id="t-pass"
+									type="password"
+									bind:value={password}
+									required
+									placeholder="Mật khẩu mặc định"
+									class="w-full rounded-lg border-2 border-black bg-white px-2.5 py-1.5 text-xs font-semibold text-black focus:ring-2 focus:ring-blue-300 focus:outline-none"
+								/>
+							</div>
+						</div>
+					</div>
+
+					<!-- Profile Info section -->
+					<div class="space-y-3">
+						<h3 class="border-b border-black/15 pb-1.5 text-xs font-black text-zinc-500">
+							2. Hồ sơ hợp đồng & cọc
+						</h3>
+						<div class="grid grid-cols-2 gap-2">
+							<button
+								type="button"
+								disabled={emptyRooms.length === 0}
+								onclick={() => (roomAssignMode = 'existing')}
+								class="rounded-[6px] border-2 border-black px-3 py-2 text-xs font-black transition-colors disabled:opacity-40 {roomAssignMode ===
+								'existing'
+									? 'bg-blue-300 text-black'
+									: 'bg-white text-zinc-500 hover:bg-zinc-100'}"
+							>
+								Chọn phòng có sẵn
+							</button>
+							<button
+								type="button"
+								onclick={() => (roomAssignMode = 'new')}
+								class="rounded-[6px] border-2 border-black px-3 py-2 text-xs font-black transition-colors {roomAssignMode ===
+								'new'
+									? 'bg-blue-300 text-black'
+									: 'bg-white text-zinc-500 hover:bg-zinc-100'}"
+							>
+								Tạo phòng mới
+							</button>
+						</div>
+						<div class="grid grid-cols-2 gap-3">
+							{#if roomAssignMode === 'existing'}
 								<div class="space-y-1">
 									<label for="t-room" class="block text-[10px] font-bold text-zinc-600"
 										>Chọn phòng nhận bàn giao</label
@@ -707,122 +831,239 @@
 									>
 										{#each emptyRooms as room}
 											<option value={room.id}>
-												{room.property.shortName} - Phòng {room.roomNumber}
+												{roomOptionLabel(room)}
 											</option>
 										{/each}
 									</select>
 								</div>
+							{:else}
 								<div class="space-y-1">
-									<label for="t-cccd" class="block text-[10px] font-bold text-zinc-600"
-										>Số CCCD / Hộ chiếu</label
+									<label for="t-property" class="block text-[10px] font-bold text-zinc-600"
+										>Tòa nhà</label
 									>
-									<input
-										id="t-cccd"
-										type="text"
-										bind:value={idNumber}
+									<select
+										id="t-property"
+										bind:value={quickPropertyId}
+										onchange={() => selectQuickProperty(quickPropertyId)}
 										required
-										placeholder="Nhập 12 số CCCD"
 										class="w-full rounded-lg border-2 border-black bg-white px-2.5 py-1.5 text-xs font-semibold text-black focus:ring-2 focus:ring-blue-300 focus:outline-none"
-									/>
+									>
+										{#each properties as property}
+											<option value={property.id}>{property.shortName} - {property.name}</option>
+										{/each}
+									</select>
 								</div>
+							{/if}
+							<div class="space-y-1">
+								<label for="t-cccd" class="block text-[10px] font-bold text-zinc-600"
+									>Số CCCD / Hộ chiếu</label
+								>
+								<input
+									id="t-cccd"
+									type="text"
+									bind:value={idNumber}
+									required
+									placeholder="Nhập 12 số CCCD"
+									class="w-full rounded-lg border-2 border-black bg-white px-2.5 py-1.5 text-xs font-semibold text-black focus:ring-2 focus:ring-blue-300 focus:outline-none"
+								/>
 							</div>
-
+						</div>
+						{#if roomAssignMode === 'new'}
 							<div class="grid grid-cols-2 gap-3">
-								<div class="space-y-1">
-									<label for="t-date" class="block text-[10px] font-bold text-zinc-600"
-										>Ngày bàn giao nhận phòng</label
-									>
-									<input
-										id="t-date"
-										type="date"
-										bind:value={moveInDate}
-										required
-										class="w-full rounded-lg border-2 border-black bg-white px-2.5 py-1.5 text-xs font-semibold text-black focus:ring-2 focus:ring-blue-300 focus:outline-none"
-									/>
-								</div>
-								<div class="space-y-1">
-									<label for="t-dep" class="block text-[10px] font-bold text-zinc-600"
-										>Số tiền cọc đã đóng (đ)</label
-									>
-									<input
-										id="t-dep"
-										type="number"
-										bind:value={deposit}
-										required
-										placeholder="Ví dụ: 3000000"
-										class="w-full rounded-lg border-2 border-black bg-white px-2.5 py-1.5 text-xs font-semibold text-black focus:ring-2 focus:ring-blue-300 focus:outline-none"
-									/>
-								</div>
-							</div>
-						</div>
-
-						<!-- Initial Meter readings -->
-						<div class="space-y-3">
-							<h3 class="border-b border-black/15 pb-1.5 text-xs font-black text-zinc-500">
-								3. Chỉ số điện nước đầu kỳ
-							</h3>
-							<div class="grid grid-cols-2 gap-3">
-								<div class="space-y-1">
-									<label for="t-elec" class="block text-[10px] font-bold text-zinc-600"
-										>Chỉ số Điện đầu kỳ (kWh)</label
-									>
-									<input
-										id="t-elec"
-										type="number"
-										bind:value={initialElectricity}
-										required
-										class="w-full rounded-lg border-2 border-black bg-white px-2.5 py-1.5 text-center text-xs font-black text-black focus:ring-2 focus:ring-blue-300 focus:outline-none"
-									/>
-								</div>
-								<div class="space-y-1">
-									<label for="t-water" class="block text-[10px] font-bold text-zinc-600"
-										>Chỉ số Nước đầu kỳ (m³)</label
-									>
-									<input
-										id="t-water"
-										type="number"
-										bind:value={initialWater}
-										required
-										class="w-full rounded-lg border-2 border-black bg-white px-2.5 py-1.5 text-center text-xs font-black text-black focus:ring-2 focus:ring-blue-300 focus:outline-none"
-									/>
-								</div>
-							</div>
-						</div>
-
-						<div class="space-y-1">
-							<label for="t-notes" class="block text-[10px] font-bold text-zinc-600"
-								>Ghi chú hợp đồng</label
-							>
-							<textarea
-								id="t-notes"
-								bind:value={notes}
-								placeholder="Thuê dài hạn 12 tháng, giữ xe máy..."
-								rows="2"
-								class="w-full rounded-lg border-2 border-black bg-white p-2.5 text-xs font-semibold text-black focus:ring-2 focus:ring-blue-300 focus:outline-none"
-							></textarea>
-						</div>
-
-						<div class="flex justify-end gap-3 border-t-2 border-black pt-3">
-							<button
-								type="button"
-								onclick={() => (isAddDialogOpen = false)}
-								class="hover:bg-zinc-150 cursor-pointer rounded-[6px] border-2 border-black bg-white px-4 py-2 text-xs font-bold text-black transition-all"
-							>
-								Hủy
-							</button>
-							<button
-								type="submit"
-								disabled={isSubmitting}
-								class="flex cursor-pointer items-center gap-1.5 rounded-[6px] border-2 border-black bg-blue-300 px-4 py-2 text-xs font-black text-black shadow-secondary transition-all hover:bg-blue-400 disabled:opacity-50"
-							>
-								Đăng ký khách thuê
-								{#if isSubmitting}
-									<Loader2 class="h-4.5 w-4.5 animate-spin" />
+								{#if quickPropertyIsApartment()}
+									<div class="space-y-1">
+										<label for="t-block" class="block text-[10px] font-bold text-zinc-600"
+											>Block</label
+										>
+										<select
+											id="t-block"
+											bind:value={quickBlockId}
+											required
+											class="w-full rounded-lg border-2 border-black bg-white px-2.5 py-1.5 text-xs font-semibold text-black focus:ring-2 focus:ring-blue-300 focus:outline-none"
+										>
+											<option value="">Chọn block</option>
+											{#each selectedQuickProperty()?.blocks ?? [] as block}
+												<option value={block.id}>{block.name}</option>
+											{/each}
+										</select>
+									</div>
+									<div class="space-y-1">
+										<label for="t-room-code" class="block text-[10px] font-bold text-zinc-600"
+											>Mã căn</label
+										>
+										<input
+											id="t-room-code"
+											type="text"
+											bind:value={quickRoomCode}
+											required
+											placeholder="A16-04"
+											class="w-full rounded-lg border-2 border-black bg-white px-2.5 py-1.5 text-xs font-semibold text-black focus:ring-2 focus:ring-blue-300 focus:outline-none"
+										/>
+									</div>
 								{/if}
-							</button>
+								<div class="space-y-1">
+									<label for="t-room-name" class="block text-[10px] font-bold text-zinc-600"
+										>{quickPropertyIsApartment() ? 'Mã phòng trong căn' : 'Số phòng'}</label
+									>
+									<input
+										id="t-room-name"
+										type="text"
+										bind:value={quickRoomNumber}
+										required
+										placeholder={quickPropertyIsApartment() ? 'Master, Phòng 2...' : '101'}
+										class="w-full rounded-lg border-2 border-black bg-white px-2.5 py-1.5 text-xs font-semibold text-black focus:ring-2 focus:ring-blue-300 focus:outline-none"
+									/>
+								</div>
+								<div class="space-y-1">
+									<label for="t-room-floor" class="block text-[10px] font-bold text-zinc-600"
+										>Tầng</label
+									>
+									<input
+										id="t-room-floor"
+										type="number"
+										bind:value={quickFloor}
+										required={quickPropertyIsApartment()}
+										placeholder="16"
+										class="w-full rounded-lg border-2 border-black bg-white px-2.5 py-1.5 text-xs font-semibold text-black focus:ring-2 focus:ring-blue-300 focus:outline-none"
+									/>
+								</div>
+								<div class="space-y-1">
+									<label for="t-room-rent" class="block text-[10px] font-bold text-zinc-600"
+										>Giá thuê tháng</label
+									>
+									<input
+										id="t-room-rent"
+										type="number"
+										bind:value={quickMonthlyRent}
+										required
+										placeholder="8000000"
+										class="w-full rounded-lg border-2 border-black bg-white px-2.5 py-1.5 text-xs font-semibold text-black focus:ring-2 focus:ring-blue-300 focus:outline-none"
+									/>
+								</div>
+								<div class="space-y-1">
+									<label for="t-room-type" class="block text-[10px] font-bold text-zinc-600"
+										>Loại phòng</label
+									>
+									<select
+										id="t-room-type"
+										bind:value={quickRoomType}
+										class="w-full rounded-lg border-2 border-black bg-white px-2.5 py-1.5 text-xs font-semibold text-black focus:ring-2 focus:ring-blue-300 focus:outline-none"
+									>
+										<option value="standard">Phòng thường</option>
+										<option value="master">Phòng master</option>
+										<option value="balcony">Phòng ban công</option>
+									</select>
+								</div>
+								<div class="space-y-1">
+									<label for="t-room-area" class="block text-[10px] font-bold text-zinc-600"
+										>Diện tích</label
+									>
+									<input
+										id="t-room-area"
+										type="number"
+										bind:value={quickArea}
+										placeholder="50"
+										class="w-full rounded-lg border-2 border-black bg-white px-2.5 py-1.5 text-xs font-semibold text-black focus:ring-2 focus:ring-blue-300 focus:outline-none"
+									/>
+								</div>
+							</div>
+						{/if}
+
+						<div class="grid grid-cols-2 gap-3">
+							<div class="space-y-1">
+								<label for="t-date" class="block text-[10px] font-bold text-zinc-600"
+									>Ngày bàn giao nhận phòng</label
+								>
+								<input
+									id="t-date"
+									type="date"
+									bind:value={moveInDate}
+									required
+									class="w-full rounded-lg border-2 border-black bg-white px-2.5 py-1.5 text-xs font-semibold text-black focus:ring-2 focus:ring-blue-300 focus:outline-none"
+								/>
+							</div>
+							<div class="space-y-1">
+								<label for="t-dep" class="block text-[10px] font-bold text-zinc-600"
+									>Số tiền cọc đã đóng (đ)</label
+								>
+								<input
+									id="t-dep"
+									type="number"
+									bind:value={deposit}
+									required
+									placeholder="Ví dụ: 3000000"
+									class="w-full rounded-lg border-2 border-black bg-white px-2.5 py-1.5 text-xs font-semibold text-black focus:ring-2 focus:ring-blue-300 focus:outline-none"
+								/>
+							</div>
 						</div>
-					</form>
-				{/if}
+					</div>
+
+					<!-- Initial Meter readings -->
+					<div class="space-y-3">
+						<h3 class="border-b border-black/15 pb-1.5 text-xs font-black text-zinc-500">
+							3. Chỉ số điện nước đầu kỳ
+						</h3>
+						<div class="grid grid-cols-2 gap-3">
+							<div class="space-y-1">
+								<label for="t-elec" class="block text-[10px] font-bold text-zinc-600"
+									>Chỉ số Điện đầu kỳ (kWh)</label
+								>
+								<input
+									id="t-elec"
+									type="number"
+									bind:value={initialElectricity}
+									required
+									class="w-full rounded-lg border-2 border-black bg-white px-2.5 py-1.5 text-center text-xs font-black text-black focus:ring-2 focus:ring-blue-300 focus:outline-none"
+								/>
+							</div>
+							<div class="space-y-1">
+								<label for="t-water" class="block text-[10px] font-bold text-zinc-600"
+									>Chỉ số Nước đầu kỳ (m³)</label
+								>
+								<input
+									id="t-water"
+									type="number"
+									bind:value={initialWater}
+									required
+									class="w-full rounded-lg border-2 border-black bg-white px-2.5 py-1.5 text-center text-xs font-black text-black focus:ring-2 focus:ring-blue-300 focus:outline-none"
+								/>
+							</div>
+						</div>
+					</div>
+
+					<div class="space-y-1">
+						<label for="t-notes" class="block text-[10px] font-bold text-zinc-600"
+							>Ghi chú hợp đồng</label
+						>
+						<textarea
+							id="t-notes"
+							bind:value={notes}
+							placeholder="Thuê dài hạn 12 tháng, giữ xe máy..."
+							rows="2"
+							class="w-full rounded-lg border-2 border-black bg-white p-2.5 text-xs font-semibold text-black focus:ring-2 focus:ring-blue-300 focus:outline-none"
+						></textarea>
+					</div>
+
+					<div class="flex justify-end gap-3 border-t-2 border-black pt-3">
+						<button
+							type="button"
+							onclick={() => (isAddDialogOpen = false)}
+							class="hover:bg-zinc-150 cursor-pointer rounded-[6px] border-2 border-black bg-white px-4 py-2 text-xs font-bold text-black transition-all"
+						>
+							Hủy
+						</button>
+						<button
+							type="submit"
+							disabled={isSubmitting}
+							class="flex cursor-pointer items-center gap-1.5 rounded-[6px] border-2 border-black bg-blue-300 px-4 py-2 text-xs font-black text-black shadow-secondary transition-all hover:bg-blue-400 disabled:opacity-50"
+						>
+							Đăng ký khách thuê
+							{#if isSubmitting}
+								<Loader2 class="h-4.5 w-4.5 animate-spin" />
+							{/if}
+						</button>
+					</div>
+				</form>
 			</div>
 		</div>
 	{/if}

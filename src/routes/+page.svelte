@@ -12,7 +12,7 @@
 		try {
 			const session = JSON.parse(sessionStr);
 			if (session.role === 'SUPER_ADMIN') {
-				goto('/super-admin');
+				goto('/admin');
 			} else if (session.role === 'LANDLORD') {
 				goto('/dashboard');
 			} else if (session.role === 'TENANT') {

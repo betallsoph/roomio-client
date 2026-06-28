@@ -121,7 +121,6 @@
 	let newRoomCode = $state('');
 	let newRoomType = $state('standard');
 	let newFloor = $state('');
-	let newApartmentUnit = $state('');
 	let newMonthlyRent = $state('');
 	let newArea = $state('');
 	let newBlockId = $state('');
@@ -256,21 +255,17 @@
 			}
 		} else {
 			const isApartment = activeRentalType() === 'APARTMENT';
-			const generatedApartmentCode = buildNewApartmentCode();
-			submittedRoomNumber = isApartment ? getNewRoomDisplayName() : newRoomNumber.trim();
-			submittedRoomCode = isApartment ? generatedApartmentCode : newRoomCode.trim() || null;
+			submittedRoomNumber = newRoomNumber.trim();
+			submittedRoomCode = newRoomCode.trim() || null;
 			submitBlockId = newBlockId || null;
 			submitFloor = newFloor ? Number(newFloor) : null;
 
-			if (
-				isApartment &&
-				(!newBlockId || !newFloor || !newApartmentUnit || !generatedApartmentCode)
-			) {
-				toast.error('Vui lòng chọn block, nhập tầng và số căn hộ');
+			if (isApartment && (!newBlockId || !newFloor || !submittedRoomCode)) {
+				toast.error('Vui lòng chọn block, nhập mã căn và tầng');
 				return;
 			}
 			if (!submittedRoomNumber) {
-				toast.error('Vui lòng điền số phòng');
+				toast.error(isApartment ? 'Vui lòng nhập mã phòng trong căn' : 'Vui lòng điền số phòng');
 				return;
 			}
 		}
@@ -301,7 +296,6 @@
 			newRoomNumber = '';
 			newRoomCode = '';
 			newFloor = '';
-			newApartmentUnit = '';
 			newMonthlyRent = '';
 			newArea = '';
 			newBlockId = '';
@@ -517,6 +511,7 @@
 	function selectProperty(propertyId: string) {
 		selectedPropertyId = propertyId;
 		selectedBlockId = 'all';
+		selectedUnitCode = '';
 		openFilterMenu = null;
 	}
 
@@ -550,37 +545,6 @@
 		if (type === 'MOTEL') return 'Mã phòng';
 		if (type === 'DORM') return 'Mã giường / box';
 		return 'Mã căn hộ';
-	}
-
-	function onlyDigits(value: string | number) {
-		if (value == null) return '';
-		return String(value).replace(/\D/g, '');
-	}
-
-	function twoDigit(value: string | number) {
-		const digits = onlyDigits(value);
-		return digits ? digits.padStart(2, '0') : '';
-	}
-
-	function getBlockTower(blockName: string) {
-		return blockName.match(/[A-Za-z]/)?.[0]?.toUpperCase() ?? '';
-	}
-
-	function buildApartmentCode(blockName: string, floor: string | number, unit: string | number) {
-		const tower = getBlockTower(blockName);
-		const floorCode = twoDigit(floor);
-		const unitCode = twoDigit(unit);
-		return tower && floorCode && unitCode ? `${tower}${floorCode}-${unitCode}` : '';
-	}
-
-	function buildNewApartmentCode() {
-		const blockName =
-			getActiveProperty()?.blocks.find((block) => block.id === newBlockId)?.name ?? '';
-		return buildApartmentCode(blockName, newFloor, newApartmentUnit);
-	}
-
-	function getNewRoomDisplayName() {
-		return newRoomNumber.trim() || twoDigit(newApartmentUnit) || buildNewApartmentCode();
 	}
 
 	// Gom các phòng trong property hiện tại theo MÃ CĂN (một mã căn có thể chứa nhiều phòng)
@@ -1111,13 +1075,14 @@
 						<div class="grid grid-cols-2 gap-4">
 							<div class="space-y-1">
 								<label for="r-num" class="block text-xs font-bold text-zinc-600"
-									>Tên phòng hiển thị</label
+									>Mã phòng trong căn</label
 								>
 								<input
 									id="r-num"
 									type="text"
 									bind:value={newRoomNumber}
-									placeholder="Mặc định: số căn"
+									required
+									placeholder="Ví dụ: Master, Phòng 2, Bed A"
 									class="w-full rounded-lg border-2 border-black bg-white px-3 py-2 text-sm font-bold focus:outline-none"
 								/>
 							</div>
@@ -1139,6 +1104,17 @@
 
 						<div class="grid grid-cols-2 gap-4">
 							<div class="space-y-1">
+								<label for="r-code" class="block text-xs font-bold text-zinc-600">Mã căn</label>
+								<input
+									id="r-code"
+									type="text"
+									bind:value={newRoomCode}
+									required
+									placeholder="Ví dụ: A16-04"
+									class="w-full rounded-lg border-2 border-black bg-white px-3 py-2 text-sm font-bold focus:outline-none"
+								/>
+							</div>
+							<div class="space-y-1">
 								<label for="r-floor" class="block text-xs font-bold text-zinc-600">Tầng</label>
 								<input
 									id="r-floor"
@@ -1149,23 +1125,6 @@
 									class="w-full rounded-lg border-2 border-black bg-white px-3 py-2 text-sm font-bold focus:outline-none"
 								/>
 							</div>
-							<div class="space-y-1">
-								<label for="r-unit" class="block text-xs font-bold text-zinc-600">Số căn</label>
-								<input
-									id="r-unit"
-									type="number"
-									bind:value={newApartmentUnit}
-									required
-									placeholder="04"
-									class="w-full rounded-lg border-2 border-black bg-white px-3 py-2 text-sm font-bold focus:outline-none"
-								/>
-							</div>
-						</div>
-
-						<div
-							class="rounded-lg border-2 border-black bg-blue-50 px-3 py-2 text-xs font-bold text-black"
-						>
-							Mã căn hộ chuẩn: <span class="font-black">{buildNewApartmentCode() || '--'}</span>
 						</div>
 					{:else}
 						<div class="grid grid-cols-2 gap-4">
