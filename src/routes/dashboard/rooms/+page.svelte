@@ -126,6 +126,7 @@
 	let newArea = $state('');
 	let newBlockId = $state('');
 	let isCreatingRoom = $state(false);
+	let selectedUnitCode = $state(''); // '' = tạo căn mới; khác '' = thêm phòng vào căn đã có
 
 	// Meter Form states
 	let meterServiceId = $state('');
@@ -237,19 +238,38 @@
 			return;
 		}
 
-		const isApartment = activeRentalType() === 'APARTMENT';
-		const generatedApartmentCode = buildNewApartmentCode();
-		const submittedRoomNumber = isApartment ? getNewRoomDisplayName() : newRoomNumber.trim();
-		const submittedRoomCode = isApartment ? generatedApartmentCode : newRoomCode.trim() || null;
+		let submittedRoomNumber: string;
+		let submittedRoomCode: string | null;
+		let submitBlockId: string | null;
+		let submitFloor: number | null;
 
-		if (isApartment && (!newBlockId || !newFloor || !newApartmentUnit || !generatedApartmentCode)) {
-			toast.error('Vui lòng chọn block, nhập tầng và số căn hộ');
-			return;
-		}
+		if (selectedUnitCode) {
+			// Thêm phòng vào CĂN đã tồn tại — kế thừa block/tầng từ phòng cùng căn
+			submittedRoomNumber = newRoomNumber.trim();
+			submittedRoomCode = selectedUnitCode;
+			const sibling = rooms.find((r) => getRoomCode(r) === selectedUnitCode);
+			submitBlockId = sibling?.blockId ?? null;
+			submitFloor = sibling?.floor ?? (newFloor ? Number(newFloor) : null);
+			if (!submittedRoomNumber) {
+				toast.error('Vui lòng nhập tên phòng mới trong căn');
+				return;
+			}
+		} else {
+			const isApartment = activeRentalType() === 'APARTMENT';
+			const generatedApartmentCode = buildNewApartmentCode();
+			submittedRoomNumber = isApartment ? getNewRoomDisplayName() : newRoomNumber.trim();
+			submittedRoomCode = isApartment ? generatedApartmentCode : newRoomCode.trim() || null;
+			submitBlockId = newBlockId || null;
+			submitFloor = newFloor ? Number(newFloor) : null;
 
-		if (!submittedRoomNumber) {
-			toast.error('Vui lòng điền số phòng');
-			return;
+			if (isApartment && (!newBlockId || !newFloor || !newApartmentUnit || !generatedApartmentCode)) {
+				toast.error('Vui lòng chọn block, nhập tầng và số căn hộ');
+				return;
+			}
+			if (!submittedRoomNumber) {
+				toast.error('Vui lòng điền số phòng');
+				return;
+			}
 		}
 
 		isCreatingRoom = true;
@@ -259,11 +279,11 @@
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({
 					propertyId: selectedPropertyId,
-					blockId: newBlockId || null,
+					blockId: submitBlockId,
 					roomNumber: submittedRoomNumber,
 					roomCode: submittedRoomCode,
 					roomType: newRoomType,
-					floor: newFloor ? Number(newFloor) : null,
+					floor: submitFloor,
 					monthlyRent: Number(newMonthlyRent),
 					area: newArea ? Number(newArea) : null
 				})
@@ -282,6 +302,7 @@
 			newMonthlyRent = '';
 			newArea = '';
 			newBlockId = '';
+			selectedUnitCode = '';
 
 			// Refresh
 			fetchRooms(selectedPropertyId);
@@ -557,6 +578,26 @@
 
 	function getNewRoomDisplayName() {
 		return newRoomNumber.trim() || twoDigit(newApartmentUnit) || buildNewApartmentCode();
+	}
+
+	// Gom các phòng trong property hiện tại theo MÃ CĂN (một mã căn có thể chứa nhiều phòng)
+	function existingUnits() {
+		const map = new Map<string, Room[]>();
+		for (const r of rooms) {
+			const code = getRoomCode(r);
+			const list = map.get(code) ?? [];
+			list.push(r);
+			map.set(code, list);
+		}
+		return [...map.entries()]
+			.map(([code, rs]) => ({ code, rooms: rs }))
+			.sort((a, b) => a.code.localeCompare(b.code));
+	}
+
+	function unitRoomNames(code: string) {
+		return (existingUnits().find((u) => u.code === code)?.rooms ?? [])
+			.map((r) => r.roomNumber)
+			.join(', ');
 	}
 
 	function getRoomBlockName(room: Room) {
@@ -1028,7 +1069,40 @@
 				</div>
 
 				<form onsubmit={handleAddRoom} class="space-y-4 p-6">
-					{#if activeRentalType() === 'APARTMENT'}
+					{#if existingUnits().length > 0}
+						<div class="space-y-1">
+							<label for="r-unit-sel" class="block text-xs font-bold text-zinc-600">Căn hộ</label>
+							<select
+								id="r-unit-sel"
+								bind:value={selectedUnitCode}
+								class="w-full rounded-lg border-2 border-black bg-white px-3 py-2 text-sm font-bold text-black focus:outline-none"
+							>
+								<option value="">➕ Tạo căn mới</option>
+								{#each existingUnits() as u}
+									<option value={u.code}>{u.code} · {u.rooms.length} phòng</option>
+								{/each}
+							</select>
+						</div>
+					{/if}
+
+					{#if selectedUnitCode}
+						<div class="space-y-1">
+							<label for="r-name" class="block text-xs font-bold text-zinc-600"
+								>Tên phòng mới trong căn {selectedUnitCode}</label
+							>
+							<input
+								id="r-name"
+								type="text"
+								bind:value={newRoomNumber}
+								required
+								placeholder="Ví dụ: Phòng 2, Master, Giường A..."
+								class="w-full rounded-lg border-2 border-black bg-white px-3 py-2 text-sm font-bold focus:outline-none"
+							/>
+						</div>
+						<div class="rounded-lg border-2 border-black bg-blue-50 px-3 py-2 text-xs font-bold text-black">
+							Phòng đang có trong căn: {unitRoomNames(selectedUnitCode) || '--'}
+						</div>
+					{:else if activeRentalType() === 'APARTMENT'}
 						<div class="grid grid-cols-2 gap-4">
 							<div class="space-y-1">
 								<label for="r-num" class="block text-xs font-bold text-zinc-600"

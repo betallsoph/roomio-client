@@ -14,8 +14,11 @@
 		Loader2,
 		Home,
 		FileText,
-		LogOut
+		LogOut,
+		Ban,
+		Trash2
 	} from '@lucide/svelte';
+	import { uploadImage } from '$lib/upload';
 
 	interface Room {
 		id: string;
@@ -42,11 +45,33 @@
 		rooms: Room[];
 	}
 
+	interface ContractRow {
+		id: string;
+		startDate: string;
+		endDate: string;
+		monthlyRent: number;
+		deposit: number;
+		fileUrl: string | null;
+		status: string;
+		notes: string | null;
+		room: { roomNumber: string };
+	}
+
 	let landlordId = $state<string | null>(null);
 	let isLoading = $state(true);
 	let tenants = $state<Tenant[]>([]);
 	let emptyRooms = $state<Room[]>([]);
 	let selectedTenant = $state<Tenant | null>(null);
+
+	// Hợp đồng của khách đang xem (gộp từ trang Hợp đồng cũ vào tenant detail)
+	let tenantContracts = $state<ContractRow[]>([]);
+	let loadingContracts = $state(false);
+	let showContractForm = $state(false);
+	let savingContract = $state(false);
+	let uploadingContractFile = $state(false);
+	let cForm = $state({ startDate: '', endDate: '', monthlyRent: 0, deposit: 0, fileUrl: '', notes: '' });
+	const todayStr = new Date().toISOString().split('T')[0];
+	const in30DaysStr = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
 
 	// Modals & drawers
 	let isAddDialogOpen = $state(false);
@@ -247,6 +272,141 @@
 
 	function formatCurrency(amount: number) {
 		return new Intl.NumberFormat('vi-VN').format(amount) + 'đ';
+	}
+
+	// Tự tải hợp đồng mỗi khi mở/đổi khách đang xem trong drawer
+	$effect(() => {
+		if (selectedTenant) loadTenantContracts(selectedTenant.id);
+	});
+
+	async function loadTenantContracts(tenantId: string) {
+		loadingContracts = true;
+		showContractForm = false;
+		try {
+			const res = await fetch(`/api/contracts?tenantId=${tenantId}`);
+			const data = await res.json();
+			tenantContracts = res.ok ? data : [];
+		} catch {
+			tenantContracts = [];
+		} finally {
+			loadingContracts = false;
+		}
+	}
+
+	function openContractForm() {
+		cForm = {
+			startDate: todayStr,
+			endDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+			monthlyRent: 0,
+			deposit: selectedTenant?.deposit ?? 0,
+			fileUrl: '',
+			notes: ''
+		};
+		showContractForm = true;
+	}
+
+	async function handleContractFile(event: Event) {
+		const input = event.target as HTMLInputElement;
+		const file = input.files?.[0];
+		if (!file) return;
+		uploadingContractFile = true;
+		try {
+			cForm.fileUrl = await uploadImage(file);
+			toast.success('Đã tải file hợp đồng lên');
+		} catch (e: any) {
+			toast.error(e.message || 'Lỗi upload file');
+		} finally {
+			uploadingContractFile = false;
+			input.value = '';
+		}
+	}
+
+	async function createTenantContract() {
+		const room = selectedTenant?.rooms[0];
+		if (!selectedTenant || !room) {
+			toast.error('Khách chưa ở phòng nào để lập hợp đồng');
+			return;
+		}
+		if (!cForm.startDate || !cForm.endDate || !cForm.monthlyRent) {
+			toast.error('Vui lòng nhập ngày bắt đầu/kết thúc và tiền thuê');
+			return;
+		}
+		savingContract = true;
+		try {
+			const res = await fetch('/api/contracts', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					tenantId: selectedTenant.id,
+					roomId: room.id,
+					startDate: cForm.startDate,
+					endDate: cForm.endDate,
+					monthlyRent: Number(cForm.monthlyRent),
+					deposit: Number(cForm.deposit),
+					fileUrl: cForm.fileUrl || null,
+					notes: cForm.notes || null
+				})
+			});
+			const data = await res.json();
+			if (!res.ok) throw new Error(data.error || 'Lỗi tạo hợp đồng');
+			toast.success('Đã tạo hợp đồng');
+			showContractForm = false;
+			await loadTenantContracts(selectedTenant.id);
+		} catch (e: any) {
+			toast.error(e.message);
+		} finally {
+			savingContract = false;
+		}
+	}
+
+	async function terminateTenantContract(c: ContractRow) {
+		if (
+			!(await confirmPopup({
+				title: 'Chấm dứt hợp đồng',
+				message: 'Chấm dứt hợp đồng này?',
+				confirmLabel: 'Chấm dứt',
+				tone: 'warning'
+			}))
+		)
+			return;
+		const res = await fetch('/api/contracts', {
+			method: 'PUT',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({ id: c.id, status: 'terminated' })
+		});
+		if (res.ok) {
+			toast.success('Đã chấm dứt hợp đồng');
+			if (selectedTenant) await loadTenantContracts(selectedTenant.id);
+		} else {
+			toast.error('Lỗi cập nhật hợp đồng');
+		}
+	}
+
+	async function deleteTenantContract(c: ContractRow) {
+		if (
+			!(await confirmPopup({
+				title: 'Xóa hợp đồng',
+				message: 'Xóa hẳn hợp đồng này? Không thể hoàn tác.',
+				confirmLabel: 'Xóa',
+				tone: 'danger'
+			}))
+		)
+			return;
+		const res = await fetch(`/api/contracts?id=${c.id}`, { method: 'DELETE' });
+		if (res.ok) {
+			toast.success('Đã xóa hợp đồng');
+			if (selectedTenant) await loadTenantContracts(selectedTenant.id);
+		} else {
+			toast.error('Lỗi xóa hợp đồng');
+		}
+	}
+
+	function contractBadge(c: ContractRow) {
+		if (c.status === 'terminated') return { text: 'Đã chấm dứt', cls: 'bg-zinc-200 text-zinc-600' };
+		if (c.endDate < todayStr) return { text: 'Hết hạn', cls: 'bg-red-200 text-red-800' };
+		if (c.status === 'active' && c.endDate <= in30DaysStr)
+			return { text: 'Sắp hết hạn', cls: 'bg-yellow-200 text-yellow-800' };
+		return { text: 'Hiệu lực', cls: 'bg-green-200 text-green-800' };
 	}
 </script>
 
@@ -774,6 +934,156 @@
 								>
 							</div>
 						</div>
+					</div>
+
+					<!-- Hợp đồng (gộp từ trang Hợp đồng cũ) -->
+					<div class="space-y-3">
+						<div class="flex items-center justify-between">
+							<h4 class="text-xs font-black text-zinc-500">Hợp đồng</h4>
+							{#if !showContractForm}
+								<button
+									onclick={openContractForm}
+									class="flex items-center gap-1 rounded-[6px] border-2 border-black bg-blue-300 px-2.5 py-1 text-[11px] font-black shadow-secondary transition-all active:translate-x-[1px] active:translate-y-[1px]"
+								>
+									<Plus class="h-3.5 w-3.5" /> Tạo HĐ
+								</button>
+							{/if}
+						</div>
+
+						{#if loadingContracts}
+							<div class="flex justify-center py-4">
+								<Loader2 class="h-5 w-5 animate-spin text-zinc-400" />
+							</div>
+						{:else if tenantContracts.length === 0 && !showContractForm}
+							<p
+								class="rounded-lg border-2 border-dashed border-black/30 bg-white p-3 text-xs font-bold text-zinc-400"
+							>
+								Chưa có hợp đồng nào cho khách này.
+							</p>
+						{:else if tenantContracts.length > 0}
+							<div class="space-y-2">
+								{#each tenantContracts as c (c.id)}
+									{@const badge = contractBadge(c)}
+									<div class="rounded-lg border-2 border-black bg-white p-3 shadow-secondary">
+										<div class="flex items-center justify-between gap-2">
+											<span class="rounded border-2 border-black px-1.5 text-[10px] font-black {badge.cls}"
+												>{badge.text}</span
+											>
+											<div class="flex items-center gap-1.5">
+												{#if c.fileUrl}
+													<a
+														href={c.fileUrl}
+														target="_blank"
+														rel="noreferrer"
+														class="rounded-[6px] border-2 border-black bg-white px-2 py-1 text-[10px] font-black hover:bg-zinc-50"
+														>File</a
+													>
+												{/if}
+												{#if c.status === 'active'}
+													<button
+														onclick={() => terminateTenantContract(c)}
+														title="Chấm dứt"
+														class="rounded-[6px] border-2 border-black bg-yellow-200 p-1.5"
+													>
+														<Ban class="h-3.5 w-3.5" />
+													</button>
+												{/if}
+												<button
+													onclick={() => deleteTenantContract(c)}
+													title="Xóa"
+													class="rounded-[6px] border-2 border-black bg-red-200 p-1.5"
+												>
+													<Trash2 class="h-3.5 w-3.5" />
+												</button>
+											</div>
+										</div>
+										<p class="mt-1.5 text-[11px] font-bold text-zinc-600">
+											{c.startDate} → {c.endDate} · {formatCurrency(c.monthlyRent)}/tháng · cọc {formatCurrency(
+												c.deposit
+											)}
+										</p>
+										{#if c.notes}
+											<p class="mt-1 text-[11px] font-semibold text-zinc-400">{c.notes}</p>
+										{/if}
+									</div>
+								{/each}
+							</div>
+						{/if}
+
+						{#if showContractForm}
+							<div class="space-y-2 rounded-lg border-2 border-black bg-blue-50 p-3">
+								<div class="grid grid-cols-2 gap-2">
+									<label class="block text-[10px] font-black text-zinc-500"
+										>Bắt đầu
+										<input
+											type="date"
+											bind:value={cForm.startDate}
+											class="mt-1 w-full rounded-[6px] border-2 border-black px-2 py-1.5 text-xs font-bold"
+										/>
+									</label>
+									<label class="block text-[10px] font-black text-zinc-500"
+										>Kết thúc
+										<input
+											type="date"
+											bind:value={cForm.endDate}
+											class="mt-1 w-full rounded-[6px] border-2 border-black px-2 py-1.5 text-xs font-bold"
+										/>
+									</label>
+									<label class="block text-[10px] font-black text-zinc-500"
+										>Tiền thuê/tháng
+										<input
+											type="number"
+											bind:value={cForm.monthlyRent}
+											class="mt-1 w-full rounded-[6px] border-2 border-black px-2 py-1.5 text-xs font-bold"
+										/>
+									</label>
+									<label class="block text-[10px] font-black text-zinc-500"
+										>Tiền cọc
+										<input
+											type="number"
+											bind:value={cForm.deposit}
+											class="mt-1 w-full rounded-[6px] border-2 border-black px-2 py-1.5 text-xs font-bold"
+										/>
+									</label>
+								</div>
+								<label class="block text-[10px] font-black text-zinc-500"
+									>File hợp đồng (ảnh scan)
+									<input
+										type="file"
+										accept="image/*"
+										onchange={handleContractFile}
+										class="mt-1 w-full rounded-[6px] border-2 border-black px-2 py-1.5 text-xs font-bold file:hidden"
+									/>
+								</label>
+								{#if uploadingContractFile}
+									<p class="flex items-center gap-1 text-[10px] font-bold text-zinc-500">
+										<Loader2 class="h-3 w-3 animate-spin" /> Đang tải...
+									</p>
+								{:else if cForm.fileUrl}
+									<img src={cForm.fileUrl} alt="File HĐ" class="h-16 rounded border-2 border-black" />
+								{/if}
+								<label class="block text-[10px] font-black text-zinc-500"
+									>Ghi chú
+									<textarea
+										bind:value={cForm.notes}
+										rows="2"
+										class="mt-1 w-full rounded-[6px] border-2 border-black px-2 py-1.5 text-xs font-bold"
+									></textarea>
+								</label>
+								<div class="flex gap-2">
+									<button
+										onclick={createTenantContract}
+										disabled={savingContract || uploadingContractFile}
+										class="flex-1 rounded-[6px] border-2 border-black bg-blue-300 py-2 text-xs font-black shadow-secondary disabled:opacity-50"
+										>{savingContract ? 'Đang lưu...' : 'Lưu hợp đồng'}</button
+									>
+									<button
+										onclick={() => (showContractForm = false)}
+										class="rounded-[6px] border-2 border-black bg-white px-3 py-2 text-xs font-black">Hủy</button
+									>
+								</div>
+							</div>
+						{/if}
 					</div>
 
 					<!-- Notes -->

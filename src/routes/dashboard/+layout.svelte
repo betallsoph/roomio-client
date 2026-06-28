@@ -16,7 +16,6 @@
 		Menu,
 		X,
 		Gauge,
-		FileText,
 		TrendingUp,
 		MessageSquare,
 		UserCog,
@@ -73,9 +72,9 @@
 
 	const menuGroups = [
 		{
-			label: 'Vận hành chính',
+			label: 'Cho thuê',
 			items: [
-				{ name: 'Tổng quan', path: '/dashboard', icon: LayoutDashboard },
+				{ name: 'Tòa nhà', path: '/dashboard/buildings', icon: Building2 },
 				{ name: 'Phòng', path: '/dashboard/rooms', icon: Home },
 				{ name: 'Hóa đơn', path: '/dashboard/invoices', icon: Receipt },
 				{ name: 'Khách thuê', path: '/dashboard/tenants', icon: Users }
@@ -86,7 +85,6 @@
 			items: [
 				{ name: 'Chốt số', path: '/dashboard/meters', icon: Gauge },
 				{ name: 'Sự cố', path: '/dashboard/requests', icon: Wrench },
-				{ name: 'Hợp đồng', path: '/dashboard/contracts', icon: FileText },
 				{ name: 'Tin nhắn', path: '/dashboard/messages', icon: MessageSquare },
 				{ name: 'Bảng tin', path: '/dashboard/notifications', icon: Bell }
 			]
@@ -94,7 +92,7 @@
 		{
 			label: 'Thiết lập & quản trị',
 			items: [
-				{ name: 'Tòa nhà', path: '/dashboard/buildings', icon: Building2 },
+				{ name: 'Tổng quan', path: '/dashboard', icon: LayoutDashboard },
 				{ name: 'Nhân viên', path: '/dashboard/staff', icon: UserCog },
 				{ name: 'Tài chính', path: '/dashboard/finance', icon: TrendingUp },
 				{ name: 'Dịch vụ', path: '/dashboard/services', icon: Plug },
@@ -128,9 +126,11 @@
 				<nav class="space-y-6">
 					{#each menuGroups as group}
 						<div>
-							<p class="mb-2 px-2 text-xs font-bold text-zinc-400">
-								{group.label}
-							</p>
+							{#if group.label}
+								<p class="mb-2 px-2 text-xs font-bold text-zinc-400">
+									{group.label}
+								</p>
+							{/if}
 							<div class="space-y-1">
 								{#each group.items as item}
 									{@const Icon = item.icon}
@@ -218,9 +218,11 @@
 				<nav class="space-y-6">
 					{#each menuGroups as group}
 						<div>
-							<p class="mb-2 px-2 text-xs font-bold text-zinc-400">
-								{group.label}
-							</p>
+							{#if group.label}
+								<p class="mb-2 px-2 text-xs font-bold text-zinc-400">
+									{group.label}
+								</p>
+							{/if}
 							<div class="space-y-1">
 								{#each group.items as item}
 									{@const Icon = item.icon}
