@@ -109,7 +109,7 @@
 					<button
 						type="submit"
 						disabled={isLoading}
-						class="login-submit mt-2 inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-[6px] border-2 border-black bg-blue-300 px-4 py-2 text-sm font-bold text-black shadow-secondary transition-all disabled:pointer-events-none disabled:opacity-50"
+						class="login-submit mt-2 inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-[6px] border-2 border-black bg-blue-300 px-4 py-2 text-sm font-bold text-black shadow-secondary transition-all hover:bg-white disabled:pointer-events-none disabled:opacity-50"
 					>
 						{#if isLoading}
 							Đang xử lý
@@ -125,7 +125,8 @@
 
 <style>
 	.login-submit:hover span {
-		color: rgb(37 99 235);
+		color: #2563eb;
+		font-weight: 900;
 		animation: login-word-pop 220ms cubic-bezier(0.34, 1.56, 0.64, 1);
 	}
 
