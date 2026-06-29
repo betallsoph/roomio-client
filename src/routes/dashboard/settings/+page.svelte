@@ -1,12 +1,18 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { goto } from '$app/navigation';
+	import { page } from '$app/state';
 	import { toast } from 'svelte-sonner';
-	import { Landmark, User, Save, Loader2, Plug } from '@lucide/svelte';
+	import { Landmark, User, Save, Loader2, Plug, UserCog } from '@lucide/svelte';
 	import { confirmPopup } from '$lib/confirm-popup';
+	import StaffManagement from '$lib/StaffManagement.svelte';
+
+	type SettingsTab = 'account' | 'staff';
 
 	let landlordId = $state<string | null>(null);
 	let isLoading = $state(true);
 	let isSubmitting = $state(false);
+	let activeTab = $state<SettingsTab>('account');
 
 	// Form states
 	let name = $state('');
@@ -29,6 +35,8 @@
 	let pChecksumKey = $state('');
 
 	onMount(() => {
+		activeTab = page.url.searchParams.get('tab') === 'staff' ? 'staff' : 'account';
+
 		const sessionStr = localStorage.getItem('roomio_user');
 		if (!sessionStr) return;
 		const session = JSON.parse(sessionStr);
@@ -177,6 +185,14 @@
 		}
 	}
 
+	function setTab(tab: SettingsTab) {
+		activeTab = tab;
+		goto(tab === 'staff' ? '/dashboard/settings?tab=staff' : '/dashboard/settings', {
+			replaceState: true,
+			noScroll: true
+		});
+	}
+
 	// Pre-configured list of common banks in Vietnam
 	const popularBanks = [
 		{ code: 'VCB', name: 'Vietcombank' },
@@ -191,23 +207,47 @@
 	];
 </script>
 
-<div class="max-w-4xl space-y-6">
+<div class="max-w-5xl space-y-6">
 	<!-- Header -->
 	<div class="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
 		<div>
-			<h1 class="text-xl font-black text-black sm:text-2xl">Cấu Hình Tài Khoản</h1>
-			<p class="text-zinc-650 mt-1 text-sm font-bold">
-				Quản lý thương hiệu dịch vụ và thông tin nhận tiền dự phòng bên cạnh PayOS
-			</p>
+			<h1 class="text-xl font-black text-black sm:text-2xl">Cài đặt</h1>
+		</div>
+
+		<div class="flex rounded-lg border-2 border-black bg-white p-1">
+			<button
+				type="button"
+				onclick={() => setTab('account')}
+				class="inline-flex min-w-32 items-center justify-center gap-2 rounded-[6px] px-3 py-2 text-sm font-black transition-colors {activeTab ===
+				'account'
+					? 'bg-blue-100 text-black'
+					: 'text-zinc-500 hover:bg-zinc-50 hover:text-black'}"
+			>
+				<User class="h-4 w-4" />
+				Tài khoản
+			</button>
+			<button
+				type="button"
+				onclick={() => setTab('staff')}
+				class="inline-flex min-w-32 items-center justify-center gap-2 rounded-[6px] px-3 py-2 text-sm font-black transition-colors {activeTab ===
+				'staff'
+					? 'bg-blue-100 text-black'
+					: 'text-zinc-500 hover:bg-zinc-50 hover:text-black'}"
+			>
+				<UserCog class="h-4 w-4" />
+				Nhân viên
+			</button>
 		</div>
 	</div>
 
-	{#if isLoading}
+	{#if activeTab === 'staff'}
+		<StaffManagement />
+	{:else if isLoading}
 		<div class="flex h-[40vh] w-full items-center justify-center">
 			<Loader2 class="h-10 w-10 animate-spin text-black" />
 		</div>
 	{:else}
-		<form onsubmit={handleSaveSettings} class="space-y-8">
+		<form onsubmit={handleSaveSettings} class="max-w-4xl space-y-8">
 			<!-- Section 1: User Profile -->
 			<section class="space-y-4 text-black">
 				<h2 class="flex items-center gap-2 text-base font-black text-black select-none">

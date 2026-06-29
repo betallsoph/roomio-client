@@ -1,17 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { toast } from 'svelte-sonner';
-	import {
-		Wrench,
-		X,
-		Check,
-		AlertTriangle,
-		Clock,
-		User,
-		Calendar,
-		MessageSquare,
-		Loader2
-	} from '@lucide/svelte';
+	import { X, Check, Loader2 } from '@lucide/svelte';
 
 	interface Request {
 		id: string;
@@ -222,7 +212,6 @@
 		<div
 			class="mx-auto max-w-md rounded-lg border-2 border-black bg-white p-12 text-center shadow-secondary"
 		>
-			<Wrench class="h-7 w-7" />
 			<h3 class="text-lg font-black text-black">Không có yêu cầu sự cố</h3>
 			<p class="text-zinc-650 mt-2 text-sm font-semibold">
 				Tuyệt vời! Hiện tại không ghi nhận sự cố nào từ cư dân.
@@ -289,10 +278,7 @@
 					<div
 						class="text-zinc-650 mt-4 flex items-center justify-between border-t border-black/15 pt-3 text-xs"
 					>
-						<span class="flex items-center gap-1.5 font-bold">
-							<User class="h-4 w-4 text-black" />
-							{req.tenant.user.name}
-						</span>
+						<span class="font-bold">{req.tenant.user.name}</span>
 						<span
 							class="rounded-lg border border-black bg-white px-2 py-1 text-[9px] font-bold text-black shadow-secondary"
 						>
@@ -346,8 +332,7 @@
 
 				<div class="flex-1 space-y-6 overflow-y-auto p-6">
 					<!-- Drawer Header Details -->
-					<div class="flex items-center gap-3 border-b-2 border-black pb-4">
-						<Wrench class="h-6 w-6 shrink-0 text-blue-500" />
+					<div class="border-b-2 border-black pb-4">
 						<div>
 							<h3 class="text-lg leading-tight font-black text-black">Yêu Cầu Sửa Chữa</h3>
 							<p class="mt-0.5 text-xs font-bold text-zinc-600">
@@ -368,8 +353,7 @@
 						</div>
 						<div>
 							<p class="text-[9px] font-bold text-zinc-500">Ngày gửi báo cáo</p>
-							<p class="mt-0.5 flex items-center gap-1 font-black text-black">
-								<Calendar class="h-3.5 w-3.5 text-black" />
+							<p class="mt-0.5 font-black text-black">
 								{new Date(selectedRequest.createdAt).toLocaleDateString('vi-VN')}
 							</p>
 						</div>
@@ -457,7 +441,7 @@
 						</div>
 						{#if staffList.length === 0}
 							<p class="text-[10px] font-semibold text-zinc-400">
-								Chưa có nhân viên — thêm ở mục Nhân viên trên menu.
+								Chưa có nhân viên — thêm trong Cài đặt.
 							</p>
 						{/if}
 					</div>

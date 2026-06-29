@@ -2,22 +2,7 @@
 	import { onMount } from 'svelte';
 	import { toast } from 'svelte-sonner';
 	import { confirmPopup } from '$lib/confirm-popup';
-	import {
-		Users,
-		Plus,
-		X,
-		User,
-		Phone,
-		Mail,
-		Calendar,
-		DollarSign,
-		Loader2,
-		Home,
-		FileText,
-		LogOut,
-		Ban,
-		Trash2
-	} from '@lucide/svelte';
+	import { X, Loader2 } from '@lucide/svelte';
 	import { uploadImage } from '$lib/upload';
 
 	interface Room {
@@ -712,7 +697,7 @@
 			onclick={() => (isAddDialogOpen = true)}
 			class="flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-[6px] border-2 border-black bg-blue-300 px-4 py-2.5 text-sm font-black text-black shadow-secondary transition-all sm:w-auto sm:justify-start"
 		>
-			Thêm khách thuê <Plus class="h-4 w-4" />
+			Thêm khách thuê
 		</button>
 	</div>
 
@@ -735,12 +720,10 @@
 	<!-- Desktop: stat cards -->
 	<div class="hidden gap-3 sm:grid sm:grid-cols-2">
 		<div class="rounded-lg border-2 border-black bg-white p-4 shadow-secondary">
-			<Users class="mb-2 h-5 w-5 text-blue-500" />
 			<p class="text-[10px] font-bold text-zinc-500">Khách thuê</p>
 			<h3 class="mt-0.5 text-base font-black text-black sm:text-xl">{tenants.length} người</h3>
 		</div>
 		<div class="rounded-lg border-2 border-black bg-white p-4 shadow-secondary">
-			<DollarSign class="mb-2 h-5 w-5 text-blue-500" />
 			<p class="text-[10px] font-bold text-zinc-500">Tiền cọc giữ</p>
 			<h3 class="mt-0.5 truncate text-base font-black text-black sm:text-xl">
 				{formatCurrency(tenants.reduce((sum, t) => sum + t.deposit, 0))}
@@ -756,7 +739,6 @@
 		<div
 			class="mx-auto max-w-md rounded-lg border-2 border-black bg-white p-12 text-center shadow-secondary"
 		>
-			<Users class="h-7 w-7" />
 			<h3 class="text-lg font-black text-black">Chưa có khách thuê nào</h3>
 			<p class="mt-2 text-sm font-semibold text-zinc-600">
 				Đăng ký khách thuê trực tiếp vào phòng trọ để bắt đầu quản lý hợp đồng.
@@ -1346,12 +1328,7 @@
 
 				<div class="flex-1 space-y-6 overflow-y-auto p-6">
 					<!-- Drawer Header Title -->
-					<div class="flex items-center gap-3 border-b-2 border-black pb-4">
-						<div
-							class="shrink-0 rounded-lg border-2 border-black bg-white p-2.5 text-black shadow-secondary"
-						>
-							<User class="h-6 w-6" />
-						</div>
+					<div class="border-b-2 border-black pb-4">
 						<div>
 							<h3 class="text-lg leading-tight font-black text-black">
 								{selectedTenant.user.name}
@@ -1365,24 +1342,15 @@
 						<h4 class="text-xs font-black text-zinc-500">Thông tin liên hệ</h4>
 						<div class="space-y-2.5 divide-y divide-black/15 text-sm font-semibold text-black">
 							<div class="flex items-center justify-between py-2">
-								<span class="flex items-center gap-1.5 text-xs font-bold text-zinc-500">
-									<Phone class="h-4 w-4 text-black" />
-									Số điện thoại
-								</span>
+								<span class="text-xs font-bold text-zinc-500">Số điện thoại</span>
 								<span class="font-black">{selectedTenant.user.phone}</span>
 							</div>
 							<div class="flex items-center justify-between py-2">
-								<span class="flex items-center gap-1.5 text-xs font-bold text-zinc-500">
-									<Mail class="h-4 w-4 text-black" />
-									Email liên hệ
-								</span>
+								<span class="text-xs font-bold text-zinc-500">Email liên hệ</span>
 								<span class="font-black">{selectedTenant.user.email}</span>
 							</div>
 							<div class="flex items-center justify-between py-2">
-								<span class="flex items-center gap-1.5 text-xs font-bold text-zinc-500">
-									<FileText class="h-4 w-4 text-black" />
-									CCCD / Hộ chiếu
-								</span>
+								<span class="text-xs font-bold text-zinc-500">CCCD / Hộ chiếu</span>
 								<span class="font-mono font-black">{selectedTenant.idNumber}</span>
 							</div>
 						</div>
@@ -1393,10 +1361,7 @@
 						<h4 class="text-xs font-black text-zinc-500">Hợp đồng thuê trọ</h4>
 						<div class="space-y-2.5 divide-y divide-black/15 text-sm font-semibold text-black">
 							<div class="flex items-center justify-between py-2">
-								<span class="flex items-center gap-1.5 text-xs font-bold text-zinc-500">
-									<Home class="h-4 w-4 text-black" />
-									Phòng đang ở
-								</span>
+								<span class="text-xs font-bold text-zinc-500">Phòng đang ở</span>
 								{#if selectedTenant.rooms[0]}
 									<span class="font-black text-blue-600">
 										{tenantRoomLabel(selectedTenant.rooms[0])}
@@ -1406,19 +1371,13 @@
 								{/if}
 							</div>
 							<div class="flex items-center justify-between py-2">
-								<span class="flex items-center gap-1.5 text-xs font-bold text-zinc-500">
-									<Calendar class="h-4 w-4 text-black" />
-									Ngày dọn vào ở
-								</span>
+								<span class="text-xs font-bold text-zinc-500">Ngày dọn vào ở</span>
 								<span class="font-black">
 									{new Date(selectedTenant.moveInDate).toLocaleDateString('vi-VN')}
 								</span>
 							</div>
 							<div class="flex items-center justify-between py-2">
-								<span class="flex items-center gap-1.5 text-xs font-bold text-zinc-500">
-									<DollarSign class="h-4 w-4 text-black" />
-									Tiền đặt cọc giữ
-								</span>
+								<span class="text-xs font-bold text-zinc-500">Tiền đặt cọc giữ</span>
 								<span class="font-black text-green-600"
 									>{formatCurrency(selectedTenant.deposit)}</span
 								>
@@ -1435,7 +1394,7 @@
 									onclick={openContractForm}
 									class="flex items-center gap-1 rounded-[6px] border-2 border-black bg-blue-300 px-2.5 py-1 text-[11px] font-black shadow-secondary transition-all active:translate-x-[1px] active:translate-y-[1px]"
 								>
-									<Plus class="h-3.5 w-3.5" /> Tạo HĐ
+									Tạo HĐ
 								</button>
 							{/if}
 						</div>
@@ -1474,17 +1433,17 @@
 													<button
 														onclick={() => terminateTenantContract(c)}
 														title="Chấm dứt"
-														class="rounded-[6px] border-2 border-black bg-yellow-200 p-1.5"
+														class="rounded-[6px] border-2 border-black bg-yellow-200 px-2 py-1 text-[10px] font-black"
 													>
-														<Ban class="h-3.5 w-3.5" />
+														Chấm dứt
 													</button>
 												{/if}
 												<button
 													onclick={() => deleteTenantContract(c)}
 													title="Xóa"
-													class="rounded-[6px] border-2 border-black bg-red-200 p-1.5"
+													class="rounded-[6px] border-2 border-black bg-red-200 px-2 py-1 text-[10px] font-black text-red-800"
 												>
-													<Trash2 class="h-3.5 w-3.5" />
+													Xóa
 												</button>
 											</div>
 										</div>
@@ -1640,7 +1599,7 @@
 							onclick={() => handleCheckout(selectedTenant!.rooms[0].id)}
 							class="flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-[6px] border-2 border-black bg-red-200 py-2.5 text-center text-xs font-black text-red-800 shadow-secondary transition-all hover:bg-red-300"
 						>
-							Trả phòng (Checkout) <LogOut class="h-4 w-4" />
+							Trả phòng (Checkout)
 						</button>
 					{/if}
 					<button

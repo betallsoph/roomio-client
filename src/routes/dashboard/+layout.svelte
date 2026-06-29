@@ -17,7 +17,6 @@
 		Gauge,
 		TrendingUp,
 		MessageSquare,
-		UserCog,
 		Plug,
 		Bot
 	} from '@lucide/svelte';
@@ -91,7 +90,6 @@
 			label: 'Thiết lập & quản trị',
 			items: [
 				{ name: 'Tổng quan', path: '/dashboard', icon: LayoutDashboard },
-				{ name: 'Nhân viên', path: '/dashboard/staff', icon: UserCog },
 				{ name: 'Tài chính', path: '/dashboard/finance', icon: TrendingUp },
 				{ name: 'Dịch vụ', path: '/dashboard/services', icon: Plug },
 				{ name: 'Tự động', path: '/dashboard/automation', icon: Bot },

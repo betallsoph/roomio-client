@@ -2,19 +2,7 @@
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { toast } from 'svelte-sonner';
-	import {
-		DollarSign,
-		Home,
-		Receipt,
-		Calendar,
-		Check,
-		Loader2,
-		Play,
-		CheckCircle2,
-		User,
-		ArrowRight,
-		Wrench
-	} from '@lucide/svelte';
+	import { Check, Loader2, Play, ArrowRight } from '@lucide/svelte';
 
 	interface DashboardStats {
 		totalRevenue: number;
@@ -179,7 +167,6 @@
 				class="flex items-center gap-1.5 text-sm leading-relaxed font-semibold text-zinc-600 sm:text-base"
 			>
 				Hôm nay, {today}
-				<Calendar class="h-4 w-4 text-zinc-500" />
 			</p>
 		</div>
 		<div class="flex gap-3">
@@ -238,7 +225,6 @@
 			<div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
 				<!-- Card 1: Revenue -->
 				<div class="rounded-lg border-2 border-black bg-white p-4">
-					<DollarSign class="mb-2 h-5 w-5 text-blue-500" />
 					<p class="text-[10px] font-bold text-zinc-500">Doanh thu</p>
 					<h3 class="mt-0.5 truncate text-base font-black text-black sm:text-xl">
 						{formatCurrency(stats.totalRevenue)}
@@ -247,7 +233,6 @@
 
 				<!-- Card 2: Occupancy -->
 				<div class="rounded-lg border-2 border-black bg-white p-4">
-					<Home class="mb-2 h-5 w-5 text-blue-500" />
 					<p class="text-[10px] font-bold text-zinc-500">Tỷ lệ trống</p>
 					<h3 class="mt-0.5 text-base font-black text-black sm:text-xl">
 						{stats.emptyRooms}/{stats.totalRooms}
@@ -261,7 +246,6 @@
 
 				<!-- Card 3: Unpaid Bills -->
 				<div class="rounded-lg border-2 border-black bg-white p-4">
-					<Receipt class="mb-2 h-5 w-5 text-blue-500" />
 					<p class="text-[10px] font-bold text-zinc-500">Chưa đóng</p>
 					<h3 class="mt-0.5 text-base font-black text-black sm:text-xl">
 						{stats.unpaidInvoices} HĐ
@@ -270,7 +254,6 @@
 
 				<!-- Card 4: Expiring Contracts -->
 				<div class="rounded-lg border-2 border-black bg-white p-4">
-					<Calendar class="mb-2 h-5 w-5 text-blue-500" />
 					<p class="text-[10px] font-bold text-zinc-500">Sắp hết HĐ</p>
 					<h3 class="mt-0.5 text-base font-black text-black sm:text-xl">
 						{stats.expiringContracts}
@@ -288,9 +271,7 @@
 						<div class="roomio-window-dot bg-yellow-500"></div>
 						<div class="roomio-window-dot bg-green-500"></div>
 					</div>
-					<h2 class="flex items-center gap-2 text-base font-black text-black">
-						Việc cần xử lý <Wrench class="h-5 w-5" />
-					</h2>
+					<h2 class="text-base font-black text-black">Việc cần xử lý</h2>
 					<a
 						href="/dashboard/automation"
 						class="flex items-center gap-1 text-xs font-black text-blue-500 hover:underline"
@@ -300,7 +281,6 @@
 				</div>
 				{#if inbox.items.length === 0}
 					<div class="p-8 text-center">
-						<CheckCircle2 class="mx-auto mb-2 h-10 w-10 text-green-500" />
 						<p class="font-black text-black">Không có việc tồn đọng</p>
 						<p class="mt-1 text-xs font-bold text-zinc-500">
 							Hệ thống chưa phát hiện hóa đơn, chỉ số, hợp đồng hay sự cố cần xử lý.
@@ -340,9 +320,7 @@
 						<div class="roomio-window-dot bg-yellow-500"></div>
 						<div class="roomio-window-dot bg-green-500"></div>
 					</div>
-					<h2 class="flex items-center gap-2 text-base font-black text-black">
-						Hoá đơn cần thu tiền <Receipt class="h-5 w-5" />
-					</h2>
+					<h2 class="text-base font-black text-black">Hoá đơn cần thu tiền</h2>
 					<a
 						href="/dashboard/invoices"
 						class="flex items-center gap-1 text-xs font-black text-blue-500 hover:underline"
@@ -353,7 +331,6 @@
 
 				{#if unpaidInvoices.length === 0}
 					<div class="flex flex-1 flex-col items-center justify-center bg-white p-8 text-center">
-						<CheckCircle2 class="mb-2 h-12 w-12 text-green-500" />
 						<p class="text-base font-black text-black">Tất cả sạch nợ!</p>
 						<p class="mt-1 text-xs font-semibold text-zinc-500">
 							Không có hoá đơn nào đang nợ hoặc chưa đóng.
@@ -464,9 +441,7 @@
 						<div class="roomio-window-dot bg-yellow-500"></div>
 						<div class="roomio-window-dot bg-green-500"></div>
 					</div>
-					<h2 class="flex items-center gap-2 text-base font-black text-black">
-						Sự cố cần xử lý <Wrench class="h-5 w-5" />
-					</h2>
+					<h2 class="text-base font-black text-black">Sự cố cần xử lý</h2>
 					<a
 						href="/dashboard/requests"
 						class="flex items-center gap-1 text-xs font-black text-blue-500 hover:underline"
@@ -477,7 +452,6 @@
 
 				{#if pendingRequests.length === 0}
 					<div class="flex flex-1 flex-col items-center justify-center bg-white p-8 text-center">
-						<CheckCircle2 class="mb-2 h-12 w-12 text-green-500" />
 						<p class="text-base font-black text-black">Không có sự cố nào!</p>
 						<p class="mt-1 text-xs font-semibold text-zinc-500">
 							Nhà trọ vận hành êm đẹp, chưa ghi nhận vấn đề.
@@ -504,10 +478,7 @@
 									</span>
 								</div>
 								<div class="mt-1 flex items-center justify-between text-xs font-bold text-zinc-500">
-									<span class="flex items-center gap-1">
-										<User class="h-3.5 w-3.5" />
-										{req.tenant.user.name}
-									</span>
+									<span>{req.tenant.user.name}</span>
 									<span>{new Date(req.createdAt).toLocaleDateString('vi-VN')}</span>
 								</div>
 								<div class="mt-2 flex gap-2">
