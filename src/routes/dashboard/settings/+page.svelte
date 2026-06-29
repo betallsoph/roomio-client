@@ -209,33 +209,27 @@
 
 <div class="max-w-5xl space-y-8">
 	<!-- Header -->
-	<div class="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
-		<div>
-			<h1 class="text-xl font-black text-blue-600 sm:text-2xl">Cài đặt</h1>
-		</div>
-
-		<div class="flex rounded-lg border-2 border-black bg-white p-1">
-			<button
-				type="button"
-				onclick={() => setTab('account')}
-				class="inline-flex min-w-32 items-center justify-center gap-2 rounded-[6px] px-3 py-2 text-sm font-black transition-colors {activeTab ===
-				'account'
-					? 'bg-blue-100 text-blue-600'
-					: 'text-zinc-500 hover:bg-zinc-50 hover:text-black'}"
-			>
-				Tài khoản
-			</button>
-			<button
-				type="button"
-				onclick={() => setTab('staff')}
-				class="inline-flex min-w-32 items-center justify-center gap-2 rounded-[6px] px-3 py-2 text-sm font-black transition-colors {activeTab ===
-				'staff'
-					? 'bg-blue-100 text-blue-600'
-					: 'text-zinc-500 hover:bg-zinc-50 hover:text-black'}"
-			>
-				Nhân viên
-			</button>
-		</div>
+	<div class="flex rounded-lg border-2 border-black bg-white p-1 sm:w-fit">
+		<button
+			type="button"
+			onclick={() => setTab('account')}
+			class="inline-flex min-w-32 flex-1 items-center justify-center rounded-[6px] px-3 py-2 text-sm font-black transition-colors sm:flex-none {activeTab ===
+			'account'
+				? 'bg-blue-100 text-blue-600'
+				: 'text-zinc-500 hover:bg-zinc-50 hover:text-black'}"
+		>
+			Tài khoản
+		</button>
+		<button
+			type="button"
+			onclick={() => setTab('staff')}
+			class="inline-flex min-w-32 flex-1 items-center justify-center rounded-[6px] px-3 py-2 text-sm font-black transition-colors sm:flex-none {activeTab ===
+			'staff'
+				? 'bg-blue-100 text-blue-600'
+				: 'text-zinc-500 hover:bg-zinc-50 hover:text-black'}"
+		>
+			Nhân viên
+		</button>
 	</div>
 
 	{#if activeTab === 'staff'}
