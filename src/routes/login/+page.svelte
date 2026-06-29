@@ -2,7 +2,6 @@
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { toast } from 'svelte-sonner';
-	import { Loader2, ArrowRight } from '@lucide/svelte';
 
 	let email = $state('');
 	let password = $state('');
@@ -76,11 +75,7 @@
 	<main
 		class="mx-auto grid min-h-screen w-full max-w-6xl gap-8 px-5 py-8 sm:px-6 lg:grid-cols-[1fr_430px] lg:items-center lg:py-12"
 	>
-		<section class="max-w-2xl self-start lg:self-center">
-			<div class="flex flex-col items-start gap-5">
-				<img src="/brand/roomieverse-logo.webp" alt="Roomieverse" class="h-auto w-40 sm:w-52" />
-			</div>
-		</section>
+		<section class="hidden lg:block"></section>
 
 		<section class="w-full max-w-md lg:justify-self-end">
 			<div class="p-0">
@@ -120,10 +115,8 @@
 					>
 						{#if isLoading}
 							Đang xử lý
-							<Loader2 class="h-4 w-4 animate-spin" />
 						{:else}
-							Vào hệ thống
-							<ArrowRight class="h-4 w-4" />
+							Léc gô
 						{/if}
 					</button>
 				</form>
