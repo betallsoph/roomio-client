@@ -273,20 +273,20 @@
 			</div>
 		</div>
 	{:else if properties.length === 0}
-		<div
-			class="mx-auto mt-8 max-w-md rounded-lg border-2 border-black bg-white p-12 text-center shadow-secondary"
-		>
-			<Building2 class="h-8 w-8 text-black" />
-			<h3 class="text-lg font-black text-black">Chưa có tòa nhà nào</h3>
-			<p class="mt-2 text-sm leading-relaxed font-semibold text-zinc-600">
-				Bắt đầu bằng cách thêm tòa nhà đầu tiên để thiết lập phòng, dịch vụ và tiền thuê hàng tháng.
-			</p>
-			<button
-				onclick={(e) => tapBounce(e, () => (isAddDialogOpen = true))}
-				class="mt-5 cursor-pointer rounded-[6px] border-2 border-black bg-blue-300 px-5 py-2.5 text-sm font-black text-black shadow-secondary transition-all"
-			>
-				Tạo tòa nhà mới
-			</button>
+		<div class="flex min-h-[44vh] items-center justify-center text-center">
+			<div class="max-w-md">
+				<h3 class="text-base font-black text-zinc-400">Chưa có tòa nhà nào</h3>
+				<p class="mt-2 text-sm leading-relaxed font-semibold text-zinc-400">
+					Bắt đầu bằng cách thêm tòa nhà đầu tiên để thiết lập phòng, dịch vụ và tiền thuê hàng
+					tháng.
+				</p>
+				<button
+					onclick={(e) => tapBounce(e, () => (isAddDialogOpen = true))}
+					class="mt-5 cursor-pointer rounded-[6px] border-2 border-black bg-blue-300 px-5 py-2.5 text-sm font-black text-black shadow-secondary transition-all"
+				>
+					Tạo tòa nhà mới
+				</button>
+			</div>
 		</div>
 	{:else}
 		<!-- Mobile card list (hidden on sm+) -->

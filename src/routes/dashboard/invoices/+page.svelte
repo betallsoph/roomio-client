@@ -3,7 +3,6 @@
 	import { toast } from 'svelte-sonner';
 	import { confirmPopup } from '$lib/confirm-popup';
 	import {
-		Receipt,
 		X,
 		Check,
 		Trash2,
@@ -277,14 +276,13 @@
 			<Loader2 class="h-10 w-10 animate-spin text-black" />
 		</div>
 	{:else if filteredInvoices().length === 0}
-		<div
-			class="mx-auto max-w-md rounded-lg border-2 border-black bg-white p-12 text-center shadow-secondary"
-		>
-			<Receipt class="mx-auto mb-3 h-12 w-12 text-black" />
-			<h3 class="text-lg font-black text-black">Không tìm thấy hóa đơn nào</h3>
-			<p class="mt-2 text-sm font-semibold text-zinc-500">
-				Không có hóa đơn nào trùng khớp với bộ lọc hiện tại.
-			</p>
+		<div class="flex min-h-[44vh] items-center justify-center text-center">
+			<div class="max-w-sm">
+				<h3 class="text-base font-black text-zinc-400">Không tìm thấy hóa đơn nào</h3>
+				<p class="mt-2 text-sm font-semibold text-zinc-400">
+					Không có hóa đơn nào trùng khớp với bộ lọc hiện tại.
+				</p>
+			</div>
 		</div>
 	{:else}
 		<!-- Invoices List -->

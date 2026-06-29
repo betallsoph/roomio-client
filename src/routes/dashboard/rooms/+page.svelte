@@ -1036,30 +1036,31 @@
 			<Loader2 class="h-10 w-10 animate-spin text-black" />
 		</div>
 	{:else if properties.length === 0}
-		<div class="mx-auto max-w-md rounded-lg border-2 border-black bg-white p-10 text-center">
-			<Building2 class="mx-auto mb-3 h-12 w-12 text-black" />
-			<h3 class="text-lg font-black text-black">Chưa có tòa nhà</h3>
-			<p class="mt-2 text-sm font-semibold text-zinc-600">
-				Bấm thêm phòng để tạo nhanh tòa nhà trước, rồi thêm phòng ngay trong cùng cửa sổ.
-			</p>
+		<div class="flex min-h-[44vh] items-center justify-center text-center">
+			<div class="max-w-sm">
+				<h3 class="text-base font-black text-zinc-400">Chưa có tòa nhà</h3>
+				<p class="mt-2 text-sm font-semibold text-zinc-400">
+					Bấm thêm phòng để tạo nhanh tòa nhà trước, rồi thêm phòng ngay trong cùng cửa sổ.
+				</p>
+			</div>
 		</div>
 	{:else if rooms.length === 0}
-		<div
-			class="mx-auto max-w-md rounded-lg border-2 border-black bg-white p-12 text-center shadow-secondary"
-		>
-			<Home class="mx-auto mb-3 h-12 w-12 text-black" />
-			<h3 class="text-lg font-black text-black">{propertyLabel()} này chưa có phòng</h3>
-			<p class="mt-2 text-sm font-semibold text-zinc-600">
-				Bắt đầu bằng cách tạo các phòng trọ để thêm thông tin khách thuê.
-			</p>
+		<div class="flex min-h-[44vh] items-center justify-center text-center">
+			<div class="max-w-sm">
+				<h3 class="text-base font-black text-zinc-400">{propertyLabel()} này chưa có phòng</h3>
+				<p class="mt-2 text-sm font-semibold text-zinc-400">
+					Bắt đầu bằng cách tạo các phòng trọ để thêm thông tin khách thuê.
+				</p>
+			</div>
 		</div>
 	{:else if visibleRooms.length === 0}
-		<div class="mx-auto max-w-md rounded-lg border-2 border-black bg-white p-10 text-center">
-			<Search class="mx-auto mb-3 h-10 w-10 text-zinc-500" />
-			<h3 class="text-lg font-black text-black">Không tìm thấy phòng</h3>
-			<p class="mt-2 text-sm font-semibold text-zinc-600">
-				Thử tìm bằng mã căn, block, tên khách hoặc số điện thoại khác.
-			</p>
+		<div class="flex min-h-[44vh] items-center justify-center text-center">
+			<div class="max-w-sm">
+				<h3 class="text-base font-black text-zinc-400">Không tìm thấy phòng</h3>
+				<p class="mt-2 text-sm font-semibold text-zinc-400">
+					Thử tìm bằng mã căn, block, tên khách hoặc số điện thoại khác.
+				</p>
+			</div>
 		</div>
 	{:else if viewMode === 'grid'}
 		<div

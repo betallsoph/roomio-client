@@ -736,13 +736,13 @@
 			<Loader2 class="h-10 w-10 animate-spin text-black" />
 		</div>
 	{:else if tenants.length === 0}
-		<div
-			class="mx-auto max-w-md rounded-lg border-2 border-black bg-white p-12 text-center shadow-secondary"
-		>
-			<h3 class="text-lg font-black text-black">Chưa có khách thuê nào</h3>
-			<p class="mt-2 text-sm font-semibold text-zinc-600">
-				Đăng ký khách thuê trực tiếp vào phòng trọ để bắt đầu quản lý hợp đồng.
-			</p>
+		<div class="flex min-h-[44vh] items-center justify-center text-center">
+			<div class="max-w-sm">
+				<h3 class="text-base font-black text-zinc-400">Chưa có khách thuê nào</h3>
+				<p class="mt-2 text-sm font-semibold text-zinc-400">
+					Đăng ký khách thuê trực tiếp vào phòng trọ để bắt đầu quản lý hợp đồng.
+				</p>
+			</div>
 		</div>
 	{:else}
 		<!-- Tenants List -->
