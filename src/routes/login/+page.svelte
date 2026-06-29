@@ -78,7 +78,6 @@
 	>
 		<section class="max-w-2xl self-start lg:self-center">
 			<div class="flex flex-col items-start gap-5">
-				<img src="/brand/roomio-wordmark-blue600.png" alt="Roomio" class="h-auto w-48 sm:w-64" />
 				<img src="/brand/roomieverse-logo.webp" alt="Roomieverse" class="h-auto w-40 sm:w-52" />
 			</div>
 		</section>
@@ -94,7 +93,7 @@
 				</div>
 
 				<div class="p-5 sm:p-6">
-					<div class="mb-5">
+					<div class="mb-5 flex justify-center">
 						<img
 							src="/brand/roomio-wordmark-blue600.png"
 							alt="Roomio"
