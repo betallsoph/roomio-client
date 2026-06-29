@@ -77,9 +77,9 @@
 		class="mx-auto grid min-h-screen w-full max-w-6xl gap-8 px-5 py-8 sm:px-6 lg:grid-cols-[1fr_430px] lg:items-center lg:py-12"
 	>
 		<section class="max-w-2xl self-start lg:self-center">
-			<div class="flex flex-wrap items-center gap-5 sm:gap-7">
-				<img src="/brand/roomio-wordmark-blue600.png" alt="Roomio" class="h-auto w-48 sm:w-60" />
-				<img src="/brand/roomieverse-logo.webp" alt="Roomieverse" class="h-auto w-32 sm:w-40" />
+			<div class="flex flex-col items-start gap-5">
+				<img src="/brand/roomio-wordmark-blue600.png" alt="Roomio" class="h-auto w-48 sm:w-64" />
+				<img src="/brand/roomieverse-logo.webp" alt="Roomieverse" class="h-auto w-40 sm:w-52" />
 			</div>
 		</section>
 
