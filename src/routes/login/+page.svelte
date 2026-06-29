@@ -95,7 +95,11 @@
 
 				<div class="p-5 sm:p-6">
 					<div class="mb-5">
-						<h2 class="text-2xl leading-none font-bold">Đăng nhập</h2>
+						<img
+							src="/brand/roomio-wordmark-blue600.png"
+							alt="Roomio"
+							class="h-auto w-48 sm:w-64"
+						/>
 					</div>
 
 					<form onsubmit={handleSubmit} class="space-y-4">
