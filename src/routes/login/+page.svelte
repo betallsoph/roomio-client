@@ -83,62 +83,50 @@
 		</section>
 
 		<section class="w-full max-w-md lg:justify-self-end">
-			<div class="roomio-window">
-				<div class="roomio-window-bar">
-					<div class="roomio-window-dots">
-						<div class="roomio-window-dot bg-red-500"></div>
-						<div class="roomio-window-dot bg-yellow-500"></div>
-						<div class="roomio-window-dot bg-green-500"></div>
-					</div>
+			<div class="p-0">
+				<div class="mb-5 flex justify-center">
+					<img src="/brand/roomio-wordmark-blue600.png" alt="Roomio" class="h-auto w-48 sm:w-64" />
 				</div>
 
-				<div class="p-5 sm:p-6">
-					<div class="mb-5 flex justify-center">
-						<img
-							src="/brand/roomio-wordmark-blue600.png"
-							alt="Roomio"
-							class="h-auto w-48 sm:w-64"
+				<form onsubmit={handleSubmit} class="space-y-4">
+					<div>
+						<label for="email" class="mb-1 block text-sm font-bold">Email hoặc số điện thoại</label>
+						<input
+							id="email"
+							type="text"
+							bind:value={email}
+							required
+							placeholder="Email hoặc SĐT đăng nhập"
+							class="w-full rounded-lg border-2 border-black bg-white px-3 py-2 text-sm font-semibold focus:ring-2 focus:ring-blue-300 focus:outline-none"
 						/>
 					</div>
 
-					<form onsubmit={handleSubmit} class="space-y-4">
-						<div>
-							<label for="email" class="mb-1 block text-sm font-bold"
-								>Email hoặc số điện thoại</label
-							>
-							<input
-								id="email"
-								type="text"
-								bind:value={email}
-								required
-								placeholder="Email hoặc SĐT đăng nhập"
-								class="w-full rounded-lg border-2 border-black bg-white px-3 py-2 text-sm font-semibold focus:ring-2 focus:ring-blue-300 focus:outline-none"
-							/>
-						</div>
+					<div>
+						<label for="password" class="mb-1 block text-sm font-bold">Mật khẩu</label>
+						<input
+							id="password"
+							type="password"
+							bind:value={password}
+							required
+							placeholder="••••••••"
+							class="w-full rounded-lg border-2 border-black bg-white px-3 py-2 text-sm font-semibold focus:ring-2 focus:ring-blue-300 focus:outline-none"
+						/>
+					</div>
 
-						<div>
-							<label for="password" class="mb-1 block text-sm font-bold">Mật khẩu</label>
-							<input
-								id="password"
-								type="password"
-								bind:value={password}
-								required
-								placeholder="••••••••"
-								class="w-full rounded-lg border-2 border-black bg-white px-3 py-2 text-sm font-semibold focus:ring-2 focus:ring-blue-300 focus:outline-none"
-							/>
-						</div>
-
-						<button type="submit" disabled={isLoading} class="roomio-button mt-2 w-full">
-							{#if isLoading}
-								Đang xử lý
-								<Loader2 class="h-4 w-4 animate-spin" />
-							{:else}
-								Vào hệ thống
-								<ArrowRight class="h-4 w-4" />
-							{/if}
-						</button>
-					</form>
-				</div>
+					<button
+						type="submit"
+						disabled={isLoading}
+						class="mt-2 inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-[6px] border-2 border-black bg-blue-300 px-4 py-2 text-sm font-bold text-black shadow-secondary transition-all hover:bg-blue-400 disabled:pointer-events-none disabled:opacity-50"
+					>
+						{#if isLoading}
+							Đang xử lý
+							<Loader2 class="h-4 w-4 animate-spin" />
+						{:else}
+							Vào hệ thống
+							<ArrowRight class="h-4 w-4" />
+						{/if}
+					</button>
+				</form>
 			</div>
 		</section>
 	</main>
