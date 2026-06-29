@@ -73,11 +73,9 @@
 	></div>
 
 	<main
-		class="mx-auto grid min-h-screen w-full max-w-6xl gap-8 px-5 py-8 sm:px-6 lg:grid-cols-[1fr_430px] lg:items-center lg:py-12"
+		class="mx-auto flex min-h-screen w-full items-center justify-center px-5 py-8 sm:px-6 lg:py-12"
 	>
-		<section class="hidden lg:block"></section>
-
-		<section class="w-full max-w-md lg:justify-self-end">
+		<section class="w-full max-w-md">
 			<div class="p-0">
 				<div class="mb-5 flex justify-center">
 					<img src="/brand/roomio-wordmark-blue600.png" alt="Roomio" class="h-auto w-48 sm:w-64" />
