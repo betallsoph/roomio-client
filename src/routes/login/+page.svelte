@@ -77,10 +77,10 @@
 		class="mx-auto grid min-h-screen w-full max-w-6xl gap-8 px-5 py-8 sm:px-6 lg:grid-cols-[1fr_430px] lg:items-center lg:py-12"
 	>
 		<section class="max-w-2xl self-start lg:self-center">
-			<img src="/brand/roomio-wordmark-blue600.png" alt="Roomio" class="h-auto w-48 sm:w-64" />
-			<h1 class="mt-8 max-w-xl text-3xl leading-tight font-black sm:text-5xl">
-				Một chỗ để chủ trọ chạy hết việc vận hành.
-			</h1>
+			<div class="flex flex-wrap items-center gap-5 sm:gap-7">
+				<img src="/brand/roomio-wordmark-blue600.png" alt="Roomio" class="h-auto w-48 sm:w-60" />
+				<img src="/brand/roomieverse-logo.webp" alt="Roomieverse" class="h-auto w-32 sm:w-40" />
+			</div>
 		</section>
 
 		<section class="w-full max-w-md lg:justify-self-end">
@@ -136,12 +136,6 @@
 						</button>
 					</form>
 				</div>
-			</div>
-
-			<div class="mt-6 border-t-2 border-black/20 pt-5 text-center">
-				<p class="text-sm font-semibold text-zinc-600">
-					Chủ trọ: `ngochau@gmail.com` / `password` · Nhân viên: `nhanvien@nhatro.com` / `staff`
-				</p>
 			</div>
 		</section>
 	</main>

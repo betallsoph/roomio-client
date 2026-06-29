@@ -161,7 +161,7 @@
 <div class="space-y-5">
 	<div class="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
 		<div>
-			<h2 class="text-lg font-black text-black">Nhân viên</h2>
+			<h2 class="text-lg font-black text-blue-600">Nhân viên</h2>
 			<p class="mt-1 text-sm font-bold text-zinc-500">
 				{staffList.length} tài khoản · {activeCount} đang hoạt động
 			</p>
@@ -378,7 +378,7 @@
 									type="email"
 									bind:value={email}
 									required
-									placeholder="nhanvien@nhatro.com"
+									placeholder="nhanvien@example.com"
 									class="w-full rounded-lg border-2 border-black bg-white py-1.5 pr-2.5 pl-8 text-xs font-semibold text-black focus:ring-2 focus:ring-blue-300 focus:outline-none"
 								/>
 							</div>
