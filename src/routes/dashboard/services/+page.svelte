@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { toast } from 'svelte-sonner';
-	import { Plug, Plus, X, Loader2, Pencil, Trash2, Power, PowerOff } from '@lucide/svelte';
+	import { Plus, X, Loader2, Pencil, Trash2, Power, PowerOff } from '@lucide/svelte';
 	import { confirmPopup } from '$lib/confirm-popup';
 
 	interface Service {
@@ -171,6 +171,11 @@
 			<p class="mt-1 text-xs font-bold text-zinc-600 sm:text-sm">
 				Đơn giá điện, nước, wifi, rác, gửi xe... áp dụng khi lập hóa đơn cho phòng
 			</p>
+			{#if !isLoading}
+				<p class="mt-2 text-xs font-bold text-blue-600">
+					{services.length} dịch vụ · {activeCount} đang áp dụng
+				</p>
+			{/if}
 		</div>
 		<button
 			onclick={() => window.setTimeout(openAdd, 200)}
@@ -180,39 +185,22 @@
 		</button>
 	</div>
 
-	<!-- Quick stats -->
-	<div class="grid grid-cols-2 gap-3">
-		<div class="rounded-lg border-2 border-black bg-white p-4 shadow-secondary">
-			<Plug class="mb-2 h-5 w-5 text-blue-500" />
-			<p class="text-[10px] font-bold text-zinc-500">Tổng dịch vụ</p>
-			<h3 class="mt-0.5 text-base font-black text-black sm:text-xl">{services.length}</h3>
-		</div>
-		<div class="rounded-lg border-2 border-black bg-white p-4 shadow-secondary">
-			<Power class="mb-2 h-5 w-5 text-green-600" />
-			<p class="text-[10px] font-bold text-zinc-500">Đang áp dụng</p>
-			<h3 class="mt-0.5 text-base font-black text-black sm:text-xl">{activeCount}</h3>
-		</div>
-	</div>
-
 	{#if isLoading}
 		<div class="flex h-[40vh] w-full items-center justify-center">
 			<Loader2 class="h-10 w-10 animate-spin text-black" />
 		</div>
 	{:else if services.length === 0}
-		<div
-			class="mx-auto max-w-md rounded-lg border-2 border-black bg-white p-12 text-center shadow-secondary"
-		>
-			<Plug class="mx-auto h-7 w-7" />
-			<h3 class="mt-2 text-lg font-black text-black">Chưa có dịch vụ nào</h3>
-			<p class="mt-2 text-sm font-semibold text-zinc-600">
+		<div class="mx-auto mt-28 max-w-md text-center">
+			<h3 class="text-lg font-black text-zinc-500">Chưa có dịch vụ nào</h3>
+			<p class="mt-2 text-sm font-semibold text-zinc-400">
 				Thêm dịch vụ để tính vào hóa đơn hàng tháng của khách.
 			</p>
 		</div>
 	{:else}
 		<!-- Service list -->
-		<div class="overflow-hidden rounded-lg border-2 border-black bg-white shadow-secondary">
+		<div>
 			<!-- Mobile card list -->
-			<div class="divide-y-2 divide-black bg-white sm:hidden">
+			<div class="divide-y divide-black/15 bg-white sm:hidden">
 				{#each services as svc}
 					<div class="space-y-2 p-4">
 						<div class="flex items-start justify-between gap-2">
