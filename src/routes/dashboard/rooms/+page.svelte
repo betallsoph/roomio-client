@@ -813,6 +813,14 @@
 		return new Intl.NumberFormat('vi-VN').format(amount) + 'đ';
 	}
 
+	function serviceTypeLabel(type: string) {
+		if (type === 'METERED') return 'Tự nhập chỉ số';
+		if (type === 'MANUAL_AMOUNT') return 'Tự nhập số tiền';
+		if (type === 'FLAT_PERSON') return 'Khoán theo người';
+		if (type === 'FLAT_VEHICLE') return 'Khoán theo xe';
+		return 'Khoán theo phòng';
+	}
+
 	function getRoomTypeLabel(type: string): string {
 		const labels: Record<string, string> = {
 			standard: 'Phòng thường',
@@ -1758,8 +1766,9 @@
 													<div>
 														<p class="text-sm font-bold text-black">{config.service.name}</p>
 														<p class="mt-0.5 text-xs font-semibold text-zinc-500">
-															Giá chuẩn: {formatCurrency(config.service.defaultRate)} | Loại: {config
-																.service.type}
+															Giá chuẩn: {formatCurrency(config.service.defaultRate)} | Loại: {serviceTypeLabel(
+																config.service.type
+															)}
 														</p>
 													</div>
 													<div class="flex items-center gap-2">
@@ -1779,7 +1788,7 @@
 															/>
 														</div>
 
-														{#if config.service.type !== 'METERED'}
+														{#if config.service.type.startsWith('FLAT_')}
 															<div class="space-y-1">
 																<span class="block text-[9px] font-black text-zinc-400"
 																	>Số lượng</span

@@ -57,6 +57,7 @@
 	let properties = $state<Property[]>([]);
 	let rooms = $state<Room[]>([]);
 	let meteredServices = $state<Service[]>([]);
+	let manualAmountServices = $state<Service[]>([]);
 
 	// Form selections
 	let selectedPropertyId = $state('');
@@ -67,6 +68,7 @@
 	let readingsMap = $state<
 		Record<string, Record<string, { prevValue: string; currValue: string }>>
 	>({});
+	let manualAmountsMap = $state<Record<string, Record<string, string>>>({});
 
 	onMount(() => {
 		const sessionStr = localStorage.getItem('roomio_user');
@@ -115,20 +117,27 @@
 
 			// 2. Extract metered services active in these rooms
 			const mServices: Record<string, Service> = {};
+			const manualServices: Record<string, Service> = {};
 			occupiedRooms.forEach((r: any) => {
 				r.services.forEach((c: any) => {
 					if (c.service.type === 'METERED' && c.service.isActive) {
 						mServices[c.serviceId] = c.service;
 					}
+					if (c.service.type === 'MANUAL_AMOUNT' && c.service.isActive) {
+						manualServices[c.serviceId] = c.service;
+					}
 				});
 			});
 			meteredServices = Object.values(mServices);
+			manualAmountServices = Object.values(manualServices);
 
 			// 3. Initialize readingsMap with previous values
 			const newReadings: typeof readingsMap = {};
+			const newManualAmounts: typeof manualAmountsMap = {};
 
 			occupiedRooms.forEach((r: any) => {
 				newReadings[r.id] = {};
+				newManualAmounts[r.id] = {};
 
 				meteredServices.forEach((s) => {
 					// Find the last recorded reading for this service in this room
@@ -138,6 +147,12 @@
 						prevValue: lastReading ? lastReading.currValue.toString() : '0',
 						currValue: ''
 					};
+				});
+
+				manualAmountServices.forEach((s) => {
+					const config = r.services.find((c: any) => c.serviceId === s.id);
+					const defaultAmount = config?.customRate ?? s.defaultRate ?? 0;
+					newManualAmounts[r.id][s.id] = defaultAmount > 0 ? String(defaultAmount) : '';
 				});
 			});
 
@@ -164,6 +179,7 @@
 			}
 
 			readingsMap = newReadings;
+			manualAmountsMap = newManualAmounts;
 		} catch (e: any) {
 			toast.error('Lỗi khi tải dữ liệu phòng: ' + e.message);
 		} finally {
@@ -192,9 +208,11 @@
 			string,
 			Record<string, { prevValue: number; currValue: number }>
 		> = {};
+		const cleanManualAmounts: Record<string, Record<string, number>> = {};
 
 		for (const room of rooms) {
 			cleanReadings[room.id] = {};
+			cleanManualAmounts[room.id] = {};
 			for (const service of meteredServices) {
 				const entry = readingsMap[room.id]?.[service.id] || { prevValue: '0', currValue: '' };
 				if (entry.currValue === '') {
@@ -221,6 +239,23 @@
 					currValue: currNum
 				};
 			}
+			for (const service of manualAmountServices) {
+				const value = manualAmountsMap[room.id]?.[service.id] ?? '';
+				if (value === '') {
+					toast.error(`Vui lòng nhập số tiền ${service.name} cho phòng ${room.roomNumber}`);
+					hasError = true;
+					break;
+				}
+
+				const amount = Number(value);
+				if (!Number.isFinite(amount) || amount < 0) {
+					toast.error(`Số tiền ${service.name} của phòng ${room.roomNumber} không hợp lệ`);
+					hasError = true;
+					break;
+				}
+
+				cleanManualAmounts[room.id][service.id] = amount;
+			}
 			if (hasError) break;
 		}
 
@@ -236,7 +271,8 @@
 					propertyId: selectedPropertyId,
 					month,
 					dueDate,
-					readings: cleanReadings
+					readings: cleanReadings,
+					manualAmounts: cleanManualAmounts
 				})
 			});
 			const data = await res.json();
@@ -374,6 +410,12 @@
 											</div>
 										</th>
 									{/each}
+
+									{#each manualAmountServices as service}
+										<th class="border-l-2 border-black bg-blue-100 px-4 py-3 text-center">
+											{service.name}
+										</th>
+									{/each}
 								</tr>
 							</thead>
 							<tbody>
@@ -415,6 +457,22 @@
 												{/if}
 											</td>
 										{/each}
+
+										{#each manualAmountServices as service}
+											<td class="border-l-2 border-black bg-zinc-50/50 px-4 py-4 text-center">
+												<input
+													type="number"
+													bind:value={manualAmountsMap[room.id][service.id]}
+													required
+													min="0"
+													placeholder="Số tiền"
+													class="w-28 rounded-lg border-2 border-black bg-white px-2 py-1 text-center text-xs font-black text-black focus:ring-2 focus:ring-blue-300 focus:outline-none"
+												/>
+												<span class="mt-1 block text-[10px] font-black text-blue-600">
+													{formatCurrency(Number(manualAmountsMap[room.id][service.id]) || 0)}
+												</span>
+											</td>
+										{/each}
 									</tr>
 								{/each}
 							</tbody>
@@ -428,8 +486,8 @@
 						<div class="flex max-w-md items-center gap-2 text-xs font-bold text-zinc-600">
 							<AlertCircle class="h-4.5 w-4.5 shrink-0 text-blue-600" />
 							<span
-								>Khi ấn xác nhận, hệ thống sẽ tự động tính toán điện nước, cộng phí dịch vụ cố định
-								và gửi hóa đơn đến khách thuê.</span
+								>Khi ấn xác nhận, hệ thống sẽ tự động tính chỉ số, cộng khoản khoán và các khoản tự
+								nhập rồi gửi hóa đơn đến khách thuê.</span
 							>
 						</div>
 

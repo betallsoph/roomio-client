@@ -8,18 +8,20 @@
 		id: string;
 		landlordId: string;
 		name: string;
-		type: string; // METERED | FLAT_ROOM | FLAT_PERSON | FLAT_VEHICLE
+		type: string; // METERED | MANUAL_AMOUNT | FLAT_ROOM | FLAT_PERSON | FLAT_VEHICLE
 		defaultRate: number;
 		isActive: boolean;
 	}
 
 	const TYPE_LABELS: Record<string, string> = {
-		METERED: 'Theo đồng hồ (điện/nước)',
-		FLAT_ROOM: 'Cố định theo phòng',
-		FLAT_PERSON: 'Theo đầu người',
-		FLAT_VEHICLE: 'Theo xe'
+		METERED: 'Tự nhập chỉ số',
+		MANUAL_AMOUNT: 'Tự nhập số tiền',
+		FLAT_ROOM: 'Khoán theo phòng',
+		FLAT_PERSON: 'Khoán theo người',
+		FLAT_VEHICLE: 'Khoán theo xe'
 	};
-	const TYPE_OPTIONS = Object.keys(TYPE_LABELS);
+	const FLAT_TYPE_OPTIONS = ['FLAT_ROOM', 'FLAT_PERSON', 'FLAT_VEHICLE'];
+	const MANUAL_TYPE_OPTIONS = ['METERED', 'MANUAL_AMOUNT'];
 
 	let landlordId = $state<string | null>(null);
 	let isLoading = $state(true);
@@ -65,6 +67,14 @@
 		isDialogOpen = true;
 	}
 
+	function getTypeMode(serviceType: string) {
+		return serviceType.startsWith('FLAT_') ? 'FLAT' : 'MANUAL';
+	}
+
+	function setTypeMode(mode: string) {
+		type = mode === 'FLAT' ? 'FLAT_ROOM' : 'METERED';
+	}
+
 	function openEdit(svc: Service) {
 		editingId = svc.id;
 		name = svc.name;
@@ -78,7 +88,11 @@
 		if (isSubmitting) return;
 
 		if (!name || defaultRate === '') {
-			toast.error('Vui lòng nhập tên dịch vụ và đơn giá');
+			toast.error(
+				type === 'MANUAL_AMOUNT'
+					? 'Vui lòng nhập tên dịch vụ và số tiền gợi ý'
+					: 'Vui lòng nhập tên dịch vụ và đơn giá'
+			);
 			return;
 		}
 
@@ -365,12 +379,12 @@
 					</div>
 
 					<div class="space-y-1">
-						<label for="sv-type" class="block text-[10px] font-bold text-zinc-600"
+						<label for="sv-mode" class="block text-[10px] font-bold text-zinc-600"
 							>Cách tính tiền</label
 						>
 						{#if editingId}
 							<input
-								id="sv-type"
+								id="sv-mode"
 								type="text"
 								value={TYPE_LABELS[type] ?? type}
 								disabled
@@ -381,20 +395,37 @@
 							</p>
 						{:else}
 							<select
-								id="sv-type"
-								bind:value={type}
+								id="sv-mode"
+								value={getTypeMode(type)}
+								onchange={(e) => setTypeMode((e.target as HTMLSelectElement).value)}
 								class="w-full rounded-lg border-2 border-black bg-white px-2.5 py-1.5 text-xs font-semibold text-black focus:ring-2 focus:ring-blue-300 focus:outline-none"
 							>
-								{#each TYPE_OPTIONS as opt}
-									<option value={opt}>{TYPE_LABELS[opt]}</option>
-								{/each}
+								<option value="MANUAL">Tự nhập mỗi tháng</option>
+								<option value="FLAT">Khoán cố định</option>
 							</select>
 						{/if}
 					</div>
 
+					{#if !editingId}
+						<div class="space-y-1">
+							<label for="sv-type" class="block text-[10px] font-bold text-zinc-600">
+								{getTypeMode(type) === 'FLAT' ? 'Khoán theo' : 'Kiểu tự nhập'}
+							</label>
+							<select
+								id="sv-type"
+								bind:value={type}
+								class="w-full rounded-lg border-2 border-black bg-white px-2.5 py-1.5 text-xs font-semibold text-black focus:ring-2 focus:ring-blue-300 focus:outline-none"
+							>
+								{#each getTypeMode(type) === 'FLAT' ? FLAT_TYPE_OPTIONS : MANUAL_TYPE_OPTIONS as opt}
+									<option value={opt}>{TYPE_LABELS[opt]}</option>
+								{/each}
+							</select>
+						</div>
+					{/if}
+
 					<div class="space-y-1">
 						<label for="sv-rate" class="block text-[10px] font-bold text-zinc-600"
-							>Đơn giá (đ)</label
+							>{type === 'MANUAL_AMOUNT' ? 'Số tiền gợi ý (đ)' : 'Đơn giá (đ)'}</label
 						>
 						<input
 							id="sv-rate"
@@ -402,7 +433,7 @@
 							bind:value={defaultRate}
 							required
 							min="0"
-							placeholder="Ví dụ: 3500"
+							placeholder={type === 'MANUAL_AMOUNT' ? 'Ví dụ: 50000' : 'Ví dụ: 3500'}
 							class="w-full rounded-lg border-2 border-black bg-white px-2.5 py-1.5 text-xs font-semibold text-black focus:ring-2 focus:ring-blue-300 focus:outline-none"
 						/>
 					</div>
