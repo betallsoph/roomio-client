@@ -1,7 +1,17 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { toast } from 'svelte-sonner';
-	import { Plus, X, Loader2, Pencil, Trash2, Power, PowerOff } from '@lucide/svelte';
+	import {
+		Plus,
+		X,
+		Loader2,
+		Pencil,
+		Trash2,
+		Power,
+		PowerOff,
+		Check,
+		XCircle
+	} from '@lucide/svelte';
 	import { confirmPopup } from '$lib/confirm-popup';
 
 	interface Service {
@@ -210,21 +220,15 @@
 									{TYPE_LABELS[svc.type] ?? svc.type}
 								</p>
 							</div>
-							<span class="shrink-0 text-sm font-black text-blue-600"
+							<span class="shrink-0 text-sm font-black text-green-700"
 								>{formatCurrency(svc.defaultRate)}</span
 							>
 						</div>
 						<div class="flex items-center justify-between">
 							{#if svc.isActive}
-								<span
-									class="rounded-full border border-black bg-green-200 px-2 py-0.5 text-[10px] font-black text-green-800"
-									>Áp dụng</span
-								>
+								<Check class="h-5 w-5 text-green-700" aria-label="Đang áp dụng" />
 							{:else}
-								<span
-									class="rounded-full border border-black bg-zinc-200 px-2 py-0.5 text-[10px] font-black text-zinc-600"
-									>Tạm ngưng</span
-								>
+								<XCircle class="h-5 w-5 text-zinc-400" aria-label="Tạm ngưng" />
 							{/if}
 							<div class="flex gap-2">
 								<button
@@ -264,7 +268,7 @@
 			<div class="hidden overflow-x-auto bg-white sm:block">
 				<table class="w-full border-collapse text-left text-sm">
 					<thead>
-						<tr class="border-b-2 border-black bg-blue-300 text-xs font-black text-black">
+						<tr class="border-b-2 border-black bg-white text-xs font-black text-blue-600">
 							<th class="px-4 py-3">Tên dịch vụ</th>
 							<th class="px-4 py-3">Cách tính</th>
 							<th class="px-4 py-3">Đơn giá</th>
@@ -279,19 +283,14 @@
 							>
 								<td class="px-4 py-4 font-black">{svc.name}</td>
 								<td class="px-4 py-4">{TYPE_LABELS[svc.type] ?? svc.type}</td>
-								<td class="px-4 py-4 font-black text-blue-600">{formatCurrency(svc.defaultRate)}</td
+								<td class="px-4 py-4 font-black text-green-700"
+									>{formatCurrency(svc.defaultRate)}</td
 								>
 								<td class="px-4 py-4">
 									{#if svc.isActive}
-										<span
-											class="rounded-full border border-black bg-green-200 px-2.5 py-0.5 text-[10px] font-black text-green-800"
-											>Áp dụng</span
-										>
+										<Check class="h-5 w-5 text-green-700" aria-label="Đang áp dụng" />
 									{:else}
-										<span
-											class="rounded-full border border-black bg-zinc-200 px-2.5 py-0.5 text-[10px] font-black text-zinc-600"
-											>Tạm ngưng</span
-										>
+										<XCircle class="h-5 w-5 text-zinc-400" aria-label="Tạm ngưng" />
 									{/if}
 								</td>
 								<td class="px-4 py-4">
