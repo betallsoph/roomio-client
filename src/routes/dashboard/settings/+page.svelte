@@ -6,6 +6,7 @@
 	import { Loader2 } from '@lucide/svelte';
 	import { confirmPopup } from '$lib/confirm-popup';
 	import StaffManagement from '$lib/StaffManagement.svelte';
+	import RoomioSelect from '$lib/RoomioSelect.svelte';
 
 	type SettingsTab = 'account' | 'staff';
 
@@ -300,21 +301,22 @@
 						<div class="space-y-1">
 							<label for="s-bcode" class="text-zinc-650 block text-xs font-bold">Mã ngân hàng</label
 							>
-							<select
+							<RoomioSelect
 								id="s-bcode"
 								bind:value={bankCode}
 								required
-								class="w-full rounded-lg border-2 border-black bg-white px-3 py-2.5 text-sm font-semibold text-black focus:ring-2 focus:ring-blue-300 focus:outline-none"
 								onchange={() => {
 									const b = popularBanks.find((x) => x.code === bankCode);
 									if (b) bankName = b.name;
 								}}
-							>
-								<option value="">-- Chọn ngân hàng --</option>
-								{#each popularBanks as bank}
-									<option value={bank.code}>{bank.name} ({bank.code})</option>
-								{/each}
-							</select>
+								options={[
+									{ value: '', label: 'Chọn ngân hàng' },
+									...popularBanks.map((bank) => ({
+										value: bank.code,
+										label: `${bank.name} (${bank.code})`
+									}))
+								]}
+							/>
 						</div>
 
 						<div class="space-y-1">

@@ -11,6 +11,7 @@
 		AlertCircle,
 		CheckCircle2
 	} from '@lucide/svelte';
+	import RoomioSelect from '$lib/RoomioSelect.svelte';
 
 	interface Service {
 		id: string;
@@ -330,16 +331,15 @@
 			<div class="grid gap-4 sm:grid-cols-3">
 				<div class="space-y-1">
 					<label for="b-prop" class="block text-xs font-bold text-zinc-600">Chọn tòa nhà</label>
-					<select
+					<RoomioSelect
 						id="b-prop"
 						bind:value={selectedPropertyId}
 						required
-						class="w-full rounded-lg border-2 border-black bg-white px-3 py-2 text-sm font-semibold text-black focus:ring-2 focus:ring-blue-300 focus:outline-none"
-					>
-						{#each properties as prop}
-							<option value={prop.id}>{prop.name}</option>
-						{/each}
-					</select>
+						options={properties.map((property) => ({
+							value: property.id,
+							label: property.name
+						}))}
+					/>
 				</div>
 
 				<div class="space-y-1">

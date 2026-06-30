@@ -13,6 +13,7 @@
 		FileText,
 		ArrowRight
 	} from '@lucide/svelte';
+	import RoomioSelect from '$lib/RoomioSelect.svelte';
 
 	interface InvoiceItem {
 		id: string;
@@ -240,15 +241,15 @@
 	<div class="grid items-end gap-4 sm:grid-cols-3">
 		<div class="space-y-1">
 			<span class="block text-[10px] font-black text-zinc-500">Trạng thái thanh toán</span>
-			<select
+			<RoomioSelect
 				bind:value={statusFilter}
-				class="w-full rounded-lg border-2 border-black bg-white px-3 py-2 text-sm font-bold text-black focus:outline-none"
-			>
-				<option value="">Tất cả hóa đơn</option>
-				<option value="pending">Chưa thanh toán</option>
-				<option value="paid">Đã thanh toán</option>
-				<option value="overdue">Trễ hạn</option>
-			</select>
+				options={[
+					{ value: '', label: 'Tất cả hóa đơn' },
+					{ value: 'pending', label: 'Chưa thanh toán' },
+					{ value: 'paid', label: 'Đã thanh toán' },
+					{ value: 'overdue', label: 'Trễ hạn' }
+				]}
+			/>
 		</div>
 
 		<div class="space-y-1">

@@ -3,6 +3,7 @@
 	import { toast } from 'svelte-sonner';
 	import { Plus, Trash2, Loader2, X } from '@lucide/svelte';
 	import { confirmPopup } from '$lib/confirm-popup';
+	import RoomioSelect from '$lib/RoomioSelect.svelte';
 
 	interface MonthlyRow {
 		month: string;
@@ -265,14 +266,11 @@
 				<div class="grid grid-cols-2 gap-3">
 					<label class="block text-xs font-black text-zinc-500">
 						Loại chi phí
-						<select
+						<RoomioSelect
 							bind:value={form.category}
-							class="mt-1 w-full rounded-[6px] border-2 border-black bg-white px-3 py-2 text-sm font-bold"
-						>
-							{#each Object.entries(CATEGORIES) as [value, label] (value)}
-								<option {value}>{label}</option>
-							{/each}
-						</select>
+							class="mt-1"
+							options={Object.entries(CATEGORIES).map(([value, label]) => ({ value, label }))}
+						/>
 					</label>
 					<label class="block text-xs font-black text-zinc-500">
 						Ngày chi
@@ -302,15 +300,17 @@
 				</label>
 				<label class="block text-xs font-black text-zinc-500">
 					Tòa nhà (tùy chọn)
-					<select
+					<RoomioSelect
 						bind:value={form.propertyId}
-						class="mt-1 w-full rounded-[6px] border-2 border-black bg-white px-3 py-2 text-sm font-bold"
-					>
-						<option value="">Chi phí chung</option>
-						{#each propertyOptions as property (property.id)}
-							<option value={property.id}>{property.shortName}</option>
-						{/each}
-					</select>
+						class="mt-1"
+						options={[
+							{ value: '', label: 'Chi phí chung' },
+							...propertyOptions.map((property) => ({
+								value: property.id,
+								label: property.shortName
+							}))
+						]}
+					/>
 				</label>
 				<button
 					onclick={addExpense}

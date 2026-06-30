@@ -13,6 +13,7 @@
 		XCircle
 	} from '@lucide/svelte';
 	import { confirmPopup } from '$lib/confirm-popup';
+	import RoomioSelect from '$lib/RoomioSelect.svelte';
 
 	interface Service {
 		id: string;
@@ -399,15 +400,16 @@
 								Không đổi được cách tính sau khi tạo.
 							</p>
 						{:else}
-							<select
+							<RoomioSelect
 								id="sv-mode"
 								value={getTypeMode(type)}
-								onchange={(e) => setTypeMode((e.target as HTMLSelectElement).value)}
-								class="w-full rounded-lg border-2 border-black bg-white px-2.5 py-1.5 text-xs font-semibold text-black focus:ring-2 focus:ring-blue-300 focus:outline-none"
-							>
-								<option value="MANUAL">Tự nhập mỗi tháng</option>
-								<option value="FLAT">Khoán cố định</option>
-							</select>
+								onchange={setTypeMode}
+								options={[
+									{ value: 'MANUAL', label: 'Tự nhập mỗi tháng' },
+									{ value: 'FLAT', label: 'Khoán cố định' }
+								]}
+								compact
+							/>
 						{/if}
 					</div>
 
@@ -416,15 +418,15 @@
 							<label for="sv-type" class="block text-[10px] font-bold text-zinc-600">
 								{getTypeMode(type) === 'FLAT' ? 'Khoán theo' : 'Kiểu tự nhập'}
 							</label>
-							<select
+							<RoomioSelect
 								id="sv-type"
 								bind:value={type}
-								class="w-full rounded-lg border-2 border-black bg-white px-2.5 py-1.5 text-xs font-semibold text-black focus:ring-2 focus:ring-blue-300 focus:outline-none"
-							>
-								{#each getTypeMode(type) === 'FLAT' ? FLAT_TYPE_OPTIONS : MANUAL_TYPE_OPTIONS as opt}
-									<option value={opt}>{TYPE_LABELS[opt]}</option>
-								{/each}
-							</select>
+								options={(getTypeMode(type) === 'FLAT'
+									? FLAT_TYPE_OPTIONS
+									: MANUAL_TYPE_OPTIONS
+								).map((option) => ({ value: option, label: TYPE_LABELS[option] }))}
+								compact
+							/>
 						</div>
 					{/if}
 

@@ -2,6 +2,7 @@
 	import { onMount } from 'svelte';
 	import { toast } from 'svelte-sonner';
 	import { X, Check, Loader2 } from '@lucide/svelte';
+	import RoomioSelect from '$lib/RoomioSelect.svelte';
 
 	interface Request {
 		id: string;
@@ -179,28 +180,30 @@
 	<div class="flex gap-4 overflow-x-auto pb-1">
 		<div class="shrink-0 space-y-1">
 			<span class="text-zinc-650 block text-[10px] font-bold">Trạng thái sự cố</span>
-			<select
+			<RoomioSelect
 				bind:value={statusFilter}
-				class="w-44 rounded-lg border-2 border-black bg-white px-3 py-2 text-sm font-semibold text-black focus:ring-2 focus:ring-blue-300 focus:outline-none"
-			>
-				<option value="">Tất cả trạng thái</option>
-				<option value="pending">Đang chờ (Pending)</option>
-				<option value="in_progress">Đang sửa (In Progress)</option>
-				<option value="completed">Đã xong (Completed)</option>
-				<option value="rejected">Từ chối (Rejected)</option>
-			</select>
+				class="w-44"
+				options={[
+					{ value: '', label: 'Tất cả trạng thái' },
+					{ value: 'pending', label: 'Đang chờ' },
+					{ value: 'in_progress', label: 'Đang sửa' },
+					{ value: 'completed', label: 'Đã xong' },
+					{ value: 'rejected', label: 'Từ chối' }
+				]}
+			/>
 		</div>
 
 		<div class="shrink-0 space-y-1">
 			<span class="text-zinc-650 block text-[10px] font-bold">Mức độ khẩn cấp</span>
-			<select
+			<RoomioSelect
 				bind:value={priorityFilter}
-				class="w-44 rounded-lg border-2 border-black bg-white px-3 py-2 text-sm font-semibold text-black focus:ring-2 focus:ring-blue-300 focus:outline-none"
-			>
-				<option value="">Tất cả</option>
-				<option value="important">Khẩn cấp / Gấp</option>
-				<option value="normal">Bình thường</option>
-			</select>
+				class="w-44"
+				options={[
+					{ value: '', label: 'Tất cả' },
+					{ value: 'important', label: 'Khẩn cấp / Gấp' },
+					{ value: 'normal', label: 'Bình thường' }
+				]}
+			/>
 		</div>
 	</div>
 
@@ -420,16 +423,16 @@
 							>Giao cho nhân viên</label
 						>
 						<div class="flex gap-2">
-							<select
+							<RoomioSelect
 								id="req-assign"
 								bind:value={assignSelection}
-								class="flex-1 rounded-lg border-2 border-black bg-white px-3 py-2 text-xs font-semibold text-black focus:ring-2 focus:ring-blue-300 focus:outline-none"
-							>
-								<option value="">— Chưa giao —</option>
-								{#each staffList as s}
-									<option value={s.id}>{s.user.name}</option>
-								{/each}
-							</select>
+								class="flex-1"
+								options={[
+									{ value: '', label: 'Chưa giao' },
+									...staffList.map((staff) => ({ value: staff.id, label: staff.user.name }))
+								]}
+								compact
+							/>
 							<button
 								type="button"
 								onclick={() => assignStaff(selectedRequest!.id)}

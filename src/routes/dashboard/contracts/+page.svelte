@@ -4,6 +4,7 @@
 	import { FileText, Plus, Trash2, Ban, Loader2, X } from '@lucide/svelte';
 	import { uploadImage } from '$lib/upload';
 	import { confirmPopup } from '$lib/confirm-popup';
+	import RoomioSelect from '$lib/RoomioSelect.svelte';
 
 	interface ContractRow {
 		id: string;
@@ -307,23 +308,23 @@
 			<div class="space-y-3 p-4">
 				<label class="block text-xs font-black text-zinc-500">
 					Khách thuê (phòng đang ở)
-					<select
+					<RoomioSelect
 						bind:value={form.tenantId}
 						onchange={() => {
 							const room = selectedTenant?.rooms[0];
 							if (room) form.monthlyRent = room.monthlyRent;
 						}}
-						class="mt-1 w-full rounded-[6px] border-2 border-black bg-white px-3 py-2 text-sm font-bold"
-					>
-						<option value="">-- Chọn khách --</option>
-						{#each tenantOptions as t (t.id)}
-							{#if t.rooms.length > 0}
-								<option value={t.id}>
-									{t.user.name} ({t.rooms[0].property.shortName} - P.{t.rooms[0].roomNumber})
-								</option>
-							{/if}
-						{/each}
-					</select>
+						class="mt-1"
+						options={[
+							{ value: '', label: 'Chọn khách' },
+							...tenantOptions
+								.filter((tenant) => tenant.rooms.length > 0)
+								.map((tenant) => ({
+									value: tenant.id,
+									label: `${tenant.user.name} (${tenant.rooms[0].property.shortName} - P.${tenant.rooms[0].roomNumber})`
+								}))
+						]}
+					/>
 				</label>
 				<div class="grid grid-cols-2 gap-3">
 					<label class="block text-xs font-black text-zinc-500">

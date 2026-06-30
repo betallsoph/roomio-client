@@ -4,6 +4,7 @@
 	import { confirmPopup } from '$lib/confirm-popup';
 	import { X, Loader2 } from '@lucide/svelte';
 	import { uploadImage } from '$lib/upload';
+	import RoomioSelect from '$lib/RoomioSelect.svelte';
 
 	interface Room {
 		id: string;
@@ -974,35 +975,33 @@
 									<label for="t-room" class="block text-[10px] font-bold text-zinc-600"
 										>Chọn phòng nhận bàn giao</label
 									>
-									<select
+									<RoomioSelect
 										id="t-room"
 										bind:value={roomId}
 										required
-										class="w-full rounded-lg border-2 border-black bg-white px-2.5 py-1.5 text-xs font-semibold text-black focus:ring-2 focus:ring-blue-300 focus:outline-none"
-									>
-										{#each emptyRooms as room}
-											<option value={room.id}>
-												{roomOptionLabel(room)}
-											</option>
-										{/each}
-									</select>
+										options={emptyRooms.map((room) => ({
+											value: room.id,
+											label: roomOptionLabel(room)
+										}))}
+										compact
+									/>
 								</div>
 							{:else if properties.length > 0}
 								<div class="space-y-1">
 									<label for="t-property" class="block text-[10px] font-bold text-zinc-600"
 										>Tòa nhà</label
 									>
-									<select
+									<RoomioSelect
 										id="t-property"
 										bind:value={quickPropertyId}
 										onchange={() => selectQuickProperty(quickPropertyId)}
 										required
-										class="w-full rounded-lg border-2 border-black bg-white px-2.5 py-1.5 text-xs font-semibold text-black focus:ring-2 focus:ring-blue-300 focus:outline-none"
-									>
-										{#each properties as property}
-											<option value={property.id}>{property.shortName} - {property.name}</option>
-										{/each}
-									</select>
+										options={properties.map((property) => ({
+											value: property.id,
+											label: `${property.shortName} - ${property.name}`
+										}))}
+										compact
+									/>
 								</div>
 							{:else}
 								<div class="col-span-2 space-y-3 rounded-lg border-2 border-black bg-blue-50 p-3">
@@ -1088,17 +1087,19 @@
 										<label for="t-block" class="block text-[10px] font-bold text-zinc-600"
 											>Block</label
 										>
-										<select
+										<RoomioSelect
 											id="t-block"
 											bind:value={quickBlockId}
 											required
-											class="w-full rounded-lg border-2 border-black bg-white px-2.5 py-1.5 text-xs font-semibold text-black focus:ring-2 focus:ring-blue-300 focus:outline-none"
-										>
-											<option value="">Chọn block</option>
-											{#each selectedQuickProperty()?.blocks ?? [] as block}
-												<option value={block.id}>{block.name}</option>
-											{/each}
-										</select>
+											options={[
+												{ value: '', label: 'Chọn block' },
+												...(selectedQuickProperty()?.blocks ?? []).map((block) => ({
+													value: block.id,
+													label: block.name
+												}))
+											]}
+											compact
+										/>
 									</div>
 									<div class="space-y-1">
 										<label for="t-unit-number" class="block text-[10px] font-bold text-zinc-600"
@@ -1168,15 +1169,16 @@
 									<label for="t-room-type" class="block text-[10px] font-bold text-zinc-600"
 										>Loại phòng</label
 									>
-									<select
+									<RoomioSelect
 										id="t-room-type"
 										bind:value={quickRoomType}
-										class="w-full rounded-lg border-2 border-black bg-white px-2.5 py-1.5 text-xs font-semibold text-black focus:ring-2 focus:ring-blue-300 focus:outline-none"
-									>
-										<option value="standard">Phòng thường</option>
-										<option value="master">Phòng master</option>
-										<option value="balcony">Phòng ban công</option>
-									</select>
+										options={[
+											{ value: 'standard', label: 'Phòng thường' },
+											{ value: 'master', label: 'Phòng master' },
+											{ value: 'balcony', label: 'Phòng ban công' }
+										]}
+										compact
+									/>
 								</div>
 								<div class="space-y-1">
 									<label for="t-room-area" class="block text-[10px] font-bold text-zinc-600"

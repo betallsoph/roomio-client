@@ -17,6 +17,7 @@
 		Trash2,
 		X
 	} from '@lucide/svelte';
+	import RoomioSelect from '$lib/RoomioSelect.svelte';
 
 	interface TenantRow {
 		id: string;
@@ -781,17 +782,18 @@
 							<label for="ann-target" class="block text-[10px] font-bold text-zinc-600"
 								>Đối tượng nhận tin</label
 							>
-							<select
+							<RoomioSelect
 								id="ann-target"
 								bind:value={annTargetType}
-								class="w-full rounded-lg border-2 border-black bg-white px-2 py-1.5 font-semibold text-black focus:outline-none"
-							>
-								<option value="ALL">Tất cả cư dân</option>
-								<option value="PROPERTY">Riêng tòa nhà</option>
-								<option value="BLOCK">Riêng block/tầng</option>
-								<option value="ROOM">Riêng phòng</option>
-								<option value="TENANT">Riêng một khách</option>
-							</select>
+								options={[
+									{ value: 'ALL', label: 'Tất cả cư dân' },
+									{ value: 'PROPERTY', label: 'Riêng tòa nhà' },
+									{ value: 'BLOCK', label: 'Riêng block/tầng' },
+									{ value: 'ROOM', label: 'Riêng phòng' },
+									{ value: 'TENANT', label: 'Riêng một khách' }
+								]}
+								compact
+							/>
 						</div>
 
 						{#if annTargetType === 'PROPERTY'}
@@ -799,36 +801,40 @@
 								<label for="ann-prop" class="block text-[10px] font-bold text-zinc-600"
 									>Chọn tòa nhà</label
 								>
-								<select
+								<RoomioSelect
 									id="ann-prop"
 									bind:value={annTargetId}
 									required
-									class="w-full rounded-lg border-2 border-black bg-white px-2 py-1.5 font-semibold text-black focus:outline-none"
-								>
-									<option value="">-- Chọn tòa nhà --</option>
-									{#each properties as prop}
-										<option value={prop.id}>{prop.name}</option>
-									{/each}
-								</select>
+									options={[
+										{ value: '', label: 'Chọn tòa nhà' },
+										...properties.map((property) => ({
+											value: property.id,
+											label: property.name
+										}))
+									]}
+									compact
+								/>
 							</div>
 						{:else if annTargetType === 'BLOCK'}
 							<div class="space-y-1">
 								<label for="ann-block" class="block text-[10px] font-bold text-zinc-600"
 									>Chọn block</label
 								>
-								<select
+								<RoomioSelect
 									id="ann-block"
 									bind:value={annTargetId}
 									required
-									class="w-full rounded-lg border-2 border-black bg-white px-2 py-1.5 font-semibold text-black focus:outline-none"
-								>
-									<option value="">-- Chọn block --</option>
-									{#each properties as prop}
-										{#each prop.blocks || [] as block}
-											<option value={block.id}>{prop.name} / {block.name}</option>
-										{/each}
-									{/each}
-								</select>
+									options={[
+										{ value: '', label: 'Chọn block' },
+										...properties.flatMap((property) =>
+											(property.blocks || []).map((block) => ({
+												value: block.id,
+												label: `${property.name} / ${block.name}`
+											}))
+										)
+									]}
+									compact
+								/>
 							</div>
 						{:else if annTargetType === 'ROOM'}
 							<div class="space-y-1">
@@ -836,27 +842,33 @@
 									>Tòa nhà rồi chọn phòng</label
 								>
 								<div class="flex gap-1">
-									<select
+									<RoomioSelect
 										id="ann-room-prop"
 										bind:value={annPropertyId}
 										onchange={() => fetchRoomOptions(annPropertyId)}
-										class="w-1/2 rounded-lg border-2 border-black bg-white px-2 py-1.5 font-semibold text-black focus:outline-none"
-									>
-										<option value="">-- Tòa --</option>
-										{#each properties as prop}
-											<option value={prop.id}>{prop.name}</option>
-										{/each}
-									</select>
-									<select
+										class="w-1/2"
+										options={[
+											{ value: '', label: 'Chọn tòa' },
+											...properties.map((property) => ({
+												value: property.id,
+												label: property.name
+											}))
+										]}
+										compact
+									/>
+									<RoomioSelect
 										bind:value={annTargetId}
 										required
-										class="w-1/2 rounded-lg border-2 border-black bg-white px-2 py-1.5 font-semibold text-black focus:outline-none"
-									>
-										<option value="">-- Phòng --</option>
-										{#each roomOptions as room}
-											<option value={room.id}>P.{room.roomNumber}</option>
-										{/each}
-									</select>
+										class="w-1/2"
+										options={[
+											{ value: '', label: 'Chọn phòng' },
+											...roomOptions.map((room) => ({
+												value: room.id,
+												label: `P.${room.roomNumber}`
+											}))
+										]}
+										compact
+									/>
 								</div>
 							</div>
 						{:else if annTargetType === 'TENANT'}
@@ -864,19 +876,19 @@
 								<label for="ann-tenant" class="block text-[10px] font-bold text-zinc-600"
 									>Chọn khách thuê</label
 								>
-								<select
+								<RoomioSelect
 									id="ann-tenant"
 									bind:value={annTargetId}
 									required
-									class="w-full rounded-lg border-2 border-black bg-white px-2 py-1.5 font-semibold text-black focus:outline-none"
-								>
-									<option value="">-- Chọn khách --</option>
-									{#each tenantOptions as tenant}
-										<option value={tenant.id}
-											>{tenant.user.name} (P.{tenant.rooms[0]?.roomNumber || '--'})</option
-										>
-									{/each}
-								</select>
+									options={[
+										{ value: '', label: 'Chọn khách' },
+										...tenantOptions.map((tenant) => ({
+											value: tenant.id,
+											label: `${tenant.user.name} (P.${tenant.rooms[0]?.roomNumber || '--'})`
+										}))
+									]}
+									compact
+								/>
 							</div>
 						{/if}
 					</div>
@@ -937,18 +949,17 @@
 					<label for="note-tenant" class="block text-[10px] font-bold text-zinc-600"
 						>Khách thuê</label
 					>
-					<select
+					<RoomioSelect
 						id="note-tenant"
 						bind:value={noteTenantId}
-						class="w-full rounded-lg border-2 border-black bg-white px-2 py-2 text-sm font-semibold text-black focus:outline-none"
-					>
-						<option value="">-- Chọn khách --</option>
-						{#each tenantOptions as tenant}
-							<option value={tenant.id}
-								>{tenant.user.name} (P.{tenant.rooms[0]?.roomNumber || '--'})</option
-							>
-						{/each}
-					</select>
+						options={[
+							{ value: '', label: 'Chọn khách' },
+							...tenantOptions.map((tenant) => ({
+								value: tenant.id,
+								label: `${tenant.user.name} (P.${tenant.rooms[0]?.roomNumber || '--'})`
+							}))
+						]}
+					/>
 				</div>
 				<div class="space-y-1">
 					<label for="note-content" class="block text-[10px] font-bold text-zinc-600"

@@ -3,6 +3,7 @@
 	import { page } from '$app/state';
 	import { toast } from 'svelte-sonner';
 	import { confirmPopup } from '$lib/confirm-popup';
+	import RoomioSelect from '$lib/RoomioSelect.svelte';
 	import {
 		Home,
 		Building2,
@@ -21,7 +22,6 @@
 		LogOut,
 		CheckCircle2,
 		ArrowRight,
-		ChevronDown,
 		LayoutGrid,
 		List,
 		Search
@@ -109,7 +109,6 @@
 	let selectedBlockId = $state('all');
 	let searchQuery = $state('');
 	let viewMode = $state<'grid' | 'list'>('grid');
-	let openFilterMenu = $state<'property' | 'block' | null>(null);
 
 	// Detail Modal / Drawer states
 	let selectedRoom = $state<Room | null>(null);
@@ -577,25 +576,15 @@
 		return buildApartmentUnitDisplay(newBlockId, newFloor, newUnitNumber);
 	}
 
-	function getSelectedBlockName() {
-		if (selectedBlockId === 'all') return `Tất cả ${blockLabel().toLowerCase()}`;
-		return (
-			getActiveProperty()?.blocks.find((block) => block.id === selectedBlockId)?.name ??
-			`Tất cả ${blockLabel().toLowerCase()}`
-		);
-	}
-
 	function selectProperty(propertyId: string) {
 		selectedPropertyId = propertyId;
 		selectedBlockId = 'all';
 		selectedUnitCode = '';
 		newBlockId = getActiveProperty()?.blocks[0]?.id ?? '';
-		openFilterMenu = null;
 	}
 
 	function selectBlock(blockId: string) {
 		selectedBlockId = blockId;
-		openFilterMenu = null;
 	}
 
 	function activeRentalType() {
@@ -831,8 +820,6 @@
 	}
 </script>
 
-<svelte:window onpointerdown={() => (openFilterMenu = null)} />
-
 <div class="space-y-6">
 	<!-- Top Section: Filters and Title -->
 	<div class="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
@@ -881,111 +868,35 @@
 				</div>
 			</div>
 
-			<div class="relative space-y-1">
+			<div class="space-y-1">
 				<span class="block text-[10px] font-black text-zinc-500">{propertyLabel()}</span>
-				<button
-					type="button"
-					class="flex h-12 w-full items-center justify-between gap-3 rounded-lg border-2 border-black bg-white px-3 text-left text-sm font-bold text-black transition-colors hover:bg-blue-50 focus:ring-2 focus:ring-blue-300 focus:outline-none"
-					aria-haspopup="listbox"
-					aria-expanded={openFilterMenu === 'property'}
-					onpointerdown={(e) => e.stopPropagation()}
-					onclick={() => (openFilterMenu = openFilterMenu === 'property' ? null : 'property')}
-				>
-					<span class="truncate">{getActiveProperty()?.name ?? 'Chọn tòa nhà'}</span>
-					<ChevronDown
-						class="h-4 w-4 shrink-0 text-zinc-600 transition-transform {openFilterMenu ===
-						'property'
-							? 'rotate-180'
-							: ''}"
-					/>
-				</button>
-				{#if openFilterMenu === 'property'}
-					<div
-						class="absolute top-[calc(100%+6px)] right-0 left-0 z-30 max-h-72 overflow-y-auto rounded-lg border-2 border-black bg-white p-1"
-						role="listbox"
-						tabindex="-1"
-						onpointerdown={(e) => e.stopPropagation()}
-					>
-						{#each properties as prop}
-							<button
-								type="button"
-								class="flex w-full items-center justify-between gap-3 rounded-[6px] px-3 py-2.5 text-left text-sm font-bold text-black transition-colors hover:bg-blue-100 {selectedPropertyId ===
-								prop.id
-									? 'bg-blue-100'
-									: 'bg-white'}"
-								role="option"
-								aria-selected={selectedPropertyId === prop.id}
-								onclick={() => selectProperty(prop.id)}
-							>
-								<span class="truncate">{prop.name}</span>
-								{#if selectedPropertyId === prop.id}
-									<Check class="h-4 w-4 shrink-0 text-blue-600" />
-								{/if}
-							</button>
-						{/each}
-					</div>
-				{/if}
+				<RoomioSelect
+					bind:value={selectedPropertyId}
+					onchange={selectProperty}
+					options={properties.map((property) => ({
+						value: property.id,
+						label: property.name
+					}))}
+					placeholder="Chọn tòa nhà"
+					class="[&_button]:h-12"
+				/>
 			</div>
 
 			{#if getActiveProperty() && getActiveProperty()!.blocks.length > 0}
-				<div class="relative space-y-1">
+				<div class="space-y-1">
 					<span class="block text-[10px] font-black text-zinc-500">{blockLabel()}</span>
-					<button
-						type="button"
-						class="flex h-12 w-full items-center justify-between gap-3 rounded-lg border-2 border-black bg-white px-3 text-left text-sm font-bold text-black transition-colors hover:bg-blue-50 focus:ring-2 focus:ring-blue-300 focus:outline-none"
-						aria-haspopup="listbox"
-						aria-expanded={openFilterMenu === 'block'}
-						onpointerdown={(e) => e.stopPropagation()}
-						onclick={() => (openFilterMenu = openFilterMenu === 'block' ? null : 'block')}
-					>
-						<span class="truncate">{getSelectedBlockName()}</span>
-						<ChevronDown
-							class="h-4 w-4 shrink-0 text-zinc-600 transition-transform {openFilterMenu === 'block'
-								? 'rotate-180'
-								: ''}"
-						/>
-					</button>
-					{#if openFilterMenu === 'block'}
-						<div
-							class="absolute top-[calc(100%+6px)] right-0 left-0 z-30 max-h-72 overflow-y-auto rounded-lg border-2 border-black bg-white p-1"
-							role="listbox"
-							tabindex="-1"
-							onpointerdown={(e) => e.stopPropagation()}
-						>
-							<button
-								type="button"
-								class="flex w-full items-center justify-between gap-3 rounded-[6px] px-3 py-2.5 text-left text-sm font-bold text-black transition-colors hover:bg-blue-100 {selectedBlockId ===
-								'all'
-									? 'bg-blue-100'
-									: 'bg-white'}"
-								role="option"
-								aria-selected={selectedBlockId === 'all'}
-								onclick={() => selectBlock('all')}
-							>
-								<span>Tất cả {blockLabel().toLowerCase()}</span>
-								{#if selectedBlockId === 'all'}
-									<Check class="h-4 w-4 shrink-0 text-blue-600" />
-								{/if}
-							</button>
-							{#each getActiveProperty()!.blocks as block}
-								<button
-									type="button"
-									class="flex w-full items-center justify-between gap-3 rounded-[6px] px-3 py-2.5 text-left text-sm font-bold text-black transition-colors hover:bg-blue-100 {selectedBlockId ===
-									block.id
-										? 'bg-blue-100'
-										: 'bg-white'}"
-									role="option"
-									aria-selected={selectedBlockId === block.id}
-									onclick={() => selectBlock(block.id)}
-								>
-									<span class="truncate">{block.name}</span>
-									{#if selectedBlockId === block.id}
-										<Check class="h-4 w-4 shrink-0 text-blue-600" />
-									{/if}
-								</button>
-							{/each}
-						</div>
-					{/if}
+					<RoomioSelect
+						bind:value={selectedBlockId}
+						onchange={selectBlock}
+						options={[
+							{ value: 'all', label: `Tất cả ${blockLabel().toLowerCase()}` },
+							...getActiveProperty()!.blocks.map((block) => ({
+								value: block.id,
+								label: block.name
+							}))
+						]}
+						class="[&_button]:h-12"
+					/>
 				</div>
 			{/if}
 
@@ -1342,16 +1253,17 @@
 						{#if existingUnits().length > 0}
 							<div class="space-y-1">
 								<label for="r-unit-sel" class="block text-xs font-bold text-zinc-600">Căn hộ</label>
-								<select
+								<RoomioSelect
 									id="r-unit-sel"
 									bind:value={selectedUnitCode}
-									class="w-full rounded-lg border-2 border-black bg-white px-3 py-2 text-sm font-bold text-black focus:outline-none"
-								>
-									<option value="">➕ Tạo căn mới</option>
-									{#each existingUnits() as u}
-										<option value={u.key}>{u.label} · {u.rooms.length} phòng</option>
-									{/each}
-								</select>
+									options={[
+										{ value: '', label: 'Tạo căn mới' },
+										...existingUnits().map((unit) => ({
+											value: unit.key,
+											label: `${unit.label} · ${unit.rooms.length} phòng`
+										}))
+									]}
+								/>
 							</div>
 						{/if}
 
@@ -1391,17 +1303,18 @@
 								</div>
 								<div class="space-y-1">
 									<label for="r-block" class="block text-xs font-bold text-zinc-600">Block</label>
-									<select
+									<RoomioSelect
 										id="r-block"
 										bind:value={newBlockId}
 										required
-										class="w-full rounded-lg border-2 border-black bg-white px-3 py-2 text-sm font-bold text-black focus:outline-none"
-									>
-										<option value="">Chọn block</option>
-										{#each getActiveBlocks() as block}
-											<option value={block.id}>{block.name}</option>
-										{/each}
-									</select>
+										options={[
+											{ value: '', label: 'Chọn block' },
+											...getActiveBlocks().map((block) => ({
+												value: block.id,
+												label: block.name
+											}))
+										]}
+									/>
 								</div>
 							</div>
 
@@ -1469,15 +1382,15 @@
 						<div class="grid grid-cols-2 gap-4">
 							<div class="space-y-1">
 								<label for="r-type" class="block text-xs font-bold text-zinc-600">Loại phòng</label>
-								<select
+								<RoomioSelect
 									id="r-type"
 									bind:value={newRoomType}
-									class="w-full rounded-lg border-2 border-black bg-white px-3 py-2 text-sm font-bold text-black focus:outline-none"
-								>
-									<option value="standard">Phòng thường</option>
-									<option value="master">Phòng master</option>
-									<option value="balcony">Phòng ban công</option>
-								</select>
+									options={[
+										{ value: 'standard', label: 'Phòng thường' },
+										{ value: 'master', label: 'Phòng master' },
+										{ value: 'balcony', label: 'Phòng ban công' }
+									]}
+								/>
 							</div>
 							{#if activeRentalType() !== 'APARTMENT'}
 								<div class="space-y-1">
@@ -1526,16 +1439,17 @@
 								<label for="r-block" class="block text-xs font-bold text-zinc-600"
 									>{blockLabel()}</label
 								>
-								<select
+								<RoomioSelect
 									id="r-block"
 									bind:value={newBlockId}
-									class="w-full rounded-lg border-2 border-black bg-white px-3 py-2 text-sm font-bold text-black focus:outline-none"
-								>
-									<option value="">Không có {blockLabel().toLowerCase()}</option>
-									{#each getActiveProperty()!.blocks as block}
-										<option value={block.id}>{block.name}</option>
-									{/each}
-								</select>
+									options={[
+										{ value: '', label: `Không có ${blockLabel().toLowerCase()}` },
+										...getActiveProperty()!.blocks.map((block) => ({
+											value: block.id,
+											label: block.name
+										}))
+									]}
+								/>
 							</div>
 						{/if}
 
@@ -1843,17 +1757,21 @@
 													<label for="m-serv" class="block text-[10px] font-black text-zinc-500"
 														>Dịch vụ</label
 													>
-													<select
+													<RoomioSelect
 														id="m-serv"
 														bind:value={meterServiceId}
 														required
-														class="w-full rounded-lg border-2 border-black bg-white px-2.5 py-1.5 text-xs font-semibold text-black focus:outline-none"
-													>
-														<option value="">-- Chọn dịch vụ --</option>
-														{#each selectedRoom.services.filter((s) => s.service.type === 'METERED') as c}
-															<option value={c.serviceId}>{c.service.name}</option>
-														{/each}
-													</select>
+														options={[
+															{ value: '', label: 'Chọn dịch vụ' },
+															...selectedRoom.services
+																.filter((service) => service.service.type === 'METERED')
+																.map((service) => ({
+																	value: service.serviceId,
+																	label: service.service.name
+																}))
+														]}
+														compact
+													/>
 												</div>
 												<div class="space-y-1">
 													<label for="m-month" class="block text-[10px] font-black text-zinc-500"
@@ -2002,15 +1920,16 @@
 													<label for="a-status" class="block text-[10px] font-black text-zinc-500"
 														>Tình trạng</label
 													>
-													<select
+													<RoomioSelect
 														id="a-status"
 														bind:value={assetStatus}
-														class="w-full rounded-lg border-2 border-black bg-white px-2.5 py-1.5 text-xs font-bold text-black focus:outline-none"
-													>
-														<option value="good">Hoạt động tốt</option>
-														<option value="broken">Đã hỏng</option>
-														<option value="need_maintenance">Cần bảo trì</option>
-													</select>
+														options={[
+															{ value: 'good', label: 'Hoạt động tốt' },
+															{ value: 'broken', label: 'Đã hỏng' },
+															{ value: 'need_maintenance', label: 'Cần bảo trì' }
+														]}
+														compact
+													/>
 												</div>
 												<div class="space-y-1">
 													<label for="a-notes" class="block text-[10px] font-black text-zinc-500"
