@@ -125,6 +125,19 @@
 		return 'Đang chạy';
 	}
 
+	function formatJobTime(job: AutomationJob) {
+		const value = job.completedAt || job.createdAt;
+		const date = new Date(value);
+		if (Number.isNaN(date.getTime())) return '--';
+		return new Intl.DateTimeFormat('vi-VN', {
+			hour: '2-digit',
+			minute: '2-digit',
+			day: '2-digit',
+			month: '2-digit',
+			year: 'numeric'
+		}).format(date);
+	}
+
 	function channelLabel(channel: string) {
 		if (channel.toLowerCase() === 'telegram') return 'Telegram';
 		if (channel.toLowerCase() === 'in_app') return 'Trong ứng dụng';
@@ -207,13 +220,18 @@
 							<div class="flex items-center justify-between gap-3">
 								<span class="font-black text-black">{JOB_LABELS[job.type] ?? 'Tác vụ tự động'}</span
 								>
-								<span
-									class="text-[11px] font-black {job.status === 'completed'
-										? 'text-green-700'
-										: job.status === 'failed'
-											? 'text-red-700'
-											: 'text-blue-600'}">{jobStatusLabel(job.status)}</span
-								>
+								<div class="shrink-0 text-right">
+									<p
+										class="text-[11px] font-black {job.status === 'completed'
+											? 'text-green-700'
+											: job.status === 'failed'
+												? 'text-red-700'
+												: 'text-blue-600'}"
+									>
+										{jobStatusLabel(job.status)}
+									</p>
+									<p class="mt-0.5 text-[10px] font-semibold text-zinc-400">{formatJobTime(job)}</p>
+								</div>
 							</div>
 							<p class="mt-1 font-semibold text-zinc-500">{parseResult(job.result)}</p>
 						</div>
