@@ -217,9 +217,11 @@
 				<div class="divide-y divide-zinc-200 border-y border-zinc-200">
 					{#each jobs as job}
 						<div class="px-1 py-3.5 text-xs font-bold text-zinc-700">
-							<div class="flex items-center justify-between gap-3">
-								<span class="font-black text-black">{JOB_LABELS[job.type] ?? 'Tác vụ tự động'}</span
-								>
+							<div class="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-4">
+								<div class="min-w-0">
+									<p class="font-black text-black">{JOB_LABELS[job.type] ?? 'Tác vụ tự động'}</p>
+									<p class="mt-1 font-semibold text-zinc-500">{parseResult(job.result)}</p>
+								</div>
 								<div class="shrink-0 text-right">
 									<p
 										class="text-[11px] font-black {job.status === 'completed'
@@ -233,7 +235,6 @@
 									<p class="mt-0.5 text-[10px] font-semibold text-zinc-400">{formatJobTime(job)}</p>
 								</div>
 							</div>
-							<p class="mt-1 font-semibold text-zinc-500">{parseResult(job.result)}</p>
 						</div>
 					{:else}
 						<p class="py-10 text-center text-sm font-semibold text-zinc-400">
