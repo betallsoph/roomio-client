@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { toast } from 'svelte-sonner';
-	import { TrendingUp, Plus, Trash2, Loader2, X } from '@lucide/svelte';
+	import { Plus, Trash2, Loader2, X } from '@lucide/svelte';
 	import { confirmPopup } from '$lib/confirm-popup';
 
 	interface MonthlyRow {
@@ -156,12 +156,17 @@
 <div class="space-y-5">
 	<div class="flex flex-wrap items-center justify-between gap-3">
 		<div>
-			<h1 class="flex items-center gap-2 text-2xl font-black text-black">
-				Tài chính <TrendingUp class="h-6 w-6" />
-			</h1>
+			<h1 class="text-2xl font-black text-black">Tài chính</h1>
 			<p class="mt-1 text-sm font-bold text-zinc-500">
 				Dòng tiền 6 tháng gần nhất: doanh thu đã thực thu so với chi phí vận hành.
 			</p>
+			{#if !isLoading}
+				<p class="mt-2 text-xs font-black text-blue-600">
+					Thu {formatMoney(totals.revenue)} · Chi {formatMoney(totals.expense)} · Lãi/lỗ {formatMoney(
+						totals.profit
+					)}
+				</p>
+			{/if}
 		</div>
 		<button
 			onclick={() => (showAddModal = true)}
@@ -176,29 +181,9 @@
 			<Loader2 class="h-8 w-8 animate-spin text-zinc-400" />
 		</div>
 	{:else}
-		<!-- Tổng quan -->
-		<div class="grid grid-cols-1 gap-3 md:grid-cols-3">
-			<div class="rounded-lg border-2 border-black bg-green-100 p-4">
-				<p class="text-xs font-black text-zinc-600">Doanh thu (6 tháng)</p>
-				<p class="mt-1 text-xl font-black text-black">{formatMoney(totals.revenue)}</p>
-			</div>
-			<div class="rounded-lg border-2 border-black bg-red-100 p-4">
-				<p class="text-xs font-black text-zinc-600">Chi phí (6 tháng)</p>
-				<p class="mt-1 text-xl font-black text-black">{formatMoney(totals.expense)}</p>
-			</div>
-			<div
-				class="rounded-lg border-2 border-black {totals.profit >= 0
-					? 'bg-blue-100'
-					: 'bg-red-200'} p-4"
-			>
-				<p class="text-xs font-black text-zinc-600">Lợi nhuận</p>
-				<p class="mt-1 text-xl font-black text-black">{formatMoney(totals.profit)}</p>
-			</div>
-		</div>
-
 		<!-- Biểu đồ cột đơn giản theo tháng -->
-		<div class="rounded-lg border-2 border-black bg-white p-4">
-			<p class="mb-3 text-sm font-black text-black">Thu / chi theo tháng</p>
+		<section class="space-y-3">
+			<p class="text-sm font-black text-blue-600">Thu / chi theo tháng</p>
 			<div class="space-y-3">
 				{#each monthly as m (m.month)}
 					<div>
@@ -222,21 +207,19 @@
 					</div>
 				{/each}
 			</div>
-		</div>
+		</section>
 
 		<!-- Danh sách chi phí -->
-		<div class="rounded-lg border-2 border-black bg-white">
-			<p class="border-b-2 border-black px-4 py-3 text-sm font-black text-black">
-				Các khoản chi gần đây
-			</p>
+		<section class="space-y-2">
+			<p class="text-sm font-black text-blue-600">Các khoản chi gần đây</p>
 			{#if expenseList.length === 0}
-				<p class="p-6 text-center text-sm font-bold text-zinc-400">Chưa ghi nhận khoản chi nào.</p>
+				<p class="py-16 text-center text-sm font-bold text-zinc-400">
+					Chưa ghi nhận khoản chi nào.
+				</p>
 			{/if}
 			{#each expenseList.slice(0, 30) as expense (expense.id)}
-				<div class="flex items-center gap-3 border-b border-zinc-100 px-4 py-3">
-					<span
-						class="shrink-0 rounded border-2 border-black bg-zinc-100 px-1.5 text-xs font-black"
-					>
+				<div class="flex items-center gap-3 border-b border-black/10 py-3">
+					<span class="shrink-0 text-xs font-black text-zinc-500">
 						{CATEGORIES[expense.category] ?? expense.category}
 					</span>
 					<div class="min-w-0 flex-1">
@@ -250,14 +233,15 @@
 					>
 					<button
 						onclick={() => deleteExpense(expense)}
-						class="shrink-0 rounded-[6px] border-2 border-black bg-red-200 p-1.5 transition-all active:translate-x-[1px] active:translate-y-[1px]"
+						class="flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full text-red-600 transition-colors hover:text-red-800"
 						title="Xóa khoản chi"
+						aria-label="Xóa khoản chi"
 					>
-						<Trash2 class="h-3.5 w-3.5" />
+						<Trash2 class="h-5 w-5" />
 					</button>
 				</div>
 			{/each}
-		</div>
+		</section>
 	{/if}
 </div>
 
