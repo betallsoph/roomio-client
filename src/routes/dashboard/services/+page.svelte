@@ -229,19 +229,32 @@
 							<div class="flex gap-2">
 								<button
 									onclick={() => toggleActive(svc)}
-									class="cursor-pointer rounded-[6px] border-2 border-black bg-white px-2.5 py-1.5 text-xs font-bold text-black shadow-secondary transition-all active:translate-x-[1px] active:translate-y-[1px]"
-									>{svc.isActive ? 'Ngưng' : 'Bật'}</button
+									title={svc.isActive ? 'Tạm ngưng' : 'Bật lại'}
+									aria-label={svc.isActive ? 'Tạm ngưng' : 'Bật lại'}
+									class="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full text-zinc-700 transition-colors hover:text-blue-600"
 								>
+									{#if svc.isActive}
+										<PowerOff class="h-5 w-5" />
+									{:else}
+										<Power class="h-5 w-5" />
+									{/if}
+								</button>
 								<button
 									onclick={() => window.setTimeout(() => openEdit(svc), 200)}
-									class="cursor-pointer rounded-[6px] border-2 border-black bg-white px-2.5 py-1.5 text-xs font-bold text-black shadow-secondary transition-all active:translate-x-[1px] active:translate-y-[1px]"
-									>Sửa</button
+									title="Sửa"
+									aria-label="Sửa"
+									class="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full text-zinc-700 transition-colors hover:text-blue-600"
 								>
+									<Pencil class="h-5 w-5" />
+								</button>
 								<button
 									onclick={() => handleDelete(svc)}
-									class="cursor-pointer rounded-[6px] border-2 border-black bg-red-200 px-2.5 py-1.5 text-xs font-bold text-red-800 shadow-secondary transition-all active:translate-x-[1px] active:translate-y-[1px]"
-									>Xóa</button
+									title="Xóa"
+									aria-label="Xóa"
+									class="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full text-red-600 transition-colors hover:text-red-800"
 								>
+									<Trash2 class="h-5 w-5" />
+								</button>
 							</div>
 						</div>
 					</div>
@@ -286,27 +299,30 @@
 										<button
 											onclick={() => toggleActive(svc)}
 											title={svc.isActive ? 'Tạm ngưng' : 'Bật lại'}
-											class="hover:bg-zinc-150 cursor-pointer rounded-[6px] border-2 border-black bg-white p-2 text-black shadow-secondary transition-all active:translate-x-[1px] active:translate-y-[1px]"
+											aria-label={svc.isActive ? 'Tạm ngưng' : 'Bật lại'}
+											class="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full text-zinc-700 transition-colors hover:text-blue-600"
 										>
 											{#if svc.isActive}
-												<PowerOff class="h-4 w-4" />
+												<PowerOff class="h-5 w-5" />
 											{:else}
-												<Power class="h-4 w-4" />
+												<Power class="h-5 w-5" />
 											{/if}
 										</button>
 										<button
 											onclick={() => window.setTimeout(() => openEdit(svc), 200)}
 											title="Sửa"
-											class="hover:bg-zinc-150 cursor-pointer rounded-[6px] border-2 border-black bg-white p-2 text-black shadow-secondary transition-all active:translate-x-[1px] active:translate-y-[1px]"
+											aria-label="Sửa"
+											class="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full text-zinc-700 transition-colors hover:text-blue-600"
 										>
-											<Pencil class="h-4 w-4" />
+											<Pencil class="h-5 w-5" />
 										</button>
 										<button
 											onclick={() => handleDelete(svc)}
 											title="Xóa"
-											class="cursor-pointer rounded-[6px] border-2 border-black bg-red-200 p-2 text-red-800 shadow-secondary transition-all hover:bg-red-300 active:translate-x-[1px] active:translate-y-[1px]"
+											aria-label="Xóa"
+											class="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full text-red-600 transition-colors hover:text-red-800"
 										>
-											<Trash2 class="h-4 w-4" />
+											<Trash2 class="h-5 w-5" />
 										</button>
 									</div>
 								</td>
