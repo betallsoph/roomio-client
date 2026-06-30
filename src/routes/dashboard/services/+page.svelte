@@ -268,7 +268,9 @@
 			<div class="hidden overflow-x-auto bg-white sm:block">
 				<table class="w-full border-collapse text-left text-sm">
 					<thead>
-						<tr class="border-b-2 border-black bg-white text-xs font-black text-blue-600">
+						<tr
+							class="border-b-2 border-black bg-white text-xs font-black text-blue-600 [&_th]:font-black"
+						>
 							<th class="px-4 py-3">Tên dịch vụ</th>
 							<th class="px-4 py-3">Cách tính</th>
 							<th class="px-4 py-3">Đơn giá</th>
