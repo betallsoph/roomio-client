@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	import { toast } from 'svelte-sonner';
 	import { confirmPopup } from '$lib/confirm-popup';
-	import { Building2, Plus, X, MapPin, Home, Trash2, Loader2 } from '@lucide/svelte';
+	import { Building2, Plus, X, Home, Trash2, Loader2 } from '@lucide/svelte';
 
 	interface Block {
 		id: string;
@@ -550,128 +550,108 @@
 			role="button"
 			tabindex="0"
 		>
-			<!-- Drawer Content: Brutalist Panel border-l-2 -->
+			<!-- Drawer Content -->
 			<div
-				class="flex h-full w-full max-w-md animate-[slide-left_0.2s_ease-out] flex-col justify-between overflow-hidden border-l-2 border-black bg-white shadow-primary"
+				class="flex h-full w-full max-w-md animate-[slide-left_0.2s_ease-out] flex-col justify-between overflow-hidden bg-white"
 				onclick={(e) => e.stopPropagation()}
 				onkeydown={(e) => e.stopPropagation()}
 				role="dialog"
 				tabindex="-1"
 			>
-				<!-- Header Windows macOS style -->
-				<div
-					class="flex shrink-0 items-center gap-2 border-b-2 border-black bg-zinc-50 px-4 py-3 select-none"
-				>
-					<div class="h-2.5 w-2.5 rounded-full border border-black bg-red-500"></div>
-					<div class="h-2.5 w-2.5 rounded-full border border-black bg-yellow-500"></div>
-					<div class="h-2.5 w-2.5 rounded-full border border-black bg-green-500"></div>
-					<span class="ml-2 text-xs font-bold text-zinc-500"
+				<div class="flex shrink-0 items-center px-6 pt-5 select-none">
+					<span class="text-xs font-bold text-zinc-500"
 						>Chi tiết {propertyLabel(selectedProperty.rentalType)}</span
 					>
 					<button
 						onclick={() => (isDetailDrawerOpen = false)}
-						class="ml-auto cursor-pointer rounded-[6px] border border-transparent p-1 text-black hover:bg-zinc-200"
+						class="ml-auto cursor-pointer rounded-[6px] p-1 text-black transition-colors hover:bg-zinc-100"
 					>
 						<X class="h-4.5 w-4.5" />
 					</button>
 				</div>
 
-				<div class="flex-1 space-y-6 overflow-y-auto p-6">
+				<div class="flex-1 space-y-7 overflow-y-auto p-6">
 					<!-- Title & basic details -->
-					<div class="flex shrink-0 items-center gap-3 border-b-2 border-black pb-4">
-						<Building2 class="h-5 w-5" />
-						<div>
-							<h3 class="text-lg leading-tight font-black text-black">{selectedProperty.name}</h3>
-							<p class="mt-1 text-xs font-bold text-zinc-600">
-								{rentalTypeLabel(selectedProperty.rentalType)} · Mã viết tắt: {selectedProperty.shortName}
-							</p>
-						</div>
+					<div>
+						<h3 class="text-xl leading-tight font-black text-black">{selectedProperty.name}</h3>
+						<p class="mt-1 text-xs font-bold text-zinc-500">
+							{rentalTypeLabel(selectedProperty.rentalType)} · {selectedProperty.shortName}
+						</p>
 					</div>
 
 					<!-- Basic Info -->
-					<div class="space-y-3">
-						<div
-							class="flex items-start justify-between border-b border-black/15 pb-3 text-xs font-semibold"
-						>
-							<span class="flex shrink-0 items-center gap-1.5 font-bold text-zinc-500">
-								<MapPin class="h-4 w-4" />
-								Địa chỉ:
-							</span>
-							<span class="pl-4 text-right font-black text-black">{selectedProperty.address}</span>
-						</div>
+					<div>
+						<p class="text-xs font-bold text-zinc-500">Địa chỉ</p>
+						<p class="mt-1 text-sm font-bold text-black">{selectedProperty.address}</p>
 					</div>
 
 					<!-- Stats breakdown -->
 					<div class="space-y-3">
-						<h4 class="text-xs font-black text-zinc-500">Thống kê chi tiết phòng</h4>
-						<div class="grid grid-cols-3 gap-2 text-center font-semibold text-black">
-							<div class="rounded-lg border-2 border-black bg-white p-3 shadow-secondary">
-								<p class="text-lg font-black">{stats.total}</p>
-								<p class="mt-0.5 text-[9px] leading-tight font-bold text-zinc-500">Tổng số phòng</p>
+						<h4 class="text-xs font-black text-blue-600">Thống kê phòng</h4>
+						<div class="grid grid-cols-3 gap-4 font-semibold text-black">
+							<div>
+								<p class="text-xl font-black">{stats.total}</p>
+								<p class="mt-0.5 text-[10px] leading-tight font-bold text-zinc-500">Tổng phòng</p>
 							</div>
-							<div class="rounded-lg border-2 border-black bg-white p-3 shadow-secondary">
-								<p class="text-lg font-black">{stats.total - stats.empty}</p>
-								<p class="mt-0.5 text-[9px] leading-tight font-bold text-zinc-500">Có người ở</p>
+							<div>
+								<p class="text-xl font-black">{stats.total - stats.empty}</p>
+								<p class="mt-0.5 text-[10px] leading-tight font-bold text-zinc-500">Đang thuê</p>
 							</div>
-							<div class="rounded-lg border-2 border-black bg-white p-3 shadow-secondary">
-								<p class="text-lg font-black">{stats.empty}</p>
-								<p class="mt-0.5 text-[9px] leading-tight font-bold text-zinc-500">Phòng trống</p>
+							<div>
+								<p class="text-xl font-black">{stats.empty}</p>
+								<p class="mt-0.5 text-[10px] leading-tight font-bold text-zinc-500">Trống</p>
 							</div>
 						</div>
 					</div>
 
 					<!-- Blocks -->
 					{#if selectedProperty.blocks.length > 0}
-						<div class="space-y-2">
-							<h4 class="text-xs font-black text-zinc-500">
+						<div class="space-y-1.5">
+							<h4 class="text-xs font-black text-blue-600">
 								{blockLabel(selectedProperty.rentalType)} ({selectedProperty.blocks.length})
 							</h4>
-							<div class="flex flex-wrap gap-2">
-								{#each selectedProperty.blocks as block}
-									<span
-										class="rounded-lg border border-black bg-white px-3 py-1.5 text-xs font-bold text-black shadow-secondary"
-									>
-										{block.name}
-									</span>
-								{/each}
-							</div>
+							<p class="text-sm font-bold text-black">
+								{selectedProperty.blocks.map((block) => block.name).join(', ')}
+							</p>
 						</div>
 					{/if}
 
 					<!-- Room types breakdown -->
-					<div class="space-y-3">
-						<h4 class="text-xs font-black text-zinc-500">Chi tiết theo loại phòng</h4>
-						<div
-							class="divide-y divide-black/15 border-t border-b border-black/15 font-semibold text-black"
-						>
-							{#each ['standard', 'master', 'balcony'] as type}
-								{@const typeRooms = selectedProperty.rooms.filter((r) => r.roomType === type)}
-								{@const typeStats = calculatePropertyStats(typeRooms)}
-								<div class="flex items-center justify-between py-2.5 text-sm">
-									<span class="text-zinc-700">{getRoomTypeLabel(type)}</span>
-									<span class="font-black text-black">
-										{typeRooms.length} phòng (Trống {typeStats.empty})
-									</span>
-								</div>
-							{/each}
+					{#if stats.total > 0}
+						<div class="space-y-3">
+							<h4 class="text-xs font-black text-blue-600">Theo loại phòng</h4>
+							<div class="space-y-2.5 font-semibold text-black">
+								{#each ['standard', 'master', 'balcony'] as type}
+									{@const typeRooms = selectedProperty.rooms.filter((r) => r.roomType === type)}
+									{@const typeStats = calculatePropertyStats(typeRooms)}
+									{#if typeRooms.length > 0}
+										<div class="flex items-center justify-between gap-3 text-sm">
+											<span class="text-zinc-600">{getRoomTypeLabel(type)}</span>
+											<span class="font-black text-black">
+												{typeRooms.length} phòng · {typeStats.empty} trống
+											</span>
+										</div>
+									{/if}
+								{/each}
+							</div>
 						</div>
-					</div>
+					{/if}
 				</div>
 
 				<!-- Action buttons at bottom -->
-				<div class="bg-zinc-150 flex shrink-0 gap-3 border-t-2 border-black p-6">
+				<div class="flex shrink-0 items-center gap-3 p-6 pt-3">
 					<button
 						onclick={() => handleDeleteProperty(selectedProperty!.id)}
-						class="cursor-pointer rounded-[6px] border-2 border-black bg-red-200 p-2.5 text-red-800 shadow-secondary transition-all hover:bg-red-300"
+						class="cursor-pointer p-2.5 text-red-600 transition-colors hover:text-red-800"
 						title="Xóa tòa nhà"
 					>
 						<Trash2 class="h-5 w-5" />
 					</button>
 					<a
-						href="/dashboard/workspace/{selectedProperty.id}"
-						class="flex flex-grow cursor-pointer items-center justify-center gap-1.5 rounded-[6px] border-2 border-black bg-blue-300 py-2.5 text-center text-sm font-black text-black shadow-secondary transition-all hover:bg-blue-400"
+						href="/dashboard/rooms?propertyId={selectedProperty.id}"
+						class="flex flex-grow cursor-pointer items-center justify-center gap-1.5 rounded-[6px] bg-blue-100 py-2.5 text-center text-sm font-black text-blue-700 transition-colors hover:bg-blue-200"
 					>
-						Vào workspace <Home class="h-4.5 w-4.5" />
+						Quản lý phòng <Home class="h-4.5 w-4.5" />
 					</a>
 				</div>
 			</div>
