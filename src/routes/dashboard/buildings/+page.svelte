@@ -552,13 +552,15 @@
 		>
 			<!-- Drawer Content -->
 			<div
-				class="flex h-full w-full max-w-md animate-[slide-left_0.2s_ease-out] flex-col justify-between overflow-hidden bg-white"
+				class="flex h-full w-full max-w-md animate-[slide-left_0.2s_ease-out] flex-col justify-between overflow-hidden border-l-2 border-black bg-white"
 				onclick={(e) => e.stopPropagation()}
 				onkeydown={(e) => e.stopPropagation()}
 				role="dialog"
 				tabindex="-1"
 			>
-				<div class="flex shrink-0 items-center px-6 pt-5 select-none">
+				<div
+					class="flex shrink-0 items-center border-b-2 border-black bg-zinc-50 px-6 py-4 select-none"
+				>
 					<span class="text-xs font-bold text-zinc-500"
 						>Chi tiết {propertyLabel(selectedProperty.rentalType)}</span
 					>
@@ -570,34 +572,34 @@
 					</button>
 				</div>
 
-				<div class="flex-1 space-y-7 overflow-y-auto p-6">
-					<!-- Title & basic details -->
-					<div>
+				<div class="flex-1 space-y-5 overflow-y-auto p-6">
+					<!-- Main property information -->
+					<div class="rounded-lg border-2 border-black bg-white p-4 shadow-secondary">
 						<h3 class="text-xl leading-tight font-black text-black">{selectedProperty.name}</h3>
 						<p class="mt-1 text-xs font-bold text-zinc-500">
 							{rentalTypeLabel(selectedProperty.rentalType)} · {selectedProperty.shortName}
 						</p>
-					</div>
-
-					<!-- Basic Info -->
-					<div>
-						<p class="text-xs font-bold text-zinc-500">Địa chỉ</p>
-						<p class="mt-1 text-sm font-bold text-black">{selectedProperty.address}</p>
+						<div class="mt-4">
+							<p class="text-[10px] font-black text-blue-600">Địa chỉ</p>
+							<p class="mt-1 text-sm font-bold text-black">{selectedProperty.address}</p>
+						</div>
 					</div>
 
 					<!-- Stats breakdown -->
 					<div class="space-y-3">
 						<h4 class="text-xs font-black text-blue-600">Thống kê phòng</h4>
-						<div class="grid grid-cols-3 gap-4 font-semibold text-black">
-							<div>
+						<div
+							class="grid grid-cols-3 rounded-lg border-2 border-black bg-white p-4 font-semibold text-black shadow-secondary"
+						>
+							<div class="text-center">
 								<p class="text-xl font-black">{stats.total}</p>
 								<p class="mt-0.5 text-[10px] leading-tight font-bold text-zinc-500">Tổng phòng</p>
 							</div>
-							<div>
+							<div class="text-center">
 								<p class="text-xl font-black">{stats.total - stats.empty}</p>
 								<p class="mt-0.5 text-[10px] leading-tight font-bold text-zinc-500">Đang thuê</p>
 							</div>
-							<div>
+							<div class="text-center">
 								<p class="text-xl font-black">{stats.empty}</p>
 								<p class="mt-0.5 text-[10px] leading-tight font-bold text-zinc-500">Trống</p>
 							</div>
@@ -610,9 +612,15 @@
 							<h4 class="text-xs font-black text-blue-600">
 								{blockLabel(selectedProperty.rentalType)} ({selectedProperty.blocks.length})
 							</h4>
-							<p class="text-sm font-bold text-black">
-								{selectedProperty.blocks.map((block) => block.name).join(', ')}
-							</p>
+							<div class="flex flex-wrap gap-2">
+								{#each selectedProperty.blocks as block}
+									<span
+										class="rounded-[6px] bg-blue-100 px-2.5 py-1 text-xs font-black text-blue-700"
+									>
+										{block.name}
+									</span>
+								{/each}
+							</div>
 						</div>
 					{/if}
 
@@ -635,11 +643,18 @@
 								{/each}
 							</div>
 						</div>
+					{:else}
+						<div class="rounded-lg bg-zinc-50 px-4 py-8 text-center">
+							<p class="text-sm font-bold text-zinc-400">Tòa nhà này chưa có phòng.</p>
+							<p class="mt-1 text-xs font-semibold text-zinc-400">
+								Bắt đầu bằng cách thêm phòng vào tòa nhà.
+							</p>
+						</div>
 					{/if}
 				</div>
 
 				<!-- Action buttons at bottom -->
-				<div class="flex shrink-0 items-center gap-3 p-6 pt-3">
+				<div class="flex shrink-0 items-center gap-3 border-t-2 border-black bg-white p-6">
 					<button
 						onclick={() => handleDeleteProperty(selectedProperty!.id)}
 						class="cursor-pointer p-2.5 text-red-600 transition-colors hover:text-red-800"
@@ -649,7 +664,7 @@
 					</button>
 					<a
 						href="/dashboard/rooms?propertyId={selectedProperty.id}"
-						class="flex flex-grow cursor-pointer items-center justify-center gap-1.5 rounded-[6px] bg-blue-100 py-2.5 text-center text-sm font-black text-blue-700 transition-colors hover:bg-blue-200"
+						class="flex flex-grow cursor-pointer items-center justify-center gap-1.5 rounded-[6px] border-2 border-black bg-blue-300 py-2.5 text-center text-sm font-black text-black shadow-secondary transition-all hover:bg-blue-400"
 					>
 						Quản lý phòng <Home class="h-4.5 w-4.5" />
 					</a>
