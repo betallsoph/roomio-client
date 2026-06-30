@@ -215,6 +215,12 @@
 		try {
 			const res = await fetch('/api/super-admin');
 			const data = await res.json();
+			if (res.status === 401) {
+				localStorage.removeItem('roomio_user');
+				toast.error('Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại');
+				await goto('/login');
+				return;
+			}
 			if (!res.ok) throw new Error(data.error || 'Lỗi khi tải danh sách chủ trọ');
 
 			landlords = data;
