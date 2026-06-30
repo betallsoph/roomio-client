@@ -1,16 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { toast } from 'svelte-sonner';
-	import {
-		Bot,
-		CalendarClock,
-		CheckCircle2,
-		Loader2,
-		Play,
-		ReceiptText,
-		Send,
-		Zap
-	} from '@lucide/svelte';
+	import { Loader2, Play } from '@lucide/svelte';
 
 	interface AutomationJob {
 		id: string;
@@ -41,34 +32,24 @@
 
 	const actions = [
 		{
-			id: 'run_all',
-			title: 'Chạy toàn bộ',
-			description: 'Quét quá hạn, tạo nhắc tiền, nhắc chỉ số và nhắc hợp đồng.',
-			icon: Bot
-		},
-		{
 			id: 'overdue_sweep',
 			title: 'Quét quá hạn',
-			description: 'Tự chuyển hóa đơn pending/partial đã quá hạn sang overdue.',
-			icon: CalendarClock
+			description: 'Chuyển các hóa đơn chưa thu đủ đã qua hạn sang trạng thái trễ hạn.'
 		},
 		{
 			id: 'invoice_reminder',
 			title: 'Nhắc thanh toán',
-			description: 'Tạo thông báo nhắc các hóa đơn chưa thu đủ.',
-			icon: ReceiptText
+			description: 'Tạo thông báo nhắc các hóa đơn chưa thu đủ.'
 		},
 		{
 			id: 'meter_reminder',
 			title: 'Nhắc điện nước',
-			description: 'Tạo thông báo cho phòng chưa gửi chỉ số tháng đã chọn.',
-			icon: Zap
+			description: 'Tạo thông báo cho phòng chưa gửi chỉ số tháng đã chọn.'
 		},
 		{
 			id: 'contract_reminder',
 			title: 'Nhắc hợp đồng',
-			description: 'Tạo nhắc cho hợp đồng hết hạn trong 30 ngày.',
-			icon: Send
+			description: 'Tạo nhắc cho hợp đồng hết hạn trong 30 ngày.'
 		}
 	];
 
@@ -119,6 +100,18 @@
 			return result;
 		}
 	}
+
+	function jobStatusLabel(status: string) {
+		if (status === 'completed') return 'Hoàn tất';
+		if (status === 'failed') return 'Thất bại';
+		return 'Đang chạy';
+	}
+
+	function channelLabel(channel: string) {
+		if (channel.toLowerCase() === 'telegram') return 'Telegram';
+		if (channel.toLowerCase() === 'in_app') return 'Trong ứng dụng';
+		return channel;
+	}
 </script>
 
 <div class="space-y-6">
@@ -150,80 +143,84 @@
 		</div>
 	</div>
 
-	<div class="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
-		{#each actions as action}
-			{@const Icon = action.icon}
-			<button
-				onclick={() => runAutomation(action.id)}
-				disabled={!!isRunning}
-				class="min-h-36 rounded-lg border-2 border-black bg-white p-4 text-left shadow-secondary transition-all disabled:opacity-50"
-			>
-				<div class="flex items-center justify-between">
-					<Icon class="h-5 w-5 text-blue-500" />
-					{#if isRunning === action.id}
-						<Loader2 class="h-4 w-4 animate-spin" />
-					{:else}
-						<Play class="h-4 w-4" />
-					{/if}
-				</div>
-				<h2 class="mt-3 text-sm font-black text-black">{action.title}</h2>
-				<p class="mt-1 text-xs leading-relaxed font-bold text-zinc-600">{action.description}</p>
-			</button>
-		{/each}
-	</div>
+	<section>
+		<div class="mb-2 flex items-end justify-between gap-4">
+			<div>
+				<h2 class="text-sm font-black text-blue-600">Tác vụ định kỳ</h2>
+				<p class="mt-0.5 text-xs font-semibold text-zinc-500">Chạy riêng khi cần xử lý ngay.</p>
+			</div>
+		</div>
+		<div class="border-y border-zinc-200">
+			{#each actions as action}
+				<button
+					onclick={() => runAutomation(action.id)}
+					disabled={!!isRunning}
+					class="flex w-full items-center justify-between gap-4 border-b border-zinc-200 px-1 py-3.5 text-left transition-colors last:border-b-0 hover:bg-blue-50 disabled:opacity-50"
+				>
+					<div class="min-w-0">
+						<h3 class="text-sm font-black text-black">{action.title}</h3>
+						<p class="mt-0.5 text-xs font-semibold text-zinc-500">{action.description}</p>
+					</div>
+					<span class="flex h-8 w-8 shrink-0 items-center justify-center text-blue-600">
+						{#if isRunning === action.id}
+							<Loader2 class="h-4 w-4 animate-spin" />
+						{:else}
+							<Play class="h-4 w-4" />
+						{/if}
+					</span>
+				</button>
+			{/each}
+		</div>
+	</section>
 
 	{#if isLoading}
 		<div class="flex h-64 items-center justify-center">
 			<Loader2 class="h-10 w-10 animate-spin text-black" />
 		</div>
 	{:else}
-		<div class="grid gap-6 lg:grid-cols-2">
-			<section class="overflow-hidden rounded-lg border-2 border-black bg-white shadow-secondary">
-				<div class="flex items-center justify-between border-b-2 border-black bg-zinc-50 p-4">
-					<h2 class="text-sm font-black text-black">Job gần đây</h2>
-					<CheckCircle2 class="h-5 w-5 text-green-600" />
-				</div>
-				<div class="divide-y divide-black/15">
+		<div class="grid gap-8 lg:grid-cols-2">
+			<section>
+				<h2 class="mb-2 text-sm font-black text-blue-600">Lần chạy gần đây</h2>
+				<div class="divide-y divide-zinc-200 border-y border-zinc-200">
 					{#each jobs as job}
-						<div class="p-4 text-xs font-bold text-zinc-700">
+						<div class="px-1 py-3.5 text-xs font-bold text-zinc-700">
 							<div class="flex items-center justify-between gap-3">
 								<span class="font-black text-black">{job.type}</span>
 								<span
-									class="rounded-full border border-black px-2 py-0.5 text-[10px] {job.status ===
-									'completed'
-										? 'bg-green-200 text-green-800'
+									class="text-[11px] font-black {job.status === 'completed'
+										? 'text-green-700'
 										: job.status === 'failed'
-											? 'bg-red-200 text-red-800'
-											: 'bg-blue-100 text-blue-800'}">{job.status}</span
+											? 'text-red-700'
+											: 'text-blue-600'}">{jobStatusLabel(job.status)}</span
 								>
 							</div>
-							<p class="mt-1 text-zinc-500">{parseResult(job.result)}</p>
+							<p class="mt-1 font-semibold text-zinc-500">{parseResult(job.result)}</p>
 						</div>
 					{:else}
-						<p class="p-6 text-center text-sm font-bold text-zinc-500">Chưa có job nào.</p>
+						<p class="py-10 text-center text-sm font-semibold text-zinc-400">
+							Chưa có lần chạy nào.
+						</p>
 					{/each}
 				</div>
 			</section>
 
-			<section class="overflow-hidden rounded-lg border-2 border-black bg-white shadow-secondary">
-				<div class="flex items-center justify-between border-b-2 border-black bg-zinc-50 p-4">
-					<h2 class="text-sm font-black text-black">Thông báo đang chờ gửi</h2>
-					<Send class="h-5 w-5 text-blue-500" />
-				</div>
-				<div class="max-h-[520px] divide-y divide-black/15 overflow-y-auto">
+			<section>
+				<h2 class="mb-2 text-sm font-black text-blue-600">Thông báo đang chờ gửi</h2>
+				<div
+					class="max-h-[520px] divide-y divide-zinc-200 overflow-y-auto border-y border-zinc-200"
+				>
 					{#each queuedNotifications as item}
-						<div class="p-4">
+						<div class="px-1 py-3.5">
 							<div class="flex items-center justify-between gap-3">
 								<h3 class="text-sm font-black text-black">{item.title}</h3>
-								<span
-									class="rounded-full border border-black bg-blue-100 px-2 py-0.5 text-[10px] font-black text-blue-800"
-									>{item.channel}</span
+								<span class="text-[11px] font-black text-blue-600"
+									>{channelLabel(item.channel)}</span
 								>
 							</div>
-							<p class="mt-1 text-xs leading-relaxed font-bold text-zinc-600">{item.content}</p>
+							<p class="mt-1 text-xs leading-relaxed font-semibold text-zinc-500">{item.content}</p>
 						</div>
 					{:else}
-						<p class="p-6 text-center text-sm font-bold text-zinc-500">
+						<p class="py-10 text-center text-sm font-semibold text-zinc-400">
 							Không có thông báo nào đang chờ.
 						</p>
 					{/each}
