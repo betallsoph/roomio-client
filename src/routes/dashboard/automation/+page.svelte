@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { toast } from 'svelte-sonner';
-	import { Loader2, Play } from '@lucide/svelte';
+	import { CalendarClock, Loader2, Play, ReceiptText, Send, Zap } from '@lucide/svelte';
 
 	interface AutomationJob {
 		id: string;
@@ -34,24 +34,42 @@
 		{
 			id: 'overdue_sweep',
 			title: 'Quét quá hạn',
-			description: 'Chuyển các hóa đơn chưa thu đủ đã qua hạn sang trạng thái trễ hạn.'
+			description: 'Chuyển các hóa đơn chưa thu đủ đã qua hạn sang trạng thái trễ hạn.',
+			icon: CalendarClock
 		},
 		{
 			id: 'invoice_reminder',
 			title: 'Nhắc thanh toán',
-			description: 'Tạo thông báo nhắc các hóa đơn chưa thu đủ.'
+			description: 'Tạo thông báo nhắc các hóa đơn chưa thu đủ.',
+			icon: ReceiptText
 		},
 		{
 			id: 'meter_reminder',
 			title: 'Nhắc điện nước',
-			description: 'Tạo thông báo cho phòng chưa gửi chỉ số tháng đã chọn.'
+			description: 'Tạo thông báo cho phòng chưa gửi chỉ số tháng đã chọn.',
+			icon: Zap
 		},
 		{
 			id: 'contract_reminder',
 			title: 'Nhắc hợp đồng',
-			description: 'Tạo nhắc cho hợp đồng hết hạn trong 30 ngày.'
+			description: 'Tạo nhắc cho hợp đồng hết hạn trong 30 ngày.',
+			icon: Send
 		}
 	];
+
+	const JOB_LABELS: Record<string, string> = {
+		overdue_sweep: 'Quét hóa đơn quá hạn',
+		invoice_reminder: 'Nhắc thanh toán',
+		meter_reminder: 'Nhắc điện nước',
+		contract_reminder: 'Nhắc hợp đồng'
+	};
+
+	const RESULT_LABELS: Record<string, string> = {
+		overdueInvoices: 'hóa đơn được chuyển sang trễ hạn',
+		queuedInvoiceReminders: 'thông báo nhắc thanh toán',
+		queuedMeterReminders: 'thông báo nhắc điện nước',
+		queuedContractReminders: 'thông báo nhắc hợp đồng'
+	};
 
 	onMount(loadAutomation);
 
@@ -94,7 +112,7 @@
 		if (!result) return '--';
 		try {
 			return Object.entries(JSON.parse(result))
-				.map(([key, value]) => `${key}: ${value}`)
+				.map(([key, value]) => `${value} ${RESULT_LABELS[key] ?? 'mục đã xử lý'}`)
 				.join(', ');
 		} catch {
 			return result;
@@ -150,24 +168,26 @@
 				<p class="mt-0.5 text-xs font-semibold text-zinc-500">Chạy riêng khi cần xử lý ngay.</p>
 			</div>
 		</div>
-		<div class="border-y border-zinc-200">
+		<div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
 			{#each actions as action}
+				{@const Icon = action.icon}
 				<button
 					onclick={() => runAutomation(action.id)}
 					disabled={!!isRunning}
-					class="flex w-full items-center justify-between gap-4 border-b border-zinc-200 px-1 py-3.5 text-left transition-colors last:border-b-0 hover:bg-blue-50 disabled:opacity-50"
+					class="min-h-36 rounded-lg border-2 border-black bg-white p-4 text-left shadow-secondary transition-colors hover:bg-blue-50 disabled:opacity-50"
 				>
-					<div class="min-w-0">
-						<h3 class="text-sm font-black text-black">{action.title}</h3>
-						<p class="mt-0.5 text-xs font-semibold text-zinc-500">{action.description}</p>
-					</div>
-					<span class="flex h-8 w-8 shrink-0 items-center justify-center text-blue-600">
+					<div class="flex items-center justify-between">
+						<Icon class="h-5 w-5 text-blue-600" />
 						{#if isRunning === action.id}
 							<Loader2 class="h-4 w-4 animate-spin" />
 						{:else}
-							<Play class="h-4 w-4" />
+							<Play class="h-4 w-4 text-blue-600" />
 						{/if}
-					</span>
+					</div>
+					<h3 class="mt-3 text-sm font-black text-black">{action.title}</h3>
+					<p class="mt-1 text-xs leading-relaxed font-semibold text-zinc-500">
+						{action.description}
+					</p>
 				</button>
 			{/each}
 		</div>
@@ -185,7 +205,8 @@
 					{#each jobs as job}
 						<div class="px-1 py-3.5 text-xs font-bold text-zinc-700">
 							<div class="flex items-center justify-between gap-3">
-								<span class="font-black text-black">{job.type}</span>
+								<span class="font-black text-black">{JOB_LABELS[job.type] ?? 'Tác vụ tự động'}</span
+								>
 								<span
 									class="text-[11px] font-black {job.status === 'completed'
 										? 'text-green-700'
