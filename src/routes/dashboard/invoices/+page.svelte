@@ -428,7 +428,7 @@
 			role="button"
 			tabindex="0"
 		>
-			<!-- Dialog Content: Brutallist Panel with macOS Header -->
+			<!-- Dialog Content -->
 			<div
 				class="relative flex max-h-[90vh] w-full max-w-2xl animate-[scale-up_0.2s_ease-out] flex-col overflow-hidden rounded-lg border-2 border-black bg-white shadow-primary"
 				onclick={(e) => e.stopPropagation()}
@@ -436,17 +436,11 @@
 				role="dialog"
 				tabindex="-1"
 			>
-				<!-- macOS Style Header -->
-				<div
-					class="flex shrink-0 items-center gap-2 border-b-2 border-black bg-zinc-50 px-4 py-3 select-none"
-				>
-					<div class="h-2.5 w-2.5 rounded-full border border-black bg-red-500"></div>
-					<div class="h-2.5 w-2.5 rounded-full border border-black bg-yellow-500"></div>
-					<div class="h-2.5 w-2.5 rounded-full border border-black bg-green-500"></div>
-					<span class="ml-2 text-xs font-bold text-zinc-500">Chi Tiết Hóa Đơn</span>
+				<div class="flex shrink-0 items-center px-6 pt-5 select-none">
+					<span class="text-base font-black text-black">Chi tiết hóa đơn</span>
 					<button
 						onclick={() => (isDetailOpen = false)}
-						class="ml-auto rounded-[6px] border border-transparent p-1 text-black hover:bg-zinc-200"
+						class="ml-auto rounded-[6px] p-1 text-black hover:bg-zinc-100"
 					>
 						<X class="h-4 w-4" />
 					</button>

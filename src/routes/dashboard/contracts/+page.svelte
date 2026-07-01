@@ -296,16 +296,16 @@
 		<div
 			class="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-lg border-2 border-black bg-white"
 		>
-			<div class="flex items-center justify-between border-b-2 border-black p-4">
+			<div class="flex items-center justify-between px-6 pt-5">
 				<h2 class="text-lg font-black">Tạo hợp đồng thuê</h2>
 				<button
 					onclick={() => (showCreateModal = false)}
-					class="rounded-[6px] border-2 border-black p-1.5 hover:bg-zinc-50"
+					class="rounded-[6px] p-1.5 hover:bg-zinc-100"
 				>
 					<X class="h-4 w-4" />
 				</button>
 			</div>
-			<div class="space-y-3 p-4">
+			<div class="space-y-3 p-6">
 				<label class="block text-xs font-black text-zinc-500">
 					Khách thuê (phòng đang ở)
 					<RoomioSelect

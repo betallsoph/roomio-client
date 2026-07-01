@@ -1298,17 +1298,11 @@
 				role="dialog"
 				tabindex="-1"
 			>
-				<!-- Windows Header style -->
-				<div
-					class="flex shrink-0 items-center gap-2 border-b-2 border-black bg-zinc-50 px-4 py-3 select-none"
-				>
-					<div class="h-2.5 w-2.5 rounded-full border border-black bg-red-500"></div>
-					<div class="h-2.5 w-2.5 rounded-full border border-black bg-yellow-500"></div>
-					<div class="h-2.5 w-2.5 rounded-full border border-black bg-green-500"></div>
-					<span class="ml-2 text-xs font-black font-bold text-zinc-500">Hồ sơ khách thuê</span>
+				<div class="flex shrink-0 items-center px-6 pt-5 select-none">
+					<span class="text-base font-black text-black">Hồ sơ khách thuê</span>
 					<button
 						onclick={() => (isDetailDrawerOpen = false)}
-						class="ml-auto cursor-pointer rounded-[6px] border border-transparent p-1 text-black hover:bg-zinc-200"
+						class="ml-auto cursor-pointer rounded-[6px] p-1 text-black hover:bg-zinc-100"
 					>
 						<X class="h-4.5 w-4.5" />
 					</button>
@@ -1316,7 +1310,7 @@
 
 				<div class="flex-1 space-y-6 overflow-y-auto p-6">
 					<!-- Drawer Header Title -->
-					<div class="border-b-2 border-black pb-4">
+					<div>
 						<div>
 							<h3 class="text-lg leading-tight font-black text-black">
 								{selectedTenant.user.name}

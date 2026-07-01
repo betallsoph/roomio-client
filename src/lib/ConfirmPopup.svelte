@@ -30,11 +30,11 @@
 			<div class="flex items-center justify-between gap-3 bg-zinc-50 px-4 py-3">
 				<div class="flex min-w-0 items-center gap-2">
 					<AlertTriangle class="h-4.5 w-4.5 shrink-0 text-blue-500" />
-					<h2 class="truncate text-sm font-black text-black">{$confirmPopupState.title}</h2>
+					<h2 class="truncate text-base font-black text-black">{$confirmPopupState.title}</h2>
 				</div>
 				<button
 					onclick={() => closeConfirmPopup(false)}
-					class="rounded-[6px] border-2 border-black bg-white p-1.5 text-black transition-colors hover:bg-zinc-100"
+					class="rounded-[6px] p-1.5 text-black transition-colors hover:bg-zinc-100"
 					aria-label="Đóng"
 				>
 					<X class="h-4 w-4" />
