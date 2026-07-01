@@ -156,7 +156,7 @@
 			<button
 				onclick={() => runAutomation('run_all')}
 				disabled={!!isRunning}
-				class="rounded-[6px] border-2 border-black bg-blue-100 px-4 py-2 text-sm font-black text-black shadow-secondary transition-[transform,box-shadow] disabled:opacity-50"
+				class="rounded-[6px] border-2 border-black bg-blue-300 px-4 py-2 text-sm font-black text-black shadow-secondary transition-[transform,box-shadow] disabled:opacity-50"
 			>
 				{isRunning === 'run_all' ? 'Đang chạy...' : 'Chạy tất cả'}
 			</button>

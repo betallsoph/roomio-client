@@ -158,7 +158,7 @@
 	<div class="flex flex-wrap items-center justify-between gap-3">
 		<button
 			onclick={() => (showAddModal = true)}
-			class="rounded-[6px] border-2 border-black bg-blue-100 px-4 py-2 text-sm font-black shadow-secondary transition-[transform,box-shadow] active:translate-x-[1px] active:translate-y-[1px]"
+			class="rounded-[6px] border-2 border-black bg-blue-300 px-4 py-2 text-sm font-black shadow-secondary transition-[transform,box-shadow] active:translate-x-[1px] active:translate-y-[1px]"
 		>
 			Ghi chi phí
 		</button>

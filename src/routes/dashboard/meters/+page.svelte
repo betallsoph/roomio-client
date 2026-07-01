@@ -98,7 +98,7 @@
 				onclick={() => (filter = 'pending')}
 				class="rounded-[6px] border-2 border-black px-4 py-2 text-sm font-black transition-all {filter ===
 				'pending'
-					? 'bg-yellow-100 shadow-secondary'
+					? 'bg-yellow-200 shadow-secondary'
 					: 'bg-white text-zinc-500'}"
 			>
 				Chờ duyệt ({pendingCount})
@@ -107,7 +107,7 @@
 				onclick={() => (filter = 'all')}
 				class="rounded-[6px] border-2 border-black px-4 py-2 text-sm font-black transition-all {filter ===
 				'all'
-					? 'bg-blue-100 shadow-secondary'
+					? 'bg-blue-300 shadow-secondary'
 					: 'bg-white text-zinc-500'}"
 			>
 				Tất cả

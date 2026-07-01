@@ -823,7 +823,7 @@
 	<div class="flex justify-start">
 		<button
 			onclick={(e) => tapBounce(e, openAddRoomDialog)}
-			class="flex w-full cursor-pointer items-center justify-center rounded-[6px] border-2 border-black bg-blue-100 px-4 py-2.5 text-sm font-bold text-black shadow-secondary transition-[transform,box-shadow] sm:w-auto"
+			class="flex w-full cursor-pointer items-center justify-center rounded-[6px] border-2 border-black bg-blue-300 px-4 py-2.5 text-sm font-bold text-black shadow-secondary transition-[transform,box-shadow] sm:w-auto"
 		>
 			Thêm phòng
 		</button>
