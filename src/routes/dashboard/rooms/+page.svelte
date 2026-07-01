@@ -821,7 +821,7 @@
 </script>
 
 <div class="space-y-6">
-	<div class="flex justify-end">
+	<div class="flex justify-start">
 		<button
 			onclick={(e) => tapBounce(e, openAddRoomDialog)}
 			class="flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-[6px] border-2 border-black bg-blue-300 px-4 py-2.5 text-sm font-bold text-black shadow-secondary transition-all hover:bg-blue-400 sm:w-auto"

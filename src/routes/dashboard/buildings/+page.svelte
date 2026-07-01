@@ -249,7 +249,7 @@
 </script>
 
 <div class="space-y-6">
-	<div class="flex justify-end">
+	<div class="flex justify-start">
 		<button
 			onclick={(e) => tapBounce(e, () => (isAddDialogOpen = true))}
 			class="flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-[6px] border-2 border-black bg-blue-300 px-4 py-2.5 text-sm font-black text-black shadow-secondary transition-all sm:w-auto"

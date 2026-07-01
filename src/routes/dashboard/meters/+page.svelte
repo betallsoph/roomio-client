@@ -92,7 +92,7 @@
 </script>
 
 <div class="space-y-5">
-	<div class="flex justify-end">
+	<div class="flex justify-start">
 		<div class="flex gap-2">
 			<button
 				onclick={() => (filter = 'pending')}

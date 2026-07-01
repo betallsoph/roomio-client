@@ -176,17 +176,17 @@
 
 <div class="space-y-6">
 	<div class="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
+		<button
+			onclick={() => window.setTimeout(openAdd, 200)}
+			class="flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-[6px] border-2 border-black bg-blue-300 px-4 py-2.5 text-sm font-black text-black shadow-secondary transition-all sm:w-auto sm:justify-start"
+		>
+			Thêm dịch vụ <Plus class="h-4 w-4" />
+		</button>
 		{#if !isLoading}
 			<p class="text-xs font-bold text-blue-600">
 				{services.length} dịch vụ · {activeCount} đang áp dụng
 			</p>
 		{/if}
-		<button
-			onclick={() => window.setTimeout(openAdd, 200)}
-			class="ml-auto flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-[6px] border-2 border-black bg-blue-300 px-4 py-2.5 text-sm font-black text-black shadow-secondary transition-all sm:w-auto sm:justify-start"
-		>
-			Thêm dịch vụ <Plus class="h-4 w-4" />
-		</button>
 	</div>
 
 	{#if isLoading}

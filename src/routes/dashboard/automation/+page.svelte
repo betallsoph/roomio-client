@@ -146,7 +146,7 @@
 </script>
 
 <div class="space-y-6">
-	<div class="flex justify-end">
+	<div class="flex justify-start">
 		<div class="flex items-center gap-2">
 			<input
 				type="month"
