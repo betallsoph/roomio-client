@@ -96,21 +96,21 @@
 		<div class="flex gap-2">
 			<button
 				onclick={() => (filter = 'pending')}
-				class="rounded-[6px] border-2 border-black px-4 py-2 text-sm font-black transition-all {filter ===
+				class="toolbar-action rounded-[6px] border-2 border-black px-4 py-2 text-sm font-black transition-all {filter ===
 				'pending'
 					? 'bg-yellow-200 shadow-secondary'
 					: 'bg-white text-zinc-500'}"
 			>
-				Chờ duyệt ({pendingCount})
+				<span class="toolbar-action-label">Chờ duyệt ({pendingCount})</span>
 			</button>
 			<button
 				onclick={() => (filter = 'all')}
-				class="rounded-[6px] border-2 border-black px-4 py-2 text-sm font-black transition-all {filter ===
+				class="toolbar-action rounded-[6px] border-2 border-black px-4 py-2 text-sm font-black transition-all {filter ===
 				'all'
 					? 'bg-blue-300 shadow-secondary'
 					: 'bg-white text-zinc-500'}"
 			>
-				Tất cả
+				<span class="toolbar-action-label">Tất cả</span>
 			</button>
 		</div>
 	</div>

@@ -194,6 +194,32 @@
 		box-shadow 80ms ease !important;
 }
 
+.toolbar-action:not(:disabled):hover {
+	background-color: #fff !important;
+}
+
+.toolbar-action-label {
+	display: inline-block;
+	transform-origin: center;
+	transition: color 150ms ease;
+}
+
+.toolbar-action:not(:disabled):hover .toolbar-action-label {
+	color: #2563eb;
+	font-weight: 900;
+	animation: toolbar-action-label-pop 220ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes toolbar-action-label-pop {
+	0%,
+	100% {
+		transform: scale(1);
+	}
+	52% {
+		transform: scale(1.08);
+	}
+}
+
 @keyframes tap-bounce {
 	0% {
 		transform: translate(var(--tap-depth, 1px), var(--tap-depth, 1px));

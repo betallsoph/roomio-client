@@ -158,9 +158,9 @@
 	<div class="flex flex-wrap items-center justify-between gap-3">
 		<button
 			onclick={() => (showAddModal = true)}
-			class="rounded-[6px] border-2 border-black bg-blue-300 px-4 py-2 text-sm font-black shadow-secondary transition-[transform,box-shadow] active:translate-x-[1px] active:translate-y-[1px]"
+			class="toolbar-action rounded-[6px] border-2 border-black bg-blue-300 px-4 py-2 text-sm font-black shadow-secondary transition-[transform,box-shadow] active:translate-x-[1px] active:translate-y-[1px]"
 		>
-			Ghi chi phí
+			<span class="toolbar-action-label">Ghi chi phí</span>
 		</button>
 		{#if !isLoading}
 			<p class="text-xs font-black text-blue-600">

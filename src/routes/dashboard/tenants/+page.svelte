@@ -689,9 +689,9 @@
 	<div class="flex justify-start">
 		<button
 			onclick={() => (isAddDialogOpen = true)}
-			class="flex w-full cursor-pointer items-center justify-center rounded-[6px] border-2 border-black bg-blue-300 px-4 py-2.5 text-sm font-black text-black shadow-secondary transition-[transform,box-shadow] sm:w-auto sm:justify-start"
+			class="toolbar-action flex w-full cursor-pointer items-center justify-center rounded-[6px] border-2 border-black bg-blue-300 px-4 py-2.5 text-sm font-black text-black shadow-secondary transition-[transform,box-shadow] sm:w-auto sm:justify-start"
 		>
-			Thêm khách thuê
+			<span class="toolbar-action-label">Thêm khách thuê</span>
 		</button>
 	</div>
 

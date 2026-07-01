@@ -252,9 +252,9 @@
 	<div class="flex justify-start">
 		<button
 			onclick={(e) => tapBounce(e, () => (isAddDialogOpen = true))}
-			class="flex w-full cursor-pointer items-center justify-center rounded-[6px] border-2 border-black bg-blue-300 px-4 py-2.5 text-sm font-black text-black shadow-secondary transition-[transform,box-shadow] sm:w-auto"
+			class="toolbar-action flex w-full cursor-pointer items-center justify-center rounded-[6px] border-2 border-black bg-blue-300 px-4 py-2.5 text-sm font-black text-black shadow-secondary transition-[transform,box-shadow] sm:w-auto"
 		>
-			Thêm tòa nhà
+			<span class="toolbar-action-label">Thêm tòa nhà</span>
 		</button>
 	</div>
 
