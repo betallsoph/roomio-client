@@ -850,7 +850,7 @@
 			role="button"
 			tabindex="0"
 		>
-			<!-- Dialog Content: Brutallist macOS Window style -->
+			<!-- Dialog Content -->
 			<div
 				class="relative flex max-h-[90vh] w-full max-w-xl animate-[scale-up_0.2s_ease-out] flex-col overflow-hidden rounded-lg border-2 border-black bg-white shadow-primary"
 				onclick={(e) => e.stopPropagation()}
@@ -858,19 +858,11 @@
 				role="dialog"
 				tabindex="-1"
 			>
-				<!-- Windows Header style -->
-				<div
-					class="flex shrink-0 items-center gap-2 border-b-2 border-black bg-zinc-50 px-4 py-3 select-none"
-				>
-					<div class="h-2.5 w-2.5 rounded-full border border-black bg-red-500"></div>
-					<div class="h-2.5 w-2.5 rounded-full border border-black bg-yellow-500"></div>
-					<div class="h-2.5 w-2.5 rounded-full border border-black bg-green-500"></div>
-					<span class="ml-2 text-xs font-black font-bold text-zinc-500"
-						>Đăng ký & Bàn giao phòng</span
-					>
+				<div class="flex shrink-0 items-center px-6 pt-5 select-none">
+					<span class="text-base font-black text-black">Đăng ký & Bàn giao phòng</span>
 					<button
 						onclick={() => (isAddDialogOpen = false)}
-						class="ml-auto cursor-pointer rounded-[6px] border border-transparent p-1 text-black hover:bg-zinc-200"
+						class="ml-auto cursor-pointer rounded-[6px] p-1 text-black hover:bg-zinc-100"
 					>
 						<X class="h-4.5 w-4.5" />
 					</button>
@@ -879,9 +871,7 @@
 				<form onsubmit={handleAddTenant} class="max-h-[70vh] space-y-4 overflow-y-auto p-6">
 					<!-- Account Info section -->
 					<div class="space-y-3">
-						<h3 class="border-b border-black/15 pb-1.5 text-xs font-black text-zinc-500">
-							1. Thông tin đăng nhập tài khoản
-						</h3>
+						<h3 class="text-sm font-black text-blue-600">1. Thông tin đăng nhập tài khoản</h3>
 						<div class="grid grid-cols-2 gap-3">
 							<div class="space-y-1">
 								<label for="t-name" class="block text-[10px] font-bold text-zinc-600"
@@ -943,9 +933,7 @@
 
 					<!-- Profile Info section -->
 					<div class="space-y-3">
-						<h3 class="border-b border-black/15 pb-1.5 text-xs font-black text-zinc-500">
-							2. Hồ sơ hợp đồng & cọc
-						</h3>
+						<h3 class="text-sm font-black text-blue-600">2. Hồ sơ hợp đồng & cọc</h3>
 						<div class="grid grid-cols-2 gap-2">
 							<button
 								type="button"
@@ -1226,9 +1214,7 @@
 
 					<!-- Initial Meter readings -->
 					<div class="space-y-3">
-						<h3 class="border-b border-black/15 pb-1.5 text-xs font-black text-zinc-500">
-							3. Chỉ số điện nước đầu kỳ
-						</h3>
+						<h3 class="text-sm font-black text-blue-600">3. Chỉ số điện nước đầu kỳ</h3>
 						<div class="grid grid-cols-2 gap-3">
 							<div class="space-y-1">
 								<label for="t-elec" class="block text-[10px] font-bold text-zinc-600"

@@ -558,10 +558,8 @@
 				role="dialog"
 				tabindex="-1"
 			>
-				<div
-					class="flex shrink-0 items-center border-b-2 border-black bg-zinc-50 px-6 py-4 select-none"
-				>
-					<span class="text-xs font-bold text-zinc-500"
+				<div class="flex shrink-0 items-center px-6 pt-5 select-none">
+					<span class="text-base font-black text-black"
 						>Chi tiết {propertyLabel(selectedProperty.rentalType)}</span
 					>
 					<button

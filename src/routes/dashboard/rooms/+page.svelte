@@ -1617,9 +1617,7 @@
 									<div
 										class="space-y-3 rounded-lg border-2 border-black bg-white p-4 shadow-secondary"
 									>
-										<h4 class="border-b pb-1.5 text-xs font-black text-zinc-500">
-											Thông tin khách thuê
-										</h4>
+										<h4 class="text-sm font-black text-blue-600">Thông tin khách thuê</h4>
 										{#if selectedRoom.tenant}
 											<div class="grid grid-cols-2 gap-3 text-sm font-semibold">
 												<div>
@@ -1748,9 +1746,7 @@
 									<div
 										class="space-y-3 rounded-lg border-2 border-black bg-white p-4 shadow-secondary"
 									>
-										<h4 class="border-b pb-1.5 text-xs font-black text-zinc-500">
-											Nhập chỉ số điện/nước mới
-										</h4>
+										<h4 class="text-sm font-black text-blue-600">Nhập chỉ số điện/nước mới</h4>
 										<form onsubmit={handleLogMeter} class="space-y-3">
 											<div class="grid grid-cols-2 gap-3">
 												<div class="space-y-1">
@@ -1835,7 +1831,7 @@
 									<div
 										class="space-y-3 rounded-lg border-2 border-black bg-white p-4 shadow-secondary"
 									>
-										<h4 class="border-b pb-1.5 text-xs font-black text-zinc-500">Lịch sử ghi số</h4>
+										<h4 class="text-sm font-black text-blue-600">Lịch sử ghi số</h4>
 										{#if selectedRoom.meterReadings.length === 0}
 											<p class="py-2 text-center text-xs font-semibold text-zinc-400">
 												Chưa có lịch sử đo lường nào.
@@ -1883,7 +1879,7 @@
 									<div
 										class="space-y-3 rounded-lg border-2 border-black bg-white p-4 shadow-secondary"
 									>
-										<h4 class="border-b pb-1.5 text-xs font-black text-zinc-500">
+										<h4 class="text-sm font-black text-blue-600">
 											{editingAssetId ? 'Sửa thiết bị bàn giao' : 'Thêm thiết bị bàn giao mới'}
 										</h4>
 										<form onsubmit={handleAddAsset} class="space-y-3">
@@ -1973,7 +1969,7 @@
 									<div
 										class="space-y-3 rounded-lg border-2 border-black bg-white p-4 shadow-secondary"
 									>
-										<h4 class="border-b pb-1.5 text-xs font-black text-zinc-500">
+										<h4 class="text-sm font-black text-blue-600">
 											Danh sách thiết bị ({selectedRoom.assets.length})
 										</h4>
 										{#if selectedRoom.assets.length === 0}
