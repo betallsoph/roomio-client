@@ -156,14 +156,9 @@
 			<button
 				onclick={() => runAutomation('run_all')}
 				disabled={!!isRunning}
-				class="flex items-center gap-1.5 rounded-[6px] border-2 border-black bg-blue-300 px-4 py-2 text-sm font-black text-black shadow-secondary transition-all disabled:opacity-50"
+				class="rounded-[6px] border-2 border-black bg-blue-100 px-4 py-2 text-sm font-black text-black shadow-secondary transition-[transform,box-shadow] disabled:opacity-50"
 			>
-				{#if isRunning === 'run_all'}
-					<Loader2 class="h-4 w-4 animate-spin" />
-				{:else}
-					<Play class="h-4 w-4" />
-				{/if}
-				Chạy tất cả
+				{isRunning === 'run_all' ? 'Đang chạy...' : 'Chạy tất cả'}
 			</button>
 		</div>
 	</div>

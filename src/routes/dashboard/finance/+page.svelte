@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { toast } from 'svelte-sonner';
-	import { Plus, Trash2, Loader2, X } from '@lucide/svelte';
+	import { Trash2, Loader2, X } from '@lucide/svelte';
 	import { confirmPopup } from '$lib/confirm-popup';
 	import RoomioSelect from '$lib/RoomioSelect.svelte';
 
@@ -158,9 +158,9 @@
 	<div class="flex flex-wrap items-center justify-between gap-3">
 		<button
 			onclick={() => (showAddModal = true)}
-			class="flex items-center gap-1.5 rounded-[6px] border-2 border-black bg-blue-300 px-4 py-2 text-sm font-black shadow-secondary transition-all active:translate-x-[1px] active:translate-y-[1px]"
+			class="rounded-[6px] border-2 border-black bg-blue-100 px-4 py-2 text-sm font-black shadow-secondary transition-[transform,box-shadow] active:translate-x-[1px] active:translate-y-[1px]"
 		>
-			<Plus class="h-4 w-4" /> Ghi chi phí
+			Ghi chi phí
 		</button>
 		{#if !isLoading}
 			<p class="text-xs font-black text-blue-600">

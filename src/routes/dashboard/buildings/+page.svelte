@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	import { toast } from 'svelte-sonner';
 	import { confirmPopup } from '$lib/confirm-popup';
-	import { Building2, Plus, X, Home, Trash2, Loader2 } from '@lucide/svelte';
+	import { Building2, X, Home, Trash2, Loader2 } from '@lucide/svelte';
 
 	interface Block {
 		id: string;
@@ -252,9 +252,9 @@
 	<div class="flex justify-start">
 		<button
 			onclick={(e) => tapBounce(e, () => (isAddDialogOpen = true))}
-			class="flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-[6px] border-2 border-black bg-blue-300 px-4 py-2.5 text-sm font-black text-black shadow-secondary transition-all sm:w-auto"
+			class="flex w-full cursor-pointer items-center justify-center rounded-[6px] border-2 border-black bg-blue-100 px-4 py-2.5 text-sm font-black text-black shadow-secondary transition-[transform,box-shadow] sm:w-auto"
 		>
-			Thêm tòa nhà <Plus class="h-4.5 w-4.5" />
+			Thêm tòa nhà
 		</button>
 	</div>
 

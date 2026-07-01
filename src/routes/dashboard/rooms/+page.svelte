@@ -7,7 +7,6 @@
 	import {
 		Home,
 		Building2,
-		Plus,
 		X,
 		User,
 		Receipt,
@@ -824,9 +823,9 @@
 	<div class="flex justify-start">
 		<button
 			onclick={(e) => tapBounce(e, openAddRoomDialog)}
-			class="flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-[6px] border-2 border-black bg-blue-300 px-4 py-2.5 text-sm font-bold text-black shadow-secondary transition-all hover:bg-blue-400 sm:w-auto"
+			class="flex w-full cursor-pointer items-center justify-center rounded-[6px] border-2 border-black bg-blue-100 px-4 py-2.5 text-sm font-bold text-black shadow-secondary transition-[transform,box-shadow] sm:w-auto"
 		>
-			Thêm phòng <Plus class="h-4.5 w-4.5" />
+			Thêm phòng
 		</button>
 	</div>
 

@@ -1,17 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { toast } from 'svelte-sonner';
-	import {
-		Plus,
-		X,
-		Loader2,
-		Pencil,
-		Trash2,
-		Power,
-		PowerOff,
-		Check,
-		XCircle
-	} from '@lucide/svelte';
+	import { X, Loader2, Pencil, Trash2, Power, PowerOff, Check, XCircle } from '@lucide/svelte';
 	import { confirmPopup } from '$lib/confirm-popup';
 	import RoomioSelect from '$lib/RoomioSelect.svelte';
 
@@ -178,9 +168,9 @@
 	<div class="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
 		<button
 			onclick={() => window.setTimeout(openAdd, 200)}
-			class="flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-[6px] border-2 border-black bg-blue-300 px-4 py-2.5 text-sm font-black text-black shadow-secondary transition-all sm:w-auto sm:justify-start"
+			class="flex w-full cursor-pointer items-center justify-center rounded-[6px] border-2 border-black bg-blue-100 px-4 py-2.5 text-sm font-black text-black shadow-secondary transition-[transform,box-shadow] sm:w-auto sm:justify-start"
 		>
-			Thêm dịch vụ <Plus class="h-4 w-4" />
+			Thêm dịch vụ
 		</button>
 		{#if !isLoading}
 			<p class="text-xs font-bold text-blue-600">
