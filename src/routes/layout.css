@@ -194,7 +194,7 @@
 		box-shadow 80ms ease !important;
 }
 
-.toolbar-action {
+:is(.toolbar-action, .modal-action) {
 	--hover-x: 50%;
 	--hover-y: 50%;
 	position: relative;
@@ -202,7 +202,7 @@
 	overflow: hidden;
 }
 
-.toolbar-action::before {
+:is(.toolbar-action, .modal-action)::before {
 	position: absolute;
 	z-index: 0;
 	inset: 0;
@@ -212,11 +212,11 @@
 	transition: clip-path 320ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.toolbar-action:not(:disabled):hover::before {
+:is(.toolbar-action, .modal-action):not(:disabled):hover::before {
 	clip-path: circle(160% at var(--hover-x) var(--hover-y));
 }
 
-.toolbar-action-label {
+:is(.toolbar-action-label, .modal-action-label) {
 	position: relative;
 	z-index: 1;
 	display: inline-block;
@@ -224,10 +224,16 @@
 	transition: color 150ms ease;
 }
 
-.toolbar-action:not(:disabled):hover .toolbar-action-label {
+:is(.toolbar-action, .modal-action):not(:disabled):hover
+	:is(.toolbar-action-label, .modal-action-label) {
 	color: #2563eb;
 	font-weight: 900;
 	animation: toolbar-action-label-pop 220ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.modal-action > svg {
+	position: relative;
+	z-index: 1;
 }
 
 @keyframes toolbar-action-label-pop {

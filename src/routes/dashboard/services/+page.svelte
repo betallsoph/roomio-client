@@ -434,9 +434,11 @@
 						<button
 							type="submit"
 							disabled={isSubmitting}
-							class="flex cursor-pointer items-center gap-1.5 rounded-[6px] border-2 border-black bg-blue-300 px-4 py-2 text-xs font-black text-black shadow-secondary transition-all hover:bg-blue-400 disabled:opacity-50"
+							class="modal-action flex cursor-pointer items-center gap-1.5 rounded-[6px] border-2 border-black bg-blue-300 px-4 py-2 text-xs font-black text-black shadow-secondary transition-all disabled:opacity-50"
 						>
-							{editingId ? 'Lưu thay đổi' : 'Thêm dịch vụ'}
+							<span class="modal-action-label">
+								{editingId ? 'Lưu thay đổi' : 'Thêm dịch vụ'}
+							</span>
 							{#if isSubmitting}
 								<Loader2 class="h-4.5 w-4.5 animate-spin" />
 							{/if}

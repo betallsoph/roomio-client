@@ -65,7 +65,7 @@
 		function handlePointerOver(event: PointerEvent) {
 			if (!(event.target instanceof Element)) return;
 
-			const action = event.target.closest<HTMLElement>('.toolbar-action');
+			const action = event.target.closest<HTMLElement>('.toolbar-action, .modal-action');
 			if (!action || action.matches(':disabled')) return;
 			if (event.relatedTarget instanceof Node && action.contains(event.relatedTarget)) return;
 

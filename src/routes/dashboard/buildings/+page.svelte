@@ -513,9 +513,9 @@
 						<button
 							type="submit"
 							disabled={isSubmitting}
-							class="flex cursor-pointer items-center gap-1.5 rounded-[6px] border-2 border-black bg-blue-300 px-4 py-2 text-sm font-black font-bold text-black shadow-secondary transition-all hover:bg-blue-400 disabled:opacity-50"
+							class="modal-action flex cursor-pointer items-center gap-1.5 rounded-[6px] border-2 border-black bg-blue-300 px-4 py-2 text-sm font-black font-bold text-black shadow-secondary transition-all disabled:opacity-50"
 						>
-							Thêm {propertyLabel(rentalType)}
+							<span class="modal-action-label">Thêm {propertyLabel(rentalType)}</span>
 							{#if isSubmitting}
 								<Loader2 class="h-4 w-4 animate-spin" />
 							{/if}
@@ -649,9 +649,10 @@
 					</button>
 					<a
 						href="/dashboard/rooms?propertyId={selectedProperty.id}"
-						class="flex flex-grow cursor-pointer items-center justify-center gap-1.5 rounded-[6px] border-2 border-black bg-blue-300 py-2.5 text-center text-sm font-black text-black shadow-secondary transition-all hover:bg-blue-400"
+						class="modal-action flex flex-grow cursor-pointer items-center justify-center gap-1.5 rounded-[6px] border-2 border-black bg-blue-300 py-2.5 text-center text-sm font-black text-black shadow-secondary transition-all"
 					>
-						Quản lý phòng <Home class="h-4.5 w-4.5" />
+						<span class="modal-action-label">Quản lý phòng</span>
+						<Home class="h-4.5 w-4.5" />
 					</a>
 				</div>
 			</div>

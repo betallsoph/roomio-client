@@ -387,9 +387,9 @@
 				<button
 					onclick={createContract}
 					disabled={isSaving || isUploadingFile}
-					class="w-full rounded-[6px] border-2 border-black bg-blue-300 py-2.5 text-sm font-black shadow-secondary transition-all active:translate-x-[1px] active:translate-y-[1px] disabled:opacity-50"
+					class="modal-action w-full rounded-[6px] border-2 border-black bg-blue-300 py-2.5 text-sm font-black shadow-secondary transition-all active:translate-x-[1px] active:translate-y-[1px] disabled:opacity-50"
 				>
-					{isSaving ? 'Đang lưu...' : 'Tạo hợp đồng'}
+					<span class="modal-action-label">{isSaving ? 'Đang lưu...' : 'Tạo hợp đồng'}</span>
 				</button>
 			</div>
 		</div>

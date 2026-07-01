@@ -421,9 +421,9 @@
 								type="button"
 								onclick={() => assignStaff(selectedRequest!.id)}
 								disabled={isAssigning}
-								class="cursor-pointer rounded-[6px] border-2 border-black bg-blue-300 px-4 py-2 text-xs font-black text-black shadow-secondary transition-all hover:bg-blue-400"
+								class="modal-action cursor-pointer rounded-[6px] border-2 border-black bg-blue-300 px-4 py-2 text-xs font-black text-black shadow-secondary transition-all"
 							>
-								Lưu
+								<span class="modal-action-label">Lưu</span>
 							</button>
 						</div>
 						{#if staffList.length === 0}
@@ -439,9 +439,9 @@
 					<button
 						onclick={() => updateRequestStatus(selectedRequest!.id, 'in_progress')}
 						disabled={isSubmitting}
-						class="min-w-[100px] flex-1 cursor-pointer rounded-[6px] border-2 border-black bg-blue-300 py-2.5 text-xs font-black text-black shadow-secondary transition-all hover:bg-blue-400"
+						class="modal-action min-w-[100px] flex-1 cursor-pointer rounded-[6px] border-2 border-black bg-blue-300 py-2.5 text-xs font-black text-black shadow-secondary transition-all"
 					>
-						Đang sửa
+						<span class="modal-action-label">Đang sửa</span>
 					</button>
 
 					<button

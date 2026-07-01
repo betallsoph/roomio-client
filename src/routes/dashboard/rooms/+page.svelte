@@ -1224,9 +1224,9 @@
 								type="button"
 								disabled={isCreatingProperty}
 								onclick={(e) => tapBounce(e, createQuickPropertyForRoom)}
-								class="flex cursor-pointer items-center gap-1.5 rounded-[6px] border-2 border-black bg-blue-300 px-4 py-2 text-xs font-bold text-black shadow-secondary transition-all hover:bg-blue-400 disabled:opacity-50"
+								class="modal-action flex cursor-pointer items-center gap-1.5 rounded-[6px] border-2 border-black bg-blue-300 px-4 py-2 text-xs font-bold text-black shadow-secondary transition-all disabled:opacity-50"
 							>
-								Tạo tòa nhà
+								<span class="modal-action-label">Tạo tòa nhà</span>
 								{#if isCreatingProperty}
 									<Loader2 class="h-4 w-4 animate-spin" />
 								{/if}
@@ -1449,9 +1449,9 @@
 							<button
 								type="submit"
 								disabled={isCreatingRoom}
-								class="flex cursor-pointer items-center gap-1.5 rounded-[6px] border-2 border-black bg-blue-300 px-4 py-2 text-xs font-bold text-black shadow-secondary transition-all hover:bg-blue-400 disabled:opacity-50"
+								class="modal-action flex cursor-pointer items-center gap-1.5 rounded-[6px] border-2 border-black bg-blue-300 px-4 py-2 text-xs font-bold text-black shadow-secondary transition-all disabled:opacity-50"
 							>
-								Thêm phòng
+								<span class="modal-action-label">Thêm phòng</span>
 								{#if isCreatingRoom}
 									<Loader2 class="h-4 w-4 animate-spin" />
 								{/if}
@@ -1627,9 +1627,10 @@
 												</p>
 												<a
 													href="/dashboard/tenants"
-													class="inline-flex rounded-[6px] border-2 border-black bg-blue-300 px-4 py-2 text-xs font-black text-black shadow-secondary transition-all"
+													class="modal-action inline-flex rounded-[6px] border-2 border-black bg-blue-300 px-4 py-2 text-xs font-black text-black shadow-secondary transition-all"
 												>
-													Đến trang Thêm khách thuê <ArrowRight class="h-3.5 w-3.5" />
+													<span class="modal-action-label">Đến trang Thêm khách thuê</span>
+													<ArrowRight class="h-3.5 w-3.5" />
 												</a>
 											</div>
 										{/if}
@@ -1710,9 +1711,9 @@
 															}))
 														)
 													)}
-												class="cursor-pointer rounded-[6px] border-2 border-black bg-blue-300 px-4 py-2 text-xs font-black text-black shadow-secondary transition-all"
+												class="modal-action cursor-pointer rounded-[6px] border-2 border-black bg-blue-300 px-4 py-2 text-xs font-black text-black shadow-secondary transition-all"
 											>
-												Lưu cấu hình dịch vụ
+												<span class="modal-action-label">Lưu cấu hình dịch vụ</span>
 											</button>
 										</div>
 									</div>
@@ -1795,9 +1796,9 @@
 												<button
 													type="submit"
 													disabled={isLoggingMeter}
-													class="flex cursor-pointer items-center gap-1.5 rounded-[6px] border-2 border-black bg-blue-300 px-4 py-2 text-xs font-black text-black shadow-secondary transition-all"
+													class="modal-action flex cursor-pointer items-center gap-1.5 rounded-[6px] border-2 border-black bg-blue-300 px-4 py-2 text-xs font-black text-black shadow-secondary transition-all"
 												>
-													Ghi chỉ số
+													<span class="modal-action-label">Ghi chỉ số</span>
 													{#if isLoggingMeter}
 														<Loader2 class="h-3 w-3 animate-spin" />
 													{/if}
@@ -1933,9 +1934,11 @@
 												<button
 													type="submit"
 													disabled={isAddingAsset}
-													class="flex cursor-pointer items-center gap-1.5 rounded-[6px] border-2 border-black bg-blue-300 px-4 py-2 text-xs font-black text-black shadow-secondary transition-all"
+													class="modal-action flex cursor-pointer items-center gap-1.5 rounded-[6px] border-2 border-black bg-blue-300 px-4 py-2 text-xs font-black text-black shadow-secondary transition-all"
 												>
-													{editingAssetId ? 'Lưu thiết bị' : 'Bàn giao thiết bị'}
+													<span class="modal-action-label">
+														{editingAssetId ? 'Lưu thiết bị' : 'Bàn giao thiết bị'}
+													</span>
 													{#if isAddingAsset}
 														<Loader2 class="h-3 w-3 animate-spin" />
 													{/if}

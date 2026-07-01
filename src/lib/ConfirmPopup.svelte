@@ -7,7 +7,7 @@
 			? 'bg-red-200 text-red-800 hover:bg-red-300'
 			: $confirmPopupState?.tone === 'warning'
 				? 'bg-yellow-200 text-black hover:bg-yellow-300'
-				: 'bg-blue-300 text-black hover:bg-blue-400'
+				: 'modal-action bg-blue-300 text-black'
 	);
 </script>
 
@@ -57,7 +57,7 @@
 						onclick={() => closeConfirmPopup(true)}
 						class="inline-flex items-center justify-center gap-1.5 rounded-[6px] border-2 border-black px-4 py-2 text-sm font-black transition-colors {buttonToneClass}"
 					>
-						{$confirmPopupState.confirmLabel}
+						<span class="modal-action-label">{$confirmPopupState.confirmLabel}</span>
 						<Check class="h-4 w-4" />
 					</button>
 				</div>

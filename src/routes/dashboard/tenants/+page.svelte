@@ -1038,9 +1038,9 @@
 										type="button"
 										disabled={isCreatingProperty}
 										onclick={createQuickPropertyForTenant}
-										class="flex w-full items-center justify-center gap-1.5 rounded-[6px] border-2 border-black bg-blue-300 px-3 py-2 text-xs font-black text-black shadow-secondary transition-colors hover:bg-blue-400 disabled:opacity-50"
+										class="modal-action flex w-full items-center justify-center gap-1.5 rounded-[6px] border-2 border-black bg-blue-300 px-3 py-2 text-xs font-black text-black shadow-secondary transition-colors disabled:opacity-50"
 									>
-										Tạo {quickPropertyLabel()}
+										<span class="modal-action-label">Tạo {quickPropertyLabel()}</span>
 										{#if isCreatingProperty}
 											<Loader2 class="h-4 w-4 animate-spin" />
 										{/if}
@@ -1260,9 +1260,9 @@
 						<button
 							type="submit"
 							disabled={isSubmitting}
-							class="flex cursor-pointer items-center gap-1.5 rounded-[6px] border-2 border-black bg-blue-300 px-4 py-2 text-xs font-black text-black shadow-secondary transition-all hover:bg-blue-400 disabled:opacity-50"
+							class="modal-action flex cursor-pointer items-center gap-1.5 rounded-[6px] border-2 border-black bg-blue-300 px-4 py-2 text-xs font-black text-black shadow-secondary transition-all disabled:opacity-50"
 						>
-							Đăng ký khách thuê
+							<span class="modal-action-label">Đăng ký khách thuê</span>
 							{#if isSubmitting}
 								<Loader2 class="h-4.5 w-4.5 animate-spin" />
 							{/if}
@@ -1367,9 +1367,9 @@
 							{#if !showContractForm}
 								<button
 									onclick={openContractForm}
-									class="flex items-center gap-1 rounded-[6px] border-2 border-black bg-blue-300 px-2.5 py-1 text-[11px] font-black shadow-secondary transition-all active:translate-x-[1px] active:translate-y-[1px]"
+									class="modal-action flex items-center gap-1 rounded-[6px] border-2 border-black bg-blue-300 px-2.5 py-1 text-[11px] font-black shadow-secondary transition-all active:translate-x-[1px] active:translate-y-[1px]"
 								>
-									Tạo HĐ
+									<span class="modal-action-label">Tạo HĐ</span>
 								</button>
 							{/if}
 						</div>
@@ -1503,8 +1503,10 @@
 									<button
 										onclick={createTenantContract}
 										disabled={savingContract || uploadingContractFile}
-										class="flex-1 rounded-[6px] border-2 border-black bg-blue-300 py-2 text-xs font-black shadow-secondary disabled:opacity-50"
-										>{savingContract ? 'Đang lưu...' : 'Lưu hợp đồng'}</button
+										class="modal-action flex-1 rounded-[6px] border-2 border-black bg-blue-300 py-2 text-xs font-black shadow-secondary disabled:opacity-50"
+										><span class="modal-action-label">
+											{savingContract ? 'Đang lưu...' : 'Lưu hợp đồng'}
+										</span></button
 									>
 									<button
 										onclick={() => (showContractForm = false)}

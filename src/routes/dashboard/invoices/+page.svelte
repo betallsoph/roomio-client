@@ -539,9 +539,9 @@
 							<button
 								onclick={() => confirmPayment(selectedInvoice!.id)}
 								disabled={isConfirming}
-								class="flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-[6px] border-2 border-black bg-blue-300 py-2.5 text-center text-xs font-black text-black shadow-secondary transition-all hover:bg-blue-400"
+								class="modal-action flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-[6px] border-2 border-black bg-blue-300 py-2.5 text-center text-xs font-black text-black shadow-secondary transition-all"
 							>
-								Xác nhận đã nhận tiền (Đóng hóa đơn)
+								<span class="modal-action-label">Xác nhận đã nhận tiền (Đóng hóa đơn)</span>
 								{#if isConfirming}
 									<Loader2 class="h-4 w-4 animate-spin" />
 								{:else}

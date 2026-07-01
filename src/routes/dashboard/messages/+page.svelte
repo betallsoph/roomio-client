@@ -911,9 +911,9 @@
 						<button
 							type="submit"
 							disabled={isSubmitting}
-							class="flex items-center gap-1.5 rounded-[6px] border-2 border-black bg-blue-300 px-4 py-2 text-xs font-black text-black shadow-secondary transition-all hover:bg-blue-400 disabled:opacity-50"
+							class="modal-action flex items-center gap-1.5 rounded-[6px] border-2 border-black bg-blue-300 px-4 py-2 text-xs font-black text-black shadow-secondary transition-all disabled:opacity-50"
 						>
-							Đăng bản tin
+							<span class="modal-action-label">Đăng bản tin</span>
 							{#if isSubmitting}
 								<Loader2 class="h-4.5 w-4.5 animate-spin" />
 							{/if}
@@ -971,9 +971,11 @@
 				<button
 					onclick={sendNoteToTenant}
 					disabled={isSendingNote}
-					class="w-full rounded-[6px] border-2 border-black bg-blue-300 py-2.5 text-sm font-black shadow-secondary transition-all disabled:opacity-50"
+					class="modal-action w-full rounded-[6px] border-2 border-black bg-blue-300 py-2.5 text-sm font-black shadow-secondary transition-all disabled:opacity-50"
 				>
-					{isSendingNote ? 'Đang gửi...' : 'Gửi lời nhắn'}
+					<span class="modal-action-label">
+						{isSendingNote ? 'Đang gửi...' : 'Gửi lời nhắn'}
+					</span>
 				</button>
 			</div>
 		</div>
