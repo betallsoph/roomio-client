@@ -62,6 +62,18 @@
 			bounceTouchTarget(interactive);
 		}
 
+		function handlePointerOver(event: PointerEvent) {
+			if (!(event.target instanceof Element)) return;
+
+			const action = event.target.closest<HTMLElement>('.toolbar-action');
+			if (!action || action.matches(':disabled')) return;
+			if (event.relatedTarget instanceof Node && action.contains(event.relatedTarget)) return;
+
+			const bounds = action.getBoundingClientRect();
+			action.style.setProperty('--hover-x', `${event.clientX - bounds.left}px`);
+			action.style.setProperty('--hover-y', `${event.clientY - bounds.top}px`);
+		}
+
 		function handleClick(event: MouseEvent) {
 			const interactive = findTapTarget(event.target);
 			if (!interactive) return;
@@ -83,11 +95,13 @@
 		}
 
 		document.addEventListener('pointerdown', handlePointerDown, { passive: true });
+		document.addEventListener('pointerover', handlePointerOver, { passive: true });
 		document.addEventListener('click', handleClick, true);
 		document.addEventListener('animationend', handleAnimationEnd, { passive: true });
 
 		return () => {
 			document.removeEventListener('pointerdown', handlePointerDown);
+			document.removeEventListener('pointerover', handlePointerOver);
 			document.removeEventListener('click', handleClick, true);
 			document.removeEventListener('animationend', handleAnimationEnd);
 		};
