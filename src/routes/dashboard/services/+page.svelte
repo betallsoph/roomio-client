@@ -175,22 +175,15 @@
 </script>
 
 <div class="space-y-6">
-	<!-- Header -->
 	<div class="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
-		<div>
-			<h1 class="text-xl font-black text-black sm:text-2xl">Quản Lý Dịch Vụ</h1>
-			<p class="mt-1 text-xs font-bold text-zinc-600 sm:text-sm">
-				Đơn giá điện, nước, wifi, rác, gửi xe... áp dụng khi lập hóa đơn cho phòng
+		{#if !isLoading}
+			<p class="text-xs font-bold text-blue-600">
+				{services.length} dịch vụ · {activeCount} đang áp dụng
 			</p>
-			{#if !isLoading}
-				<p class="mt-2 text-xs font-bold text-blue-600">
-					{services.length} dịch vụ · {activeCount} đang áp dụng
-				</p>
-			{/if}
-		</div>
+		{/if}
 		<button
 			onclick={() => window.setTimeout(openAdd, 200)}
-			class="flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-[6px] border-2 border-black bg-blue-300 px-4 py-2.5 text-sm font-black text-black shadow-secondary transition-all sm:w-auto sm:justify-start"
+			class="ml-auto flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-[6px] border-2 border-black bg-blue-300 px-4 py-2.5 text-sm font-black text-black shadow-secondary transition-all sm:w-auto sm:justify-start"
 		>
 			Thêm dịch vụ <Plus class="h-4 w-4" />
 		</button>

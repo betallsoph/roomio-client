@@ -146,13 +146,7 @@
 </script>
 
 <div class="space-y-6">
-	<div class="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
-		<div>
-			<h1 class="text-xl leading-none font-black text-black sm:text-2xl">Tự Động Hoá</h1>
-			<p class="mt-1 text-xs font-bold text-zinc-500 sm:text-sm">
-				Gom các việc định kỳ của nhà trọ vào một nơi.
-			</p>
-		</div>
+	<div class="flex justify-end">
 		<div class="flex items-center gap-2">
 			<input
 				type="month"

@@ -686,14 +686,7 @@
 </script>
 
 <div class="space-y-6">
-	<!-- Header -->
-	<div class="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
-		<div>
-			<h1 class="text-xl font-black text-black sm:text-2xl">Quản Lý Khách Thuê</h1>
-			<p class="mt-1 text-xs font-bold text-zinc-600 sm:text-sm">
-				Hồ sơ khách hàng, tiền đặt cọ và lịch bàn giao phòng
-			</p>
-		</div>
+	<div class="flex justify-end">
 		<button
 			onclick={() => (isAddDialogOpen = true)}
 			class="flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-[6px] border-2 border-black bg-blue-300 px-4 py-2.5 text-sm font-black text-black shadow-secondary transition-all sm:w-auto sm:justify-start"

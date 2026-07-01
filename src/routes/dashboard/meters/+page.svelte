@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { toast } from 'svelte-sonner';
-	import { Gauge, Check, X, TriangleAlert, Camera, Loader2 } from '@lucide/svelte';
+	import { Check, X, TriangleAlert, Camera, Loader2 } from '@lucide/svelte';
 
 	interface ReadingRow {
 		id: string;
@@ -92,15 +92,7 @@
 </script>
 
 <div class="space-y-5">
-	<div class="flex flex-wrap items-center justify-between gap-3">
-		<div>
-			<h1 class="flex items-center gap-2 text-2xl font-black text-black">
-				Chốt số điện nước <Gauge class="h-6 w-6" />
-			</h1>
-			<p class="mt-1 text-sm font-bold text-zinc-500">
-				Duyệt chỉ số khách gửi: đối chiếu ảnh chụp đồng hồ, sửa lại số nếu cần rồi chốt.
-			</p>
-		</div>
+	<div class="flex justify-end">
 		<div class="flex gap-2">
 			<button
 				onclick={() => (filter = 'pending')}

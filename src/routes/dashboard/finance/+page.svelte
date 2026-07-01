@@ -156,22 +156,16 @@
 
 <div class="space-y-5">
 	<div class="flex flex-wrap items-center justify-between gap-3">
-		<div>
-			<h1 class="text-2xl font-black text-black">Tài chính</h1>
-			<p class="mt-1 text-sm font-bold text-zinc-500">
-				Dòng tiền 6 tháng gần nhất: doanh thu đã thực thu so với chi phí vận hành.
+		{#if !isLoading}
+			<p class="text-xs font-black text-blue-600">
+				Thu {formatMoney(totals.revenue)} · Chi {formatMoney(totals.expense)} · Lãi/lỗ {formatMoney(
+					totals.profit
+				)}
 			</p>
-			{#if !isLoading}
-				<p class="mt-2 text-xs font-black text-blue-600">
-					Thu {formatMoney(totals.revenue)} · Chi {formatMoney(totals.expense)} · Lãi/lỗ {formatMoney(
-						totals.profit
-					)}
-				</p>
-			{/if}
-		</div>
+		{/if}
 		<button
 			onclick={() => (showAddModal = true)}
-			class="flex items-center gap-1.5 rounded-[6px] border-2 border-black bg-blue-300 px-4 py-2 text-sm font-black shadow-secondary transition-all active:translate-x-[1px] active:translate-y-[1px]"
+			class="ml-auto flex items-center gap-1.5 rounded-[6px] border-2 border-black bg-blue-300 px-4 py-2 text-sm font-black shadow-secondary transition-all active:translate-x-[1px] active:translate-y-[1px]"
 		>
 			<Plus class="h-4 w-4" /> Ghi chi phí
 		</button>

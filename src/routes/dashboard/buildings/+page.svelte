@@ -249,14 +249,7 @@
 </script>
 
 <div class="space-y-6">
-	<!-- Header -->
-	<div class="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
-		<div>
-			<h1 class="text-xl font-black text-black sm:text-2xl">Tòa nhà cho thuê</h1>
-			<p class="mt-1 text-sm font-bold text-zinc-600">
-				{properties.length} tòa nhà, {properties.reduce((sum, p) => sum + p.rooms.length, 0)} phòng
-			</p>
-		</div>
+	<div class="flex justify-end">
 		<button
 			onclick={(e) => tapBounce(e, () => (isAddDialogOpen = true))}
 			class="flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-[6px] border-2 border-black bg-blue-300 px-4 py-2.5 text-sm font-black text-black shadow-secondary transition-all sm:w-auto"

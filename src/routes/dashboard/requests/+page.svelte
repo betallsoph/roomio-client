@@ -166,16 +166,6 @@
 </script>
 
 <div class="space-y-6">
-	<!-- Header -->
-	<div class="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
-		<div>
-			<h1 class="text-xl font-black text-black sm:text-2xl">Báo Cáo Sự Cố</h1>
-			<p class="text-zinc-650 mt-1 text-sm font-bold">
-				Quản lý và giải quyết các yêu cầu sửa chữa từ khách thuê phòng
-			</p>
-		</div>
-	</div>
-
 	<!-- Filters -->
 	<div class="flex gap-4 overflow-x-auto pb-1">
 		<div class="shrink-0 space-y-1">

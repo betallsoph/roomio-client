@@ -198,14 +198,7 @@
 </script>
 
 <div class="space-y-6">
-	<!-- Header -->
-	<div class="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
-		<div>
-			<h1 class="text-xl leading-none font-black text-black sm:text-2xl">Quản Lý Hóa Đơn</h1>
-			<p class="mt-1 text-xs font-bold text-zinc-500 sm:text-sm">
-				Lịch sử xuất hóa đơn và đối soát thanh toán
-			</p>
-		</div>
+	<div class="flex justify-end">
 		<a
 			href="/dashboard/invoices/bulk"
 			class="flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-[6px] border-2 border-black bg-blue-300 px-4 py-2.5 text-sm font-black text-black shadow-secondary transition-all sm:w-auto"
