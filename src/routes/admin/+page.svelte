@@ -38,18 +38,25 @@
 		payosUnmatched: number;
 		payosAppliedAmount: number;
 		queuedNotifications: number;
+		pendingSubscriptionRequests: number;
 		lastPaymentAt: string | null;
 	}
 
 	interface SubscriptionQuote {
 		tier: string;
+		recommendedTier: string;
 		period: 'MONTHLY' | 'YEARLY';
 		minRooms: number;
 		maxRooms: number | null;
-		pricingGroups: ('STANDARD' | 'COLIVING')[];
+		strategy: 'POOLED' | 'SPLIT';
+		splitEligible: boolean;
 		monthlyPrice: number | null;
 		periodPrice: number | null;
+		pooledMonthlyPrice: number | null;
+		splitMonthlyPrice: number | null;
 		roomCount: number;
+		standardRoomCount: number;
+		colivingRoomCount: number;
 		overCapacity: boolean;
 		requiresContact: boolean;
 	}
@@ -82,6 +89,20 @@
 		metrics: LandlordMetrics;
 	}
 
+	interface SubscriptionChangeRequest {
+		id: string;
+		requestedTier: string;
+		requestedPeriod: 'MONTHLY' | 'YEARLY';
+		quotedPeriodPrice: number | null;
+		standardRoomCount: number;
+		colivingRoomCount: number;
+		pricingStrategy: 'POOLED' | 'SPLIT';
+		status: 'pending' | 'approved' | 'rejected' | 'cancelled';
+		note: string | null;
+		adminNote: string | null;
+		createdAt: string;
+	}
+
 	let adminName = $state('');
 	let isLoading = $state(true);
 	let landlords = $state<Landlord[]>([]);
@@ -96,6 +117,8 @@
 	let searchQuery = $state('');
 	let planFilter = $state('all');
 	let statusFilter = $state('all');
+	let subscriptionRequests = $state<SubscriptionChangeRequest[]>([]);
+	let requestActionId = $state<string | null>(null);
 	let createForm = $state({
 		name: '',
 		companyName: '',
@@ -242,9 +265,11 @@
 		if (tier === 'ROOMS_101_PLUS') return null;
 		const hasStandard = rentalTypes.some((type) => type !== 'COLIVING');
 		const hasColiving = rentalTypes.includes('COLIVING');
-		const monthly =
-			(hasStandard ? (STANDARD_TIER_PRICES[tier] ?? 0) : 0) +
-			(hasColiving ? (COLIVING_TIER_PRICES[tier] ?? 0) : 0);
+		const monthly = hasStandard
+			? (STANDARD_TIER_PRICES[tier] ?? 0)
+			: hasColiving
+				? (COLIVING_TIER_PRICES[tier] ?? 0)
+				: 0;
 		return monthly * (period === 'YEARLY' ? 12 : 1);
 	}
 
@@ -253,6 +278,11 @@
 		rentalTypes: string[],
 		period: 'MONTHLY' | 'YEARLY'
 	) {
+		const hasStandard = rentalTypes.some((type) => type !== 'COLIVING');
+		const hasColiving = rentalTypes.includes('COLIVING');
+		if (tier !== 'FREE' && tier !== 'ROOMS_101_PLUS' && hasStandard && hasColiving) {
+			return 'Tự chọn giá tốt nhất';
+		}
 		const price = selectedTierPrice(tier, rentalTypes, period);
 		if (price === null) return 'Liên hệ';
 		if (price === 0) return 'Miễn phí';
@@ -294,10 +324,59 @@
 			selectedLandlord = landlordId
 				? (data.find((landlord: Landlord) => landlord.id === landlordId) ?? null)
 				: null;
+			if (landlordId) await fetchSubscriptionRequests(landlordId);
 		} catch (e: any) {
 			toast.error('Lỗi khi tải danh sách chủ trọ: ' + e.message);
 		} finally {
 			isLoading = false;
+		}
+	}
+
+	async function fetchSubscriptionRequests(targetLandlordId: string) {
+		try {
+			const res = await fetch(
+				`/api/subscription/requests?landlordId=${encodeURIComponent(targetLandlordId)}`
+			);
+			const data = await res.json();
+			if (!res.ok) throw new Error(data.error || 'Không tải được yêu cầu đổi gói');
+			subscriptionRequests = data;
+		} catch (error: any) {
+			toast.error(error.message);
+		}
+	}
+
+	async function reviewSubscriptionRequest(
+		request: SubscriptionChangeRequest,
+		action: 'approve' | 'reject'
+	) {
+		if (!selectedLandlord || requestActionId) return;
+		const approving = action === 'approve';
+		if (
+			!(await confirmPopup({
+				title: approving ? 'Duyệt điều chỉnh gói' : 'Từ chối điều chỉnh gói',
+				message: approving
+					? `Áp dụng gói ${subscriptionTierLabel(request.requestedTier)} cho chủ trọ này?`
+					: 'Từ chối yêu cầu điều chỉnh gói này?',
+				confirmLabel: approving ? 'Duyệt yêu cầu' : 'Từ chối',
+				tone: approving ? 'default' : 'danger'
+			}))
+		)
+			return;
+		requestActionId = request.id;
+		try {
+			const res = await fetch('/api/subscription/requests', {
+				method: 'PUT',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ id: request.id, action })
+			});
+			const data = await res.json();
+			if (!res.ok) throw new Error(data.error || 'Không xử lý được yêu cầu');
+			toast.success(approving ? 'Đã duyệt và áp dụng gói mới' : 'Đã từ chối yêu cầu');
+			await fetchLandlords();
+		} catch (error: any) {
+			toast.error(error.message);
+		} finally {
+			requestActionId = null;
 		}
 	}
 
@@ -475,7 +554,11 @@
 				(sum, landlord) => sum + landlord.metrics.overdueInvoices,
 				0
 			),
-			payosIssues: landlords.reduce((sum, landlord) => sum + landlord.metrics.payosUnmatched, 0)
+			payosIssues: landlords.reduce((sum, landlord) => sum + landlord.metrics.payosUnmatched, 0),
+			pendingSubscriptionRequests: landlords.reduce(
+				(sum, landlord) => sum + landlord.metrics.pendingSubscriptionRequests,
+				0
+			)
 		};
 	});
 
@@ -491,15 +574,17 @@
 		return `${formatCurrency(quote.periodPrice)}/${quote.period === 'YEARLY' ? 'năm' : 'tháng'}`;
 	}
 
-	function pricingGroupsLabel(groups: SubscriptionQuote['pricingGroups']) {
-		if (groups.length === 2) return 'Bảng chuẩn + Co-living';
-		return groups[0] === 'COLIVING' ? 'Bảng Co-living' : 'Bảng trọ / CHDV / Sleepbox';
+	function pricingStrategyLabel(quote: SubscriptionQuote) {
+		if (quote.roomCount === 0) return 'Chưa có phòng';
+		if (quote.standardRoomCount === 0) return 'Bảng Co-living';
+		if (quote.colivingRoomCount === 0) return 'Bảng trọ / CHDV / Sleepbox';
+		return quote.strategy === 'SPLIT' ? 'Tách hai bảng có lợi hơn' : 'Gộp chung có lợi hơn';
 	}
 
-	function pricingTierLabel(quote: SubscriptionQuote) {
-		return quote.maxRooms === null
-			? `Từ ${quote.minRooms} phòng`
-			: `${quote.minRooms}–${quote.maxRooms} phòng`;
+	function formatMonthlyPrice(price: number | null) {
+		if (price === null) return 'Liên hệ';
+		if (price === 0) return 'Miễn phí';
+		return `${formatCurrency(price)}/tháng`;
 	}
 
 	function subscriptionTierLabel(tier: string) {
@@ -627,6 +712,10 @@
 				<div>
 					<span class="text-zinc-500">Cần soát</span>
 					<span class="ml-2 text-lg font-black">{platformStats().payosIssues} PayOS</span>
+				</div>
+				<div>
+					<span class="text-zinc-500">Yêu cầu đổi gói</span>
+					<span class="ml-2 text-lg font-black">{platformStats().pendingSubscriptionRequests}</span>
 				</div>
 			</section>
 		{/if}
@@ -805,16 +894,93 @@
 											</span>
 										</div>
 										<p class="mt-2 text-xs font-bold text-zinc-600">
-											{pricingGroupsLabel(selectedLandlord.subscriptionQuote.pricingGroups)} ·
-											{selectedLandlord.subscriptionQuote.roomCount} phòng đang quản lý ·
-											{pricingTierLabel(selectedLandlord.subscriptionQuote)}
+											{pricingStrategyLabel(selectedLandlord.subscriptionQuote)} ·
+											{selectedLandlord.subscriptionQuote.standardRoomCount} phòng chuẩn +
+											{selectedLandlord.subscriptionQuote.colivingRoomCount} phòng co-living
 										</p>
+										{#if selectedLandlord.subscriptionQuote.splitEligible}
+											<p class="mt-1 text-[10px] font-bold text-zinc-500">
+												Giá gộp {formatMonthlyPrice(
+													selectedLandlord.subscriptionQuote.pooledMonthlyPrice
+												)} · Giá tách {formatMonthlyPrice(
+													selectedLandlord.subscriptionQuote.splitMonthlyPrice
+												)} · Gói phù hợp {subscriptionTierLabel(
+													selectedLandlord.subscriptionQuote.recommendedTier
+												)}
+											</p>
+										{:else if selectedLandlord.subscriptionQuote.standardRoomCount > 0 && selectedLandlord.subscriptionQuote.colivingRoomCount > 0}
+											<p class="mt-1 text-[10px] font-bold text-zinc-500">
+												Chỉ tách giá khi mỗi nhóm có ít nhất 4 phòng; mức Free chỉ áp dụng một lần.
+											</p>
+										{/if}
 										{#if selectedLandlord.subscriptionQuote.overCapacity}
 											<p class="mt-2 text-xs font-black text-red-700">
 												Số phòng hiện tại đã vượt giới hạn gói.
 											</p>
 										{/if}
 									</div>
+
+									{#if subscriptionRequests.length > 0}
+										<div class="space-y-2 rounded-lg border-2 border-black p-4">
+											<p class="text-xs font-black text-zinc-500">Yêu cầu điều chỉnh gói</p>
+											{#each subscriptionRequests.slice(0, 3) as request}
+												<div
+													class="flex flex-wrap items-center justify-between gap-3 border-t border-zinc-200 pt-2 first:border-t-0 first:pt-0"
+												>
+													<div>
+														<p class="text-xs font-black">
+															{subscriptionTierLabel(request.requestedTier)} · {request.requestedPeriod ===
+															'YEARLY'
+																? 'Theo năm'
+																: 'Theo tháng'}
+														</p>
+														<p class="mt-0.5 text-[10px] font-bold text-zinc-500">
+															{request.quotedPeriodPrice === null
+																? 'Liên hệ'
+																: formatCurrency(request.quotedPeriodPrice)} · {request.standardRoomCount}
+															chuẩn + {request.colivingRoomCount} co-living
+														</p>
+														{#if request.note}<p class="mt-1 text-[10px] font-bold">
+																“{request.note}”
+															</p>{/if}
+													</div>
+													{#if request.status === 'pending'}
+														<div class="flex gap-2">
+															<button
+																type="button"
+																disabled={requestActionId === request.id}
+																onclick={() => reviewSubscriptionRequest(request, 'reject')}
+																class="rounded-[6px] border-2 border-black bg-white px-2.5 py-1.5 text-[10px] font-black hover:bg-zinc-100 disabled:opacity-50"
+															>
+																Từ chối
+															</button>
+															<button
+																type="button"
+																disabled={requestActionId === request.id}
+																onclick={() => reviewSubscriptionRequest(request, 'approve')}
+																class="rounded-[6px] border-2 border-black bg-green-200 px-2.5 py-1.5 text-[10px] font-black hover:bg-green-300 disabled:opacity-50"
+															>
+																{#if requestActionId === request.id}<Loader2
+																		class="inline h-3 w-3 animate-spin"
+																	/>{/if}
+																Duyệt
+															</button>
+														</div>
+													{:else}
+														<span
+															class="rounded-full bg-zinc-100 px-2.5 py-1 text-[10px] font-black text-zinc-600"
+														>
+															{request.status === 'approved'
+																? 'Đã duyệt'
+																: request.status === 'rejected'
+																	? 'Từ chối'
+																	: 'Đã hủy'}
+														</span>
+													{/if}
+												</div>
+											{/each}
+										</div>
+									{/if}
 
 									<div class="space-y-2 text-sm font-bold">
 										<div class="flex items-center justify-between gap-3">

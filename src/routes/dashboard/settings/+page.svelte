@@ -6,9 +6,10 @@
 	import { Loader2 } from '@lucide/svelte';
 	import { confirmPopup } from '$lib/confirm-popup';
 	import StaffManagement from '$lib/StaffManagement.svelte';
+	import SubscriptionManagement from '$lib/SubscriptionManagement.svelte';
 	import RoomioSelect from '$lib/RoomioSelect.svelte';
 
-	type SettingsTab = 'account' | 'staff';
+	type SettingsTab = 'account' | 'staff' | 'subscription';
 
 	let landlordId = $state<string | null>(null);
 	let isLoading = $state(true);
@@ -36,7 +37,9 @@
 	let pChecksumKey = $state('');
 
 	onMount(() => {
-		activeTab = page.url.searchParams.get('tab') === 'staff' ? 'staff' : 'account';
+		const requestedTab = page.url.searchParams.get('tab');
+		activeTab =
+			requestedTab === 'staff' || requestedTab === 'subscription' ? requestedTab : 'account';
 
 		const sessionStr = localStorage.getItem('roomio_user');
 		if (!sessionStr) return;
@@ -188,7 +191,7 @@
 
 	function setTab(tab: SettingsTab) {
 		activeTab = tab;
-		goto(tab === 'staff' ? '/dashboard/settings?tab=staff' : '/dashboard/settings', {
+		goto(tab === 'account' ? '/dashboard/settings' : `/dashboard/settings?tab=${tab}`, {
 			replaceState: true,
 			noScroll: true
 		});
@@ -231,10 +234,22 @@
 		>
 			Nhân viên
 		</button>
+		<button
+			type="button"
+			onclick={() => setTab('subscription')}
+			class="inline-flex min-w-32 flex-1 items-center justify-center rounded-[6px] px-3 py-2 text-sm font-black transition-colors sm:flex-none {activeTab ===
+			'subscription'
+				? 'bg-blue-100 text-blue-600'
+				: 'text-zinc-500 hover:bg-zinc-50 hover:text-black'}"
+		>
+			Gói Roomio
+		</button>
 	</div>
 
 	{#if activeTab === 'staff'}
 		<StaffManagement />
+	{:else if activeTab === 'subscription'}
+		<SubscriptionManagement />
 	{:else if isLoading}
 		<div class="flex h-[40vh] w-full items-center justify-center">
 			<Loader2 class="h-10 w-10 animate-spin text-black" />
