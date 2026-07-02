@@ -62,6 +62,10 @@
 		{ value: 'COLIVING', label: 'Co-living / share căn' }
 	];
 
+	function isColivingPricingType(type: string) {
+		return type === 'APARTMENT' || type === 'COLIVING';
+	}
+
 	let isLoading = $state(true);
 	let isQuoteLoading = $state(false);
 	let isSubmitting = $state(false);
@@ -105,8 +109,8 @@
 			);
 			if (missingRooms > 0) {
 				if (
-					quoteData.activeSubscription.enabledRentalTypes.includes('COLIVING') &&
-					quoteData.activeSubscription.enabledRentalTypes.length === 1
+					quoteData.activeSubscription.enabledRentalTypes.length > 0 &&
+					quoteData.activeSubscription.enabledRentalTypes.every(isColivingPricingType)
 				) {
 					baseColivingRooms += missingRooms;
 					plannedColivingRooms = baseColivingRooms;
@@ -169,9 +173,13 @@
 		plannedStandardRooms =
 			baseStandardRooms +
 			Object.entries(roomAdditions)
-				.filter(([type]) => type !== 'COLIVING')
+				.filter(([type]) => !isColivingPricingType(type))
 				.reduce((sum, [, count]) => sum + count, 0);
-		plannedColivingRooms = baseColivingRooms + (roomAdditions.COLIVING ?? 0);
+		plannedColivingRooms =
+			baseColivingRooms +
+			Object.entries(roomAdditions)
+				.filter(([type]) => isColivingPricingType(type))
+				.reduce((sum, [, count]) => sum + count, 0);
 		selectedTier = tierForRoomCount(plannedStandardRooms + plannedColivingRooms);
 		refreshQuote();
 	}
@@ -319,7 +327,7 @@
 						{quote.actualRoomCounts.standard + quote.actualRoomCounts.coliving} phòng
 					</p>
 					<p class="text-[10px] font-bold text-zinc-500">
-						{quote.actualRoomCounts.standard} chuẩn + {quote.actualRoomCounts.coliving} co-living
+						{quote.actualRoomCounts.standard} trọ/CHDV + {quote.actualRoomCounts.coliving} chung cư/co-living
 					</p>
 					{#if quote.activeSubscription.standardRoomLimit !== null || quote.activeSubscription.colivingRoomLimit !== null}
 						<p class="mt-1 text-[10px] font-black text-blue-800">
@@ -379,8 +387,8 @@
 					{/each}
 				</div>
 				<p class="text-[10px] font-bold text-zinc-500">
-					Sau điều chỉnh: {plannedStandardRooms} phòng chuẩn + {plannedColivingRooms} co-living. Hệ thống
-					cộng phần mở rộng vào hạn mức hiện tại để tính giá.
+					Sau điều chỉnh: {plannedStandardRooms} trọ/CHDV/Sleepbox + {plannedColivingRooms} chung cư/co-living.
+					Hệ thống cộng phần mở rộng vào hạn mức hiện tại để tính giá.
 				</p>
 			</div>
 

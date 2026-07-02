@@ -269,10 +269,14 @@
 		ROOMS_101_PLUS: null
 	};
 
+	function isColivingPricingType(type: string) {
+		return type === 'APARTMENT' || type === 'COLIVING';
+	}
+
 	function selectedTierPrice(tier: string, rentalTypes: string[], period: 'MONTHLY' | 'YEARLY') {
 		if (tier === 'ROOMS_101_PLUS') return null;
-		const hasStandard = rentalTypes.some((type) => type !== 'COLIVING');
-		const hasColiving = rentalTypes.includes('COLIVING');
+		const hasStandard = rentalTypes.some((type) => !isColivingPricingType(type));
+		const hasColiving = rentalTypes.some(isColivingPricingType);
 		const monthly = hasStandard
 			? (STANDARD_TIER_PRICES[tier] ?? 0)
 			: hasColiving
@@ -286,8 +290,8 @@
 		rentalTypes: string[],
 		period: 'MONTHLY' | 'YEARLY'
 	) {
-		const hasStandard = rentalTypes.some((type) => type !== 'COLIVING');
-		const hasColiving = rentalTypes.includes('COLIVING');
+		const hasStandard = rentalTypes.some((type) => !isColivingPricingType(type));
+		const hasColiving = rentalTypes.some(isColivingPricingType);
 		if (tier !== 'FREE' && tier !== 'ROOMS_101_PLUS' && hasStandard && hasColiving) {
 			return 'Tự chọn giá tốt nhất';
 		}
@@ -420,6 +424,10 @@
 	async function handleUpdateSubscription(e: SubmitEvent) {
 		e.preventDefault();
 		if (!selectedLandlord || isSaving) return;
+		if (editRentalTypes.length === 0) {
+			toast.error('Phải chọn ít nhất một loại hình');
+			return;
+		}
 
 		isSaving = true;
 		try {
@@ -491,6 +499,10 @@
 	async function handleCreateLandlord(e: SubmitEvent) {
 		e.preventDefault();
 		if (isCreating) return;
+		if (createForm.enabledRentalTypes.length === 0) {
+			toast.error('Phải chọn ít nhất một loại hình');
+			return;
+		}
 
 		if (!createForm.name || !createForm.email || !createForm.phone || !createForm.password) {
 			toast.error('Vui lòng nhập đủ tên, email, số điện thoại và mật khẩu');
@@ -662,10 +674,9 @@
 
 	function toggleEditRentalType(type: string) {
 		if (editRentalTypes.includes(type)) {
-			if (editRentalTypes.length === 1) return;
 			editRentalTypes = editRentalTypes.filter((item) => item !== type);
-			if (type === 'COLIVING') editColivingRooms = 0;
-			if (!editRentalTypes.some((item) => item !== 'COLIVING')) editStandardRooms = 0;
+			if (!editRentalTypes.some(isColivingPricingType)) editColivingRooms = 0;
+			if (!editRentalTypes.some((item) => !isColivingPricingType(item))) editStandardRooms = 0;
 			return;
 		}
 		editRentalTypes = [...editRentalTypes, type];
@@ -680,11 +691,14 @@
 	function toggleCreateRentalType(type: string) {
 		const current = createForm.enabledRentalTypes;
 		if (current.includes(type)) {
-			if (current.length === 1) return;
+			const enabledRentalTypes = current.filter((item) => item !== type);
 			createForm = {
 				...createForm,
-				enabledRentalTypes: current.filter((item) => item !== type),
-				...(type === 'COLIVING' ? { colivingRoomLimit: 0 } : {})
+				enabledRentalTypes,
+				...(!enabledRentalTypes.some(isColivingPricingType) ? { colivingRoomLimit: 0 } : {}),
+				...(!enabledRentalTypes.some((item) => !isColivingPricingType(item))
+					? { standardRoomLimit: 0 }
+					: {})
 			};
 			return;
 		}
@@ -943,8 +957,8 @@
 										</div>
 										<p class="mt-2 text-xs font-bold text-zinc-600">
 											{pricingStrategyLabel(selectedLandlord.subscriptionQuote)} ·
-											{selectedLandlord.subscriptionQuote.standardRoomCount} phòng chuẩn +
-											{selectedLandlord.subscriptionQuote.colivingRoomCount} phòng co-living
+											{selectedLandlord.subscriptionQuote.standardRoomCount} trọ/CHDV +
+											{selectedLandlord.subscriptionQuote.colivingRoomCount} chung cư/co-living
 										</p>
 										{#if selectedLandlord.subscriptionQuote.splitEligible}
 											<p class="mt-1 text-[10px] font-bold text-zinc-500">
@@ -986,8 +1000,8 @@
 															{request.quotedPeriodPrice === null
 																? 'Liên hệ'
 																: formatCurrency(request.quotedPeriodPrice)} · Phòng dự kiến: {request.standardRoomCount}
-															chuẩn + {request.colivingRoomCount}
-															co-living
+															trọ/CHDV + {request.colivingRoomCount}
+															chung cư/co-living
 														</p>
 														{#if request.requestedRentalTypes}
 															<p class="mt-1 text-[10px] font-black text-blue-700">
@@ -1304,7 +1318,7 @@
 					<div class="space-y-2">
 						<p class="block text-xs font-bold text-zinc-600">Số phòng đã thương lượng</p>
 						<div class="grid grid-cols-2 gap-2">
-							{#if editRentalTypes.some((type) => type !== 'COLIVING')}
+							{#if editRentalTypes.some((type) => !isColivingPricingType(type))}
 								<label class="text-[10px] font-bold text-zinc-500">
 									Nhóm phòng tiêu chuẩn
 									<input
@@ -1316,7 +1330,7 @@
 									/>
 								</label>
 							{/if}
-							{#if editRentalTypes.includes('COLIVING')}
+							{#if editRentalTypes.some(isColivingPricingType)}
 								<label class="text-[10px] font-bold text-zinc-500">
 									Co-living / share căn
 									<input
@@ -1383,7 +1397,7 @@
 						</button>
 						<button
 							type="submit"
-							disabled={isSaving}
+							disabled={isSaving || editRentalTypes.length === 0}
 							class="flex cursor-pointer items-center gap-1 rounded-[6px] border-2 border-black bg-blue-300 px-4 py-2 text-xs font-black text-black transition-colors hover:bg-blue-400 disabled:opacity-50"
 						>
 							{#if isSaving}
@@ -1519,7 +1533,7 @@
 					<div class="space-y-2">
 						<p class="block text-xs font-bold text-zinc-600">Số phòng đã thương lượng</p>
 						<div class="grid grid-cols-2 gap-2">
-							{#if createForm.enabledRentalTypes.some((type) => type !== 'COLIVING')}
+							{#if createForm.enabledRentalTypes.some((type) => !isColivingPricingType(type))}
 								<label class="text-[10px] font-bold text-zinc-500">
 									Nhóm phòng tiêu chuẩn
 									<input
@@ -1532,7 +1546,7 @@
 									/>
 								</label>
 							{/if}
-							{#if createForm.enabledRentalTypes.includes('COLIVING')}
+							{#if createForm.enabledRentalTypes.some(isColivingPricingType)}
 								<label class="text-[10px] font-bold text-zinc-500">
 									Co-living / share căn
 									<input
@@ -1605,7 +1619,7 @@
 						</button>
 						<button
 							type="submit"
-							disabled={isCreating}
+							disabled={isCreating || createForm.enabledRentalTypes.length === 0}
 							class="flex cursor-pointer items-center gap-1 rounded-[6px] border-2 border-black bg-blue-300 px-4 py-2 text-xs font-black text-black transition-colors hover:bg-blue-400 disabled:opacity-50"
 						>
 							{#if isCreating}
