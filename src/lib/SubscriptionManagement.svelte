@@ -36,6 +36,7 @@
 		requestedTier: string;
 		requestedPeriod: Period;
 		requestedRentalTypes: string | null;
+		requestedRoomAdditions: string | null;
 		standardRoomCount: number;
 		colivingRoomCount: number;
 		quotedPeriodPrice: number | null;
@@ -69,7 +70,9 @@
 	let selectedTier = $state('FREE');
 	let selectedPeriod = $state<Period>('MONTHLY');
 	let note = $state('');
-	let addRentalTypes = $state<string[]>([]);
+	let roomAdditions = $state<Record<string, number>>({});
+	let baseStandardRooms = $state(0);
+	let baseColivingRooms = $state(0);
 	let plannedStandardRooms = $state(0);
 	let plannedColivingRooms = $state(0);
 
@@ -89,8 +92,10 @@
 			quote = quoteData;
 			selectedPeriod = quoteData.activeSubscription.period;
 			const actual = quoteData.actualRoomCounts;
-			plannedStandardRooms = quoteData.activeSubscription.standardRoomLimit ?? actual.standard;
-			plannedColivingRooms = quoteData.activeSubscription.colivingRoomLimit ?? actual.coliving;
+			baseStandardRooms = quoteData.activeSubscription.standardRoomLimit ?? actual.standard;
+			baseColivingRooms = quoteData.activeSubscription.colivingRoomLimit ?? actual.coliving;
+			plannedStandardRooms = baseStandardRooms;
+			plannedColivingRooms = baseColivingRooms;
 			const activeMinRooms =
 				TIER_OPTIONS.find((option) => option.value === quoteData.activeSubscription.tier)
 					?.minRooms ?? 0;
@@ -102,9 +107,13 @@
 				if (
 					quoteData.activeSubscription.enabledRentalTypes.includes('COLIVING') &&
 					quoteData.activeSubscription.enabledRentalTypes.length === 1
-				)
-					plannedColivingRooms += missingRooms;
-				else plannedStandardRooms += missingRooms;
+				) {
+					baseColivingRooms += missingRooms;
+					plannedColivingRooms = baseColivingRooms;
+				} else {
+					baseStandardRooms += missingRooms;
+					plannedStandardRooms = baseStandardRooms;
+				}
 			}
 			selectedTier = tierForRoomCount(plannedStandardRooms + plannedColivingRooms);
 			requests = requestData;
@@ -156,16 +165,20 @@
 		);
 	}
 
-	function updatePlannedRooms(group: 'STANDARD' | 'COLIVING', rawValue: string) {
-		if (!quote) return;
-		const value = Math.max(0, Math.floor(Number(rawValue) || 0));
-		if (group === 'STANDARD') {
-			plannedStandardRooms = Math.max(value, quote.actualRoomCounts.standard);
-		} else {
-			plannedColivingRooms = Math.max(value, quote.actualRoomCounts.coliving);
-		}
+	function recalculateExpansion() {
+		plannedStandardRooms =
+			baseStandardRooms +
+			Object.entries(roomAdditions)
+				.filter(([type]) => type !== 'COLIVING')
+				.reduce((sum, [, count]) => sum + count, 0);
+		plannedColivingRooms = baseColivingRooms + (roomAdditions.COLIVING ?? 0);
 		selectedTier = tierForRoomCount(plannedStandardRooms + plannedColivingRooms);
 		refreshQuote();
+	}
+
+	function updateRoomAddition(type: string, rawValue: string) {
+		roomAdditions = { ...roomAdditions, [type]: Math.max(1, Math.floor(Number(rawValue) || 1)) };
+		recalculateExpansion();
 	}
 
 	async function submitRequest() {
@@ -182,7 +195,7 @@
 				body: JSON.stringify({
 					requestedTier: selectedTier,
 					requestedPeriod: selectedPeriod,
-					addRentalTypes,
+					roomAdditions,
 					standardRoomCount: plannedStandardRooms,
 					colivingRoomCount: plannedColivingRooms,
 					note
@@ -192,7 +205,8 @@
 			if (!res.ok) throw new Error(data.error || 'Không gửi được yêu cầu');
 			requests = [data, ...requests];
 			note = '';
-			addRentalTypes = [];
+			roomAdditions = {};
+			recalculateExpansion();
 			toast.success('Đã gửi yêu cầu điều chỉnh gói');
 		} catch (error: any) {
 			toast.error(error.message);
@@ -234,20 +248,24 @@
 		return RENTAL_TYPE_OPTIONS.find((option) => option.value === type)?.label ?? type;
 	}
 
-	function toggleRentalType(type: string) {
-		const removing = addRentalTypes.includes(type);
-		addRentalTypes = removing
-			? addRentalTypes.filter((item) => item !== type)
-			: [...addRentalTypes, type];
-		if (
-			removing &&
-			type === 'COLIVING' &&
-			!quote?.activeSubscription.enabledRentalTypes.includes('COLIVING')
-		) {
-			plannedColivingRooms = quote?.actualRoomCounts.coliving ?? 0;
-			selectedTier = tierForRoomCount(plannedStandardRooms + plannedColivingRooms);
-			refreshQuote();
+	function roomAdditionsLabel(value: string | null) {
+		if (!value) return '';
+		try {
+			const additions = JSON.parse(value) as Record<string, number>;
+			return Object.entries(additions)
+				.map(([type, count]) => `${rentalTypeLabel(type)} +${count}`)
+				.join(', ');
+		} catch {
+			return '';
 		}
+	}
+
+	function toggleRentalType(type: string) {
+		const next = { ...roomAdditions };
+		if (next[type] !== undefined) delete next[type];
+		else next[type] = 1;
+		roomAdditions = next;
+		recalculateExpansion();
 	}
 
 	function money(value: number | null) {
@@ -268,17 +286,6 @@
 	}
 
 	const hasPendingRequest = $derived(requests.some((request) => request.status === 'pending'));
-	const availableRentalTypes = $derived(
-		RENTAL_TYPE_OPTIONS.filter(
-			(option) => !quote?.activeSubscription.enabledRentalTypes.includes(option.value)
-		)
-	);
-	const canPlanColiving = $derived(
-		Boolean(
-			quote?.activeSubscription.enabledRentalTypes.includes('COLIVING') ||
-			addRentalTypes.includes('COLIVING')
-		)
-	);
 </script>
 
 {#if isLoading}
@@ -332,58 +339,48 @@
 				</p>
 			</div>
 
-			{#if availableRentalTypes.length > 0}
-				<div class="space-y-2">
-					<p class="text-xs font-bold text-zinc-600">Thêm loại hình quản lý khác</p>
-					<div class="flex flex-wrap gap-2">
-						{#each availableRentalTypes as option}
+			<div class="space-y-2">
+				<div class="flex items-end justify-between gap-3">
+					<p class="text-xs font-bold text-zinc-600">Chọn loại hình muốn mở rộng</p>
+					<p class="text-xs font-black text-blue-700">Gói đề xuất: {tierLabel(selectedTier)}</p>
+				</div>
+				<div class="grid grid-cols-2 gap-2 sm:grid-cols-3">
+					{#each RENTAL_TYPE_OPTIONS as option}
+						<div class="space-y-1.5">
 							<button
 								type="button"
 								disabled={hasPendingRequest}
 								onclick={() => toggleRentalType(option.value)}
-								class="rounded-[6px] border-2 border-black px-3 py-2 text-xs font-black transition-colors disabled:opacity-50 {addRentalTypes.includes(
+								class="w-full rounded-[6px] border-2 border-black px-3 py-2 text-left text-xs font-black transition-colors disabled:opacity-50 {roomAdditions[
 									option.value
-								)
+								] !== undefined
 									? 'bg-blue-300 text-black'
 									: 'bg-white text-zinc-500 hover:bg-zinc-100'}"
 							>
 								{option.label}
+								{#if quote.activeSubscription.enabledRentalTypes.includes(option.value)}
+									<span class="mt-0.5 block text-[9px]">Đang quản lý</span>
+								{/if}
 							</button>
-						{/each}
-					</div>
-				</div>
-			{/if}
-
-			<div class="space-y-2">
-				<div class="flex items-end justify-between gap-3">
-					<p class="text-xs font-bold text-zinc-600">Số phòng dự kiến sau điều chỉnh</p>
-					<p class="text-xs font-black text-blue-700">Gói đề xuất: {tierLabel(selectedTier)}</p>
-				</div>
-				<div class="grid grid-cols-2 gap-2">
-					<label class="text-[10px] font-bold text-zinc-500">
-						Trọ / Chung cư / CHDV / Sleepbox
-						<input
-							type="number"
-							min={quote.actualRoomCounts.standard}
-							value={plannedStandardRooms}
-							onchange={(event) => updatePlannedRooms('STANDARD', event.currentTarget.value)}
-							class="mt-1 w-full rounded-[6px] border-2 border-black px-3 py-2 text-sm font-black text-black"
-						/>
-					</label>
-					<label class="text-[10px] font-bold text-zinc-500">
-						Co-living / share căn
-						<input
-							type="number"
-							min={quote.actualRoomCounts.coliving}
-							value={plannedColivingRooms}
-							disabled={!canPlanColiving}
-							onchange={(event) => updatePlannedRooms('COLIVING', event.currentTarget.value)}
-							class="mt-1 w-full rounded-[6px] border-2 border-black px-3 py-2 text-sm font-black text-black disabled:bg-zinc-100 disabled:text-zinc-400"
-						/>
-					</label>
+							{#if roomAdditions[option.value] !== undefined}
+								<label class="block text-[10px] font-bold text-zinc-500">
+									Số phòng muốn thêm
+									<input
+										type="number"
+										min="1"
+										value={roomAdditions[option.value]}
+										onchange={(event) =>
+											updateRoomAddition(option.value, event.currentTarget.value)}
+										class="mt-1 w-full rounded-[6px] border-2 border-black px-3 py-2 text-sm font-black text-black"
+									/>
+								</label>
+							{/if}
+						</div>
+					{/each}
 				</div>
 				<p class="text-[10px] font-bold text-zinc-500">
-					Hệ thống tính gói từ số phòng dự kiến. Sau khi duyệt, không thể tạo vượt hạn mức này.
+					Sau điều chỉnh: {plannedStandardRooms} phòng chuẩn + {plannedColivingRooms} co-living. Hệ thống
+					cộng phần mở rộng vào hạn mức hiện tại để tính giá.
 				</p>
 			</div>
 
@@ -498,6 +495,11 @@
 											.split(',')
 											.map(rentalTypeLabel)
 											.join(', ')}
+									</p>
+								{/if}
+								{#if request.requestedRoomAdditions}
+									<p class="mt-1 text-xs font-bold text-blue-700">
+										Mở rộng: {roomAdditionsLabel(request.requestedRoomAdditions)}
 									</p>
 								{/if}
 								{#if request.adminNote}<p class="mt-1 text-xs font-bold">

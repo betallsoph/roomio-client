@@ -67,6 +67,8 @@
 		subscriptionType: string;
 		subscriptionPeriod: 'MONTHLY' | 'YEARLY';
 		subValidUntil: string | null;
+		subscribedStandardRoomLimit: number | null;
+		subscribedColivingRoomLimit: number | null;
 		companyName: string | null;
 		enabledRentalTypes: string;
 		user: {
@@ -94,6 +96,7 @@
 		requestedTier: string;
 		requestedPeriod: 'MONTHLY' | 'YEARLY';
 		requestedRentalTypes: string | null;
+		requestedRoomAdditions: string | null;
 		quotedPeriodPrice: number | null;
 		standardRoomCount: number;
 		colivingRoomCount: number;
@@ -113,6 +116,8 @@
 	let subType = $state('FREE');
 	let subPeriod = $state<'MONTHLY' | 'YEARLY'>('MONTHLY');
 	let editRentalTypes = $state<string[]>(['APARTMENT']);
+	let editStandardRooms = $state(0);
+	let editColivingRooms = $state(0);
 	let isSaving = $state(false);
 	let isCreating = $state(false);
 	let searchQuery = $state('');
@@ -128,7 +133,9 @@
 		password: '',
 		subscriptionType: 'FREE',
 		subscriptionPeriod: 'MONTHLY' as 'MONTHLY' | 'YEARLY',
-		enabledRentalTypes: ['APARTMENT']
+		enabledRentalTypes: ['APARTMENT'],
+		standardRoomLimit: 0,
+		colivingRoomLimit: 0
 	});
 
 	// PayOS riêng cho từng chủ trọ — super-admin cấu hình hộ (cầm tay onboarding)
@@ -423,7 +430,9 @@
 					landlordId: selectedLandlord.id,
 					subscriptionType: subType,
 					subscriptionPeriod: subPeriod,
-					enabledRentalTypes: editRentalTypes
+					enabledRentalTypes: editRentalTypes,
+					standardRoomLimit: editStandardRooms,
+					colivingRoomLimit: editColivingRooms
 				})
 			});
 			const data = await res.json();
@@ -456,6 +465,10 @@
 		subType = landlord.subscriptionType;
 		subPeriod = landlord.subscriptionPeriod;
 		editRentalTypes = parseRentalTypes(landlord.enabledRentalTypes);
+		editStandardRooms =
+			landlord.subscribedStandardRoomLimit ?? landlord.subscriptionQuote.standardRoomCount;
+		editColivingRooms =
+			landlord.subscribedColivingRoomLimit ?? landlord.subscriptionQuote.colivingRoomCount;
 		isEditOpen = true;
 	}
 
@@ -468,7 +481,9 @@
 			password: '',
 			subscriptionType: 'FREE',
 			subscriptionPeriod: 'MONTHLY',
-			enabledRentalTypes: ['APARTMENT']
+			enabledRentalTypes: ['APARTMENT'],
+			standardRoomLimit: 0,
+			colivingRoomLimit: 0
 		};
 		isCreateOpen = true;
 	}
@@ -630,13 +645,47 @@
 			.join(', ');
 	}
 
+	function roomAdditionsLabel(value: string | null) {
+		if (!value) return '';
+		try {
+			const additions = JSON.parse(value) as Record<string, number>;
+			return Object.entries(additions)
+				.map(([type, count]) => {
+					const label = RENTAL_TYPE_OPTIONS.find((option) => option.value === type)?.label ?? type;
+					return `${label} +${count}`;
+				})
+				.join(', ');
+		} catch {
+			return '';
+		}
+	}
+
 	function toggleEditRentalType(type: string) {
 		if (editRentalTypes.includes(type)) {
 			if (editRentalTypes.length === 1) return;
 			editRentalTypes = editRentalTypes.filter((item) => item !== type);
+			if (type === 'COLIVING') editColivingRooms = 0;
+			if (!editRentalTypes.some((item) => item !== 'COLIVING')) editStandardRooms = 0;
+			subType = suggestedTierForRoomCount(editStandardRooms + editColivingRooms);
 			return;
 		}
 		editRentalTypes = [...editRentalTypes, type];
+	}
+
+	function suggestedTierForRoomCount(roomCount: number) {
+		if (roomCount <= 3) return 'FREE';
+		if (roomCount <= 10) return 'ROOMS_4_10';
+		if (roomCount <= 25) return 'ROOMS_11_25';
+		if (roomCount <= 50) return 'ROOMS_26_50';
+		if (roomCount <= 100) return 'ROOMS_51_100';
+		return 'ROOMS_101_PLUS';
+	}
+
+	function updateEditRoomLimit(group: 'STANDARD' | 'COLIVING', rawValue: string) {
+		const value = Math.max(0, Math.floor(Number(rawValue) || 0));
+		if (group === 'STANDARD') editStandardRooms = value;
+		else editColivingRooms = value;
+		subType = suggestedTierForRoomCount(editStandardRooms + editColivingRooms);
 	}
 
 	function toggleCreateRentalType(type: string) {
@@ -645,13 +694,26 @@
 			if (current.length === 1) return;
 			createForm = {
 				...createForm,
-				enabledRentalTypes: current.filter((item) => item !== type)
+				enabledRentalTypes: current.filter((item) => item !== type),
+				...(type === 'COLIVING' ? { colivingRoomLimit: 0 } : {})
 			};
 			return;
 		}
 		createForm = {
 			...createForm,
 			enabledRentalTypes: [...current, type]
+		};
+	}
+
+	function updateCreateRoomLimit(group: 'STANDARD' | 'COLIVING', rawValue: string) {
+		const value = Math.max(0, Math.floor(Number(rawValue) || 0));
+		createForm = {
+			...createForm,
+			...(group === 'STANDARD' ? { standardRoomLimit: value } : { colivingRoomLimit: value }),
+			subscriptionType: suggestedTierForRoomCount(
+				(group === 'STANDARD' ? value : createForm.standardRoomLimit) +
+					(group === 'COLIVING' ? value : createForm.colivingRoomLimit)
+			)
 		};
 	}
 </script>
@@ -945,6 +1007,11 @@
 														{#if request.requestedRentalTypes}
 															<p class="mt-1 text-[10px] font-black text-blue-700">
 																Thêm loại hình: {rentalTypesLabel(request.requestedRentalTypes)}
+															</p>
+														{/if}
+														{#if request.requestedRoomAdditions}
+															<p class="mt-1 text-[10px] font-black text-blue-700">
+																Mở rộng: {roomAdditionsLabel(request.requestedRoomAdditions)}
 															</p>
 														{/if}
 														{#if request.note}<p class="mt-1 text-[10px] font-bold">
@@ -1250,6 +1317,43 @@
 					</div>
 
 					<div class="space-y-2">
+						<div class="flex items-end justify-between gap-3">
+							<p class="block text-xs font-bold text-zinc-600">Số phòng đã thương lượng</p>
+							<p class="text-xs font-black text-blue-700">
+								Gợi ý: {subscriptionTierLabel(
+									suggestedTierForRoomCount(editStandardRooms + editColivingRooms)
+								)}
+							</p>
+						</div>
+						<div class="grid grid-cols-2 gap-2">
+							{#if editRentalTypes.some((type) => type !== 'COLIVING')}
+								<label class="text-[10px] font-bold text-zinc-500">
+									Nhóm phòng tiêu chuẩn
+									<input
+										type="number"
+										min="0"
+										value={editStandardRooms}
+										onchange={(event) => updateEditRoomLimit('STANDARD', event.currentTarget.value)}
+										class="mt-1 w-full rounded-[6px] border-2 border-black px-3 py-2 text-sm font-black text-black"
+									/>
+								</label>
+							{/if}
+							{#if editRentalTypes.includes('COLIVING')}
+								<label class="text-[10px] font-bold text-zinc-500">
+									Co-living / share căn
+									<input
+										type="number"
+										min="0"
+										value={editColivingRooms}
+										onchange={(event) => updateEditRoomLimit('COLIVING', event.currentTarget.value)}
+										class="mt-1 w-full rounded-[6px] border-2 border-black px-3 py-2 text-sm font-black text-black"
+									/>
+								</label>
+							{/if}
+						</div>
+					</div>
+
+					<div class="space-y-2">
 						<p class="block text-xs font-bold text-zinc-600">Gói số phòng</p>
 						<div class="grid grid-cols-2 gap-2 sm:grid-cols-3">
 							{#each SUBSCRIPTION_TIER_OPTIONS as option}
@@ -1431,6 +1535,47 @@
 									{option.label}
 								</button>
 							{/each}
+						</div>
+					</div>
+
+					<div class="space-y-2">
+						<div class="flex items-end justify-between gap-3">
+							<p class="block text-xs font-bold text-zinc-600">Số phòng đã thương lượng</p>
+							<p class="text-xs font-black text-blue-700">
+								Gợi ý: {subscriptionTierLabel(
+									suggestedTierForRoomCount(
+										createForm.standardRoomLimit + createForm.colivingRoomLimit
+									)
+								)}
+							</p>
+						</div>
+						<div class="grid grid-cols-2 gap-2">
+							{#if createForm.enabledRentalTypes.some((type) => type !== 'COLIVING')}
+								<label class="text-[10px] font-bold text-zinc-500">
+									Nhóm phòng tiêu chuẩn
+									<input
+										type="number"
+										min="0"
+										value={createForm.standardRoomLimit}
+										onchange={(event) =>
+											updateCreateRoomLimit('STANDARD', event.currentTarget.value)}
+										class="mt-1 w-full rounded-[6px] border-2 border-black px-3 py-2 text-sm font-black text-black"
+									/>
+								</label>
+							{/if}
+							{#if createForm.enabledRentalTypes.includes('COLIVING')}
+								<label class="text-[10px] font-bold text-zinc-500">
+									Co-living / share căn
+									<input
+										type="number"
+										min="0"
+										value={createForm.colivingRoomLimit}
+										onchange={(event) =>
+											updateCreateRoomLimit('COLIVING', event.currentTarget.value)}
+										class="mt-1 w-full rounded-[6px] border-2 border-black px-3 py-2 text-sm font-black text-black"
+									/>
+								</label>
+							{/if}
 						</div>
 					</div>
 
