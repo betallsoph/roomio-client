@@ -123,7 +123,8 @@
 		{ value: 'APARTMENT', label: 'Chung cư' },
 		{ value: 'MOTEL', label: 'Phòng trọ' },
 		{ value: 'SERVICED_APARTMENT', label: 'Căn hộ dịch vụ' },
-		{ value: 'DORM', label: 'KTX / Sleepbox' }
+		{ value: 'DORM', label: 'KTX / Sleepbox' },
+		{ value: 'COLIVING', label: 'Co-living / share căn' }
 	];
 
 	// Telegram Link Generation
@@ -305,6 +306,7 @@
 	}
 
 	function quickPropertyLabel(type = quickPropertyRentalType) {
+		if (type === 'COLIVING') return 'căn co-living';
 		if (type === 'MOTEL') return 'khu trọ';
 		if (type === 'SERVICED_APARTMENT') return 'tòa nhà căn hộ dịch vụ';
 		if (type === 'DORM') return 'khu KTX / sleepbox';
@@ -312,6 +314,7 @@
 	}
 
 	function quickBlockLabel(type = quickPropertyRentalType) {
+		if (type === 'COLIVING') return 'Phòng share';
 		if (type === 'MOTEL') return 'Dãy';
 		if (type === 'SERVICED_APARTMENT') return 'Tầng / khu';
 		if (type === 'DORM') return 'Phòng / khu';
@@ -319,6 +322,7 @@
 	}
 
 	function quickPropertyNamePlaceholder(type = quickPropertyRentalType) {
+		if (type === 'COLIVING') return 'Ví dụ: Co-living Thảo Điền';
 		if (type === 'MOTEL') return 'Ví dụ: Khu trọ An Bình';
 		if (type === 'SERVICED_APARTMENT') return 'Ví dụ: CHDV Nguyễn Trãi';
 		if (type === 'DORM') return 'Ví dụ: Sleepbox Cầu Giấy';
@@ -326,6 +330,7 @@
 	}
 
 	function quickBlockPlaceholder(type = quickPropertyRentalType) {
+		if (type === 'COLIVING') return 'Ví dụ: Phòng 1, Phòng 2';
 		if (type === 'MOTEL') return 'Ví dụ: Dãy A, Dãy B';
 		if (type === 'SERVICED_APARTMENT') return 'Ví dụ: Tầng 1, Tầng 2';
 		if (type === 'DORM') return 'Ví dụ: Phòng nam, Phòng nữ';

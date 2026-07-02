@@ -41,10 +41,24 @@
 		lastPaymentAt: string | null;
 	}
 
+	interface SubscriptionQuote {
+		tier: string;
+		period: 'MONTHLY' | 'YEARLY';
+		minRooms: number;
+		maxRooms: number | null;
+		pricingGroups: ('STANDARD' | 'COLIVING')[];
+		monthlyPrice: number | null;
+		periodPrice: number | null;
+		roomCount: number;
+		overCapacity: boolean;
+		requiresContact: boolean;
+	}
+
 	interface Landlord {
 		id: string;
 		userId: string;
 		subscriptionType: string;
+		subscriptionPeriod: 'MONTHLY' | 'YEARLY';
 		subValidUntil: string | null;
 		companyName: string | null;
 		enabledRentalTypes: string;
@@ -64,6 +78,7 @@
 				rooms: number;
 			};
 		}[];
+		subscriptionQuote: SubscriptionQuote;
 		metrics: LandlordMetrics;
 	}
 
@@ -74,7 +89,7 @@
 	let isEditOpen = $state(false);
 	let isCreateOpen = $state(false);
 	let subType = $state('FREE');
-	let subValid = $state('');
+	let subPeriod = $state<'MONTHLY' | 'YEARLY'>('MONTHLY');
 	let editRentalTypes = $state<string[]>(['APARTMENT']);
 	let isSaving = $state(false);
 	let isCreating = $state(false);
@@ -88,7 +103,7 @@
 		phone: '',
 		password: '',
 		subscriptionType: 'FREE',
-		subValidUntil: '',
+		subscriptionPeriod: 'MONTHLY' as 'MONTHLY' | 'YEARLY',
 		enabledRentalTypes: ['APARTMENT']
 	});
 
@@ -193,8 +208,56 @@
 		{ value: 'APARTMENT', label: 'Chung cư' },
 		{ value: 'MOTEL', label: 'Phòng trọ' },
 		{ value: 'SERVICED_APARTMENT', label: 'Căn hộ dịch vụ' },
-		{ value: 'DORM', label: 'KTX / Sleepbox' }
+		{ value: 'DORM', label: 'KTX / Sleepbox' },
+		{ value: 'COLIVING', label: 'Co-living / share căn' }
 	];
+
+	const SUBSCRIPTION_TIER_OPTIONS = [
+		{ value: 'FREE', label: 'Free', range: 'Tối đa 3 phòng' },
+		{ value: 'ROOMS_4_10', label: '4–10 phòng', range: 'Tối đa 10 phòng' },
+		{ value: 'ROOMS_11_25', label: '11–25 phòng', range: 'Tối đa 25 phòng' },
+		{ value: 'ROOMS_26_50', label: '26–50 phòng', range: 'Tối đa 50 phòng' },
+		{ value: 'ROOMS_51_100', label: '51–100 phòng', range: 'Tối đa 100 phòng' },
+		{ value: 'ROOMS_101_PLUS', label: 'Trên 100 phòng', range: 'Báo giá riêng' }
+	];
+
+	const STANDARD_TIER_PRICES: Record<string, number | null> = {
+		FREE: 0,
+		ROOMS_4_10: 149_000,
+		ROOMS_11_25: 349_000,
+		ROOMS_26_50: 699_000,
+		ROOMS_51_100: 1_399_000,
+		ROOMS_101_PLUS: null
+	};
+	const COLIVING_TIER_PRICES: Record<string, number | null> = {
+		FREE: 0,
+		ROOMS_4_10: 129_000,
+		ROOMS_11_25: 319_000,
+		ROOMS_26_50: 629_000,
+		ROOMS_51_100: 1_199_000,
+		ROOMS_101_PLUS: null
+	};
+
+	function selectedTierPrice(tier: string, rentalTypes: string[], period: 'MONTHLY' | 'YEARLY') {
+		if (tier === 'ROOMS_101_PLUS') return null;
+		const hasStandard = rentalTypes.some((type) => type !== 'COLIVING');
+		const hasColiving = rentalTypes.includes('COLIVING');
+		const monthly =
+			(hasStandard ? (STANDARD_TIER_PRICES[tier] ?? 0) : 0) +
+			(hasColiving ? (COLIVING_TIER_PRICES[tier] ?? 0) : 0);
+		return monthly * (period === 'YEARLY' ? 12 : 1);
+	}
+
+	function formatSelectedTierPrice(
+		tier: string,
+		rentalTypes: string[],
+		period: 'MONTHLY' | 'YEARLY'
+	) {
+		const price = selectedTierPrice(tier, rentalTypes, period);
+		if (price === null) return 'Liên hệ';
+		if (price === 0) return 'Miễn phí';
+		return `${new Intl.NumberFormat('vi-VN').format(price)}đ/${period === 'YEARLY' ? 'năm' : 'tháng'}`;
+	}
 
 	onMount(() => {
 		const sessionStr = localStorage.getItem('roomio_user');
@@ -279,7 +342,7 @@
 				body: JSON.stringify({
 					landlordId: selectedLandlord.id,
 					subscriptionType: subType,
-					subValidUntil: subValid || null,
+					subscriptionPeriod: subPeriod,
 					enabledRentalTypes: editRentalTypes
 				})
 			});
@@ -311,7 +374,7 @@
 	function openSubscriptionDialog(landlord: Landlord) {
 		selectedLandlord = landlord;
 		subType = landlord.subscriptionType;
-		subValid = landlord.subValidUntil ? landlord.subValidUntil.slice(0, 10) : '';
+		subPeriod = landlord.subscriptionPeriod;
 		editRentalTypes = parseRentalTypes(landlord.enabledRentalTypes);
 		isEditOpen = true;
 	}
@@ -324,7 +387,7 @@
 			phone: '',
 			password: '',
 			subscriptionType: 'FREE',
-			subValidUntil: '',
+			subscriptionPeriod: 'MONTHLY',
 			enabledRentalTypes: ['APARTMENT']
 		};
 		isCreateOpen = true;
@@ -394,6 +457,10 @@
 		return {
 			activeLandlords: landlords.filter((landlord) => landlord.user.isActive).length,
 			paidLandlords: landlords.filter((landlord) => landlord.subscriptionType !== 'FREE').length,
+			monthlySubscriptionRevenue: landlords.reduce(
+				(sum, landlord) => sum + (landlord.subscriptionQuote.monthlyPrice ?? 0),
+				0
+			),
 			totalRooms: landlords.reduce((sum, landlord) => sum + landlord.metrics.totalRooms, 0),
 			collectedAmount: landlords.reduce(
 				(sum, landlord) => sum + landlord.metrics.collectedAmount,
@@ -418,14 +485,35 @@
 		return new Intl.NumberFormat('vi-VN').format(amount) + 'đ';
 	}
 
+	function formatSubscriptionPrice(quote: SubscriptionQuote) {
+		if (quote.periodPrice === null) return 'Liên hệ';
+		if (quote.periodPrice === 0) return 'Miễn phí';
+		return `${formatCurrency(quote.periodPrice)}/${quote.period === 'YEARLY' ? 'năm' : 'tháng'}`;
+	}
+
+	function pricingGroupsLabel(groups: SubscriptionQuote['pricingGroups']) {
+		if (groups.length === 2) return 'Bảng chuẩn + Co-living';
+		return groups[0] === 'COLIVING' ? 'Bảng Co-living' : 'Bảng trọ / CHDV / Sleepbox';
+	}
+
+	function pricingTierLabel(quote: SubscriptionQuote) {
+		return quote.maxRooms === null
+			? `Từ ${quote.minRooms} phòng`
+			: `${quote.minRooms}–${quote.maxRooms} phòng`;
+	}
+
+	function subscriptionTierLabel(tier: string) {
+		return SUBSCRIPTION_TIER_OPTIONS.find((option) => option.value === tier)?.label ?? tier;
+	}
+
 	function formatDate(value: string | null) {
 		if (!value) return 'Không giới hạn';
 		return new Date(value).toLocaleDateString('vi-VN');
 	}
 
 	function planBadgeClass(plan: string) {
-		if (plan === 'ENTERPRISE') return 'bg-amber-100 text-amber-900';
-		if (plan === 'PREMIUM') return 'bg-blue-100 text-blue-800';
+		if (plan === 'ROOMS_101_PLUS') return 'bg-amber-100 text-amber-900';
+		if (plan !== 'FREE') return 'bg-blue-100 text-blue-800';
 		return 'bg-zinc-100 text-zinc-600';
 	}
 
@@ -521,6 +609,12 @@
 					<span class="ml-2 text-lg font-black">{platformStats().paidLandlords}</span>
 				</div>
 				<div>
+					<span class="text-zinc-500">Phí Roomio dự kiến</span>
+					<span class="ml-2 text-lg font-black">
+						{formatCurrency(platformStats().monthlySubscriptionRevenue)}/tháng
+					</span>
+				</div>
+				<div>
 					<span class="text-zinc-500">Phòng quản lý</span>
 					<span class="ml-2 text-lg font-black">{platformStats().totalRooms}</span>
 				</div>
@@ -538,7 +632,7 @@
 		{/if}
 
 		{#if !landlordId}
-			<section class="grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto_auto]">
+			<section class="grid gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(520px,auto)_auto]">
 				<label
 					class="flex min-w-0 items-center gap-2 rounded-[6px] border-2 border-black px-3 py-2"
 				>
@@ -554,14 +648,14 @@
 				<div
 					class="grid grid-cols-4 gap-1 rounded-lg border-2 border-black bg-white p-1 text-xs font-black"
 				>
-					{#each ['all', 'FREE', 'PREMIUM', 'ENTERPRISE'] as plan}
+					{#each [{ value: 'all', label: 'Tất cả gói' }, ...SUBSCRIPTION_TIER_OPTIONS.map( (option) => ({ value: option.value, label: option.label }) )] as plan}
 						<button
-							onclick={() => (planFilter = plan)}
-							class="rounded-[5px] px-3 py-2 transition-colors {planFilter === plan
+							onclick={() => (planFilter = plan.value)}
+							class="rounded-[5px] px-2 py-2 transition-colors {planFilter === plan.value
 								? 'bg-blue-300 text-black'
 								: 'text-zinc-500 hover:bg-zinc-100'}"
 						>
-							{plan === 'all' ? 'Tất cả gói' : plan}
+							{plan.label}
 						</button>
 					{/each}
 				</div>
@@ -617,12 +711,17 @@
 												{landlord.companyName || 'Chưa đặt thương hiệu'} · {landlord.user.email}
 											</span>
 										</span>
-										<span
-											class="w-fit rounded-full px-2.5 py-1 text-[10px] font-black {planBadgeClass(
-												landlord.subscriptionType
-											)}"
-										>
-											{landlord.subscriptionType}
+										<span class="min-w-0">
+											<span
+												class="block w-fit rounded-full px-2.5 py-1 text-[10px] font-black {planBadgeClass(
+													landlord.subscriptionType
+												)}"
+											>
+												{subscriptionTierLabel(landlord.subscriptionType)}
+											</span>
+											<span class="mt-1 block truncate text-[10px] text-zinc-500">
+												{formatSubscriptionPrice(landlord.subscriptionQuote)}
+											</span>
 										</span>
 										<span>{landlord.metrics.occupiedRooms}/{landlord.metrics.totalRooms}</span>
 										<span>{formatCurrency(landlord.metrics.unpaidAmount)}</span>
@@ -691,6 +790,32 @@
 										</div>
 									</div>
 
+									<div class="rounded-lg bg-blue-50 p-4">
+										<div class="flex items-start justify-between gap-4">
+											<div>
+												<p class="text-xs font-bold text-blue-800">Phí Roomio tự tính</p>
+												<p class="mt-1 text-xl font-black">
+													{formatSubscriptionPrice(selectedLandlord.subscriptionQuote)}
+												</p>
+											</div>
+											<span
+												class="rounded-full bg-white px-2.5 py-1 text-[10px] font-black text-blue-900"
+											>
+												{subscriptionTierLabel(selectedLandlord.subscriptionType)}
+											</span>
+										</div>
+										<p class="mt-2 text-xs font-bold text-zinc-600">
+											{pricingGroupsLabel(selectedLandlord.subscriptionQuote.pricingGroups)} ·
+											{selectedLandlord.subscriptionQuote.roomCount} phòng đang quản lý ·
+											{pricingTierLabel(selectedLandlord.subscriptionQuote)}
+										</p>
+										{#if selectedLandlord.subscriptionQuote.overCapacity}
+											<p class="mt-2 text-xs font-black text-red-700">
+												Số phòng hiện tại đã vượt giới hạn gói.
+											</p>
+										{/if}
+									</div>
+
 									<div class="space-y-2 text-sm font-bold">
 										<div class="flex items-center justify-between gap-3">
 											<span class="text-zinc-500">Email</span>
@@ -707,9 +832,10 @@
 										<div class="flex items-center justify-between gap-3">
 											<span class="text-zinc-500">Gói dịch vụ</span>
 											<span
-												>{selectedLandlord.subscriptionType} · {formatDate(
-													selectedLandlord.subValidUntil
-												)}</span
+												>{subscriptionTierLabel(selectedLandlord.subscriptionType)} · {selectedLandlord.subscriptionPeriod ===
+												'YEARLY'
+													? 'Theo năm'
+													: 'Theo tháng'} · {formatDate(selectedLandlord.subValidUntil)}</span
 											>
 										</div>
 										<div class="flex items-center justify-between gap-3">
@@ -911,7 +1037,7 @@
 			tabindex="0"
 		>
 			<div
-				class="relative flex w-full max-w-md animate-[scale-up_0.2s_ease-out] flex-col gap-4 rounded-lg border-2 border-black bg-white p-6"
+				class="relative flex max-h-[90vh] w-full max-w-2xl animate-[scale-up_0.2s_ease-out] flex-col gap-4 overflow-y-auto rounded-lg border-2 border-black bg-white p-6"
 				onclick={(e) => e.stopPropagation()}
 				onkeydown={(e) => e.stopPropagation()}
 				role="dialog"
@@ -933,7 +1059,7 @@
 				<form onsubmit={handleUpdateSubscription} class="space-y-4">
 					<div class="space-y-2">
 						<p class="block text-xs font-bold text-zinc-600">Loại hình được dùng</p>
-						<div class="grid grid-cols-2 gap-2">
+						<div class="grid grid-cols-2 gap-2 sm:grid-cols-3">
 							{#each RENTAL_TYPE_OPTIONS as option}
 								<button
 									type="button"
@@ -950,33 +1076,46 @@
 						</div>
 					</div>
 
-					<div class="space-y-1">
-						<label for="sub-level" class="block text-xs font-bold text-zinc-600">Gói đăng ký</label>
-						<select
-							id="sub-level"
-							bind:value={subType}
-							required
-							class="w-full rounded-lg border-2 border-black bg-white px-3 py-2 text-sm font-semibold text-black focus:ring-2 focus:ring-blue-300 focus:outline-none"
-						>
-							<option value="FREE">Gói miễn phí (FREE)</option>
-							<option value="PREMIUM">Gói nâng cao (PREMIUM)</option>
-							<option value="ENTERPRISE">Gói doanh nghiệp (ENTERPRISE)</option>
-						</select>
+					<div class="space-y-2">
+						<p class="block text-xs font-bold text-zinc-600">Gói số phòng</p>
+						<div class="grid grid-cols-2 gap-2 sm:grid-cols-3">
+							{#each SUBSCRIPTION_TIER_OPTIONS as option}
+								<button
+									type="button"
+									onclick={() => (subType = option.value)}
+									class="rounded-[6px] border-2 border-black px-3 py-2 text-left transition-colors {subType ===
+									option.value
+										? 'bg-blue-300 text-black'
+										: 'bg-white text-zinc-500 hover:bg-zinc-100'}"
+								>
+									<span class="block text-xs font-black">{option.label}</span>
+									<span class="mt-1 block text-[10px] font-bold">
+										{formatSelectedTierPrice(option.value, editRentalTypes, subPeriod)}
+									</span>
+								</button>
+							{/each}
+						</div>
 					</div>
 
-					<div class="space-y-1">
-						<label for="sub-valid" class="block text-xs font-bold text-zinc-600"
-							>Hạn gói dịch vụ</label
-						>
-						<input
-							id="sub-valid"
-							type="date"
-							bind:value={subValid}
-							class="w-full rounded-lg border-2 border-black bg-white px-3 py-2.5 text-sm font-semibold text-black focus:ring-2 focus:ring-blue-300 focus:outline-none"
-						/>
-						<span class="mt-1 block text-[10px] font-bold text-zinc-400">
-							Để trống nếu không muốn giới hạn thời hạn.
-						</span>
+					<div class="space-y-2">
+						<p class="block text-xs font-bold text-zinc-600">Thời hạn</p>
+						<div class="grid grid-cols-2 gap-2">
+							{#each [{ value: 'MONTHLY' as const, label: 'Theo tháng' }, { value: 'YEARLY' as const, label: 'Theo năm' }] as option}
+								<button
+									type="button"
+									onclick={() => (subPeriod = option.value)}
+									class="rounded-[6px] border-2 border-black px-3 py-2 text-xs font-black transition-colors {subPeriod ===
+									option.value
+										? 'bg-blue-300 text-black'
+										: 'bg-white text-zinc-500 hover:bg-zinc-100'}"
+								>
+									{option.label}
+								</button>
+							{/each}
+						</div>
+						<p class="text-[10px] font-bold text-zinc-500">
+							Gói sẽ có hạn 1 tháng hoặc 1 năm tính từ lúc lưu.
+						</p>
 					</div>
 
 					<div class="flex justify-end gap-3 pt-2">
@@ -1122,29 +1261,47 @@
 						</div>
 					</div>
 
-					<div class="grid gap-3 sm:grid-cols-2">
-						<label class="block text-xs font-bold text-zinc-600" for="new-landlord-plan">
-							Gói ban đầu
-							<select
-								id="new-landlord-plan"
-								bind:value={createForm.subscriptionType}
-								class="mt-1 w-full rounded-lg border-2 border-black bg-white px-3 py-2 text-sm font-semibold text-black focus:ring-2 focus:ring-blue-300 focus:outline-none"
-							>
-								<option value="FREE">Gói miễn phí (FREE)</option>
-								<option value="PREMIUM">Gói nâng cao (PREMIUM)</option>
-								<option value="ENTERPRISE">Gói doanh nghiệp (ENTERPRISE)</option>
-							</select>
-						</label>
+					<div class="space-y-2">
+						<p class="block text-xs font-bold text-zinc-600">Gói ban đầu</p>
+						<div class="grid grid-cols-2 gap-2 sm:grid-cols-3">
+							{#each SUBSCRIPTION_TIER_OPTIONS as option}
+								<button
+									type="button"
+									onclick={() => (createForm.subscriptionType = option.value)}
+									class="rounded-[6px] border-2 border-black px-3 py-2 text-left transition-colors {createForm.subscriptionType ===
+									option.value
+										? 'bg-blue-300 text-black'
+										: 'bg-white text-zinc-500 hover:bg-zinc-100'}"
+								>
+									<span class="block text-xs font-black">{option.label}</span>
+									<span class="mt-1 block text-[10px] font-bold">
+										{formatSelectedTierPrice(
+											option.value,
+											createForm.enabledRentalTypes,
+											createForm.subscriptionPeriod
+										)}
+									</span>
+								</button>
+							{/each}
+						</div>
+					</div>
 
-						<label class="block text-xs font-bold text-zinc-600" for="new-landlord-valid">
-							Hạn gói
-							<input
-								id="new-landlord-valid"
-								bind:value={createForm.subValidUntil}
-								type="date"
-								class="mt-1 w-full rounded-lg border-2 border-black bg-white px-3 py-2 text-sm font-semibold text-black focus:ring-2 focus:ring-blue-300 focus:outline-none"
-							/>
-						</label>
+					<div class="space-y-2">
+						<p class="block text-xs font-bold text-zinc-600">Thời hạn</p>
+						<div class="grid grid-cols-2 gap-2">
+							{#each [{ value: 'MONTHLY' as const, label: 'Theo tháng' }, { value: 'YEARLY' as const, label: 'Theo năm' }] as option}
+								<button
+									type="button"
+									onclick={() => (createForm.subscriptionPeriod = option.value)}
+									class="rounded-[6px] border-2 border-black px-3 py-2 text-xs font-black transition-colors {createForm.subscriptionPeriod ===
+									option.value
+										? 'bg-blue-300 text-black'
+										: 'bg-white text-zinc-500 hover:bg-zinc-100'}"
+								>
+									{option.label}
+								</button>
+							{/each}
+						</div>
 					</div>
 
 					<div class="rounded-[6px] bg-blue-50 px-3 py-2 text-xs font-bold text-blue-900">
