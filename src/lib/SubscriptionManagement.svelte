@@ -24,6 +24,7 @@
 			tier: string;
 			period: Period;
 			validUntil: string | null;
+			enabledRentalTypes: string[];
 		};
 	}
 
@@ -31,6 +32,7 @@
 		id: string;
 		requestedTier: string;
 		requestedPeriod: Period;
+		requestedRentalTypes: string | null;
 		quotedPeriodPrice: number | null;
 		status: 'pending' | 'approved' | 'rejected' | 'cancelled';
 		note: string | null;
@@ -46,6 +48,13 @@
 		{ value: 'ROOMS_51_100', label: '51–100 phòng', maxRooms: 100 },
 		{ value: 'ROOMS_101_PLUS', label: 'Trên 100 phòng', maxRooms: null }
 	];
+	const RENTAL_TYPE_OPTIONS = [
+		{ value: 'APARTMENT', label: 'Chung cư' },
+		{ value: 'MOTEL', label: 'Phòng trọ' },
+		{ value: 'SERVICED_APARTMENT', label: 'Căn hộ dịch vụ' },
+		{ value: 'DORM', label: 'KTX / Sleepbox' },
+		{ value: 'COLIVING', label: 'Co-living / share căn' }
+	];
 
 	let isLoading = $state(true);
 	let isQuoteLoading = $state(false);
@@ -55,6 +64,7 @@
 	let selectedTier = $state('FREE');
 	let selectedPeriod = $state<Period>('MONTHLY');
 	let note = $state('');
+	let addRentalTypes = $state<string[]>([]);
 
 	onMount(load);
 
@@ -120,6 +130,7 @@
 				body: JSON.stringify({
 					requestedTier: selectedTier,
 					requestedPeriod: selectedPeriod,
+					addRentalTypes,
 					note
 				})
 			});
@@ -127,6 +138,7 @@
 			if (!res.ok) throw new Error(data.error || 'Không gửi được yêu cầu');
 			requests = [data, ...requests];
 			note = '';
+			addRentalTypes = [];
 			toast.success('Đã gửi yêu cầu điều chỉnh gói');
 		} catch (error: any) {
 			toast.error(error.message);
@@ -164,6 +176,16 @@
 		return TIER_OPTIONS.find((option) => option.value === tier)?.label ?? tier;
 	}
 
+	function rentalTypeLabel(type: string) {
+		return RENTAL_TYPE_OPTIONS.find((option) => option.value === type)?.label ?? type;
+	}
+
+	function toggleRentalType(type: string) {
+		addRentalTypes = addRentalTypes.includes(type)
+			? addRentalTypes.filter((item) => item !== type)
+			: [...addRentalTypes, type];
+	}
+
 	function money(value: number | null) {
 		if (value === null) return 'Liên hệ';
 		if (value === 0) return 'Miễn phí';
@@ -182,6 +204,11 @@
 	}
 
 	const hasPendingRequest = $derived(requests.some((request) => request.status === 'pending'));
+	const availableRentalTypes = $derived(
+		RENTAL_TYPE_OPTIONS.filter(
+			(option) => !quote?.activeSubscription.enabledRentalTypes.includes(option.value)
+		)
+	);
 </script>
 
 {#if isLoading}
@@ -216,6 +243,47 @@
 				<p class="mt-1 text-xs font-bold text-zinc-500">
 					Roomio tự so giá gộp và giá tách theo loại hình thực tế, rồi lấy phương án thấp hơn.
 				</p>
+			</div>
+
+			<div class="space-y-3 rounded-lg border-2 border-black bg-white p-4">
+				<div class="space-y-2">
+					<p class="text-xs font-bold text-zinc-600">Loại hình đang quản lý</p>
+					<div class="flex flex-wrap gap-2">
+						{#each quote.activeSubscription.enabledRentalTypes as type}
+							<span class="rounded-[6px] bg-zinc-100 px-3 py-2 text-xs font-black text-zinc-600">
+								{rentalTypeLabel(type)}
+							</span>
+						{/each}
+					</div>
+				</div>
+
+				{#if availableRentalTypes.length > 0}
+					<div class="space-y-2">
+						<p class="text-xs font-bold text-zinc-600">Thêm loại hình quản lý khác</p>
+						<div class="grid grid-cols-2 gap-2 sm:grid-cols-3">
+							{#each availableRentalTypes as option}
+								<button
+									type="button"
+									disabled={hasPendingRequest}
+									onclick={() => toggleRentalType(option.value)}
+									class="rounded-[6px] border-2 border-black px-3 py-2 text-left text-xs font-black transition-colors disabled:opacity-50 {addRentalTypes.includes(
+										option.value
+									)
+										? 'bg-blue-300 text-black'
+										: 'bg-white text-zinc-500 hover:bg-zinc-100'}"
+								>
+									{option.label}
+								</button>
+							{/each}
+						</div>
+						<p class="text-[10px] font-bold text-zinc-500">
+							Loại hình mới chỉ được bật sau khi Super Admin duyệt và chỉ ảnh hưởng giá khi có phòng
+							thực tế.
+						</p>
+					</div>
+				{:else}
+					<p class="text-xs font-bold text-green-700">Đã bật tất cả loại hình.</p>
+				{/if}
 			</div>
 
 			<div class="space-y-2">
@@ -346,6 +414,14 @@
 										request.createdAt
 									).toLocaleDateString('vi-VN')}
 								</p>
+								{#if request.requestedRentalTypes}
+									<p class="mt-1 text-xs font-bold text-blue-700">
+										Thêm loại hình: {request.requestedRentalTypes
+											.split(',')
+											.map(rentalTypeLabel)
+											.join(', ')}
+									</p>
+								{/if}
 								{#if request.adminNote}<p class="mt-1 text-xs font-bold">
 										Phản hồi: {request.adminNote}
 									</p>{/if}

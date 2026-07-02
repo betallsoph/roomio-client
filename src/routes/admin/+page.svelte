@@ -93,6 +93,7 @@
 		id: string;
 		requestedTier: string;
 		requestedPeriod: 'MONTHLY' | 'YEARLY';
+		requestedRentalTypes: string | null;
 		quotedPeriodPrice: number | null;
 		standardRoomCount: number;
 		colivingRoomCount: number;
@@ -940,6 +941,11 @@
 																: formatCurrency(request.quotedPeriodPrice)} · {request.standardRoomCount}
 															chuẩn + {request.colivingRoomCount} co-living
 														</p>
+														{#if request.requestedRentalTypes}
+															<p class="mt-1 text-[10px] font-black text-blue-700">
+																Thêm loại hình: {rentalTypesLabel(request.requestedRentalTypes)}
+															</p>
+														{/if}
 														{#if request.note}<p class="mt-1 text-[10px] font-bold">
 																“{request.note}”
 															</p>{/if}
