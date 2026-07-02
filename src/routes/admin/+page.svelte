@@ -938,8 +938,9 @@
 														<p class="mt-0.5 text-[10px] font-bold text-zinc-500">
 															{request.quotedPeriodPrice === null
 																? 'Liên hệ'
-																: formatCurrency(request.quotedPeriodPrice)} · {request.standardRoomCount}
-															chuẩn + {request.colivingRoomCount} co-living
+																: formatCurrency(request.quotedPeriodPrice)} · Phòng dự kiến: {request.standardRoomCount}
+															chuẩn + {request.colivingRoomCount}
+															co-living
 														</p>
 														{#if request.requestedRentalTypes}
 															<p class="mt-1 text-[10px] font-black text-blue-700">

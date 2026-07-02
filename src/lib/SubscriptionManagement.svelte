@@ -25,7 +25,10 @@
 			period: Period;
 			validUntil: string | null;
 			enabledRentalTypes: string[];
+			standardRoomLimit: number | null;
+			colivingRoomLimit: number | null;
 		};
+		actualRoomCounts: { standard: number; coliving: number };
 	}
 
 	interface ChangeRequest {
@@ -33,6 +36,8 @@
 		requestedTier: string;
 		requestedPeriod: Period;
 		requestedRentalTypes: string | null;
+		standardRoomCount: number;
+		colivingRoomCount: number;
 		quotedPeriodPrice: number | null;
 		status: 'pending' | 'approved' | 'rejected' | 'cancelled';
 		note: string | null;
@@ -41,12 +46,12 @@
 	}
 
 	const TIER_OPTIONS = [
-		{ value: 'FREE', label: 'Free', maxRooms: 3 },
-		{ value: 'ROOMS_4_10', label: '4–10 phòng', maxRooms: 10 },
-		{ value: 'ROOMS_11_25', label: '11–25 phòng', maxRooms: 25 },
-		{ value: 'ROOMS_26_50', label: '26–50 phòng', maxRooms: 50 },
-		{ value: 'ROOMS_51_100', label: '51–100 phòng', maxRooms: 100 },
-		{ value: 'ROOMS_101_PLUS', label: 'Trên 100 phòng', maxRooms: null }
+		{ value: 'FREE', label: 'Free', minRooms: 0, maxRooms: 3 },
+		{ value: 'ROOMS_4_10', label: '4–10 phòng', minRooms: 4, maxRooms: 10 },
+		{ value: 'ROOMS_11_25', label: '11–25 phòng', minRooms: 11, maxRooms: 25 },
+		{ value: 'ROOMS_26_50', label: '26–50 phòng', minRooms: 26, maxRooms: 50 },
+		{ value: 'ROOMS_51_100', label: '51–100 phòng', minRooms: 51, maxRooms: 100 },
+		{ value: 'ROOMS_101_PLUS', label: 'Trên 100 phòng', minRooms: 101, maxRooms: null }
 	];
 	const RENTAL_TYPE_OPTIONS = [
 		{ value: 'APARTMENT', label: 'Chung cư' },
@@ -65,6 +70,8 @@
 	let selectedPeriod = $state<Period>('MONTHLY');
 	let note = $state('');
 	let addRentalTypes = $state<string[]>([]);
+	let plannedStandardRooms = $state(0);
+	let plannedColivingRooms = $state(0);
 
 	onMount(load);
 
@@ -80,9 +87,33 @@
 			if (!quoteRes.ok) throw new Error(quoteData.error || 'Không tải được giá gói');
 			if (!requestRes.ok) throw new Error(requestData.error || 'Không tải được yêu cầu đổi gói');
 			quote = quoteData;
-			selectedTier = quoteData.activeSubscription.tier;
 			selectedPeriod = quoteData.activeSubscription.period;
+			const actual = quoteData.actualRoomCounts;
+			plannedStandardRooms = quoteData.activeSubscription.standardRoomLimit ?? actual.standard;
+			plannedColivingRooms = quoteData.activeSubscription.colivingRoomLimit ?? actual.coliving;
+			const activeMinRooms =
+				TIER_OPTIONS.find((option) => option.value === quoteData.activeSubscription.tier)
+					?.minRooms ?? 0;
+			const missingRooms = Math.max(
+				0,
+				activeMinRooms - plannedStandardRooms - plannedColivingRooms
+			);
+			if (missingRooms > 0) {
+				if (
+					quoteData.activeSubscription.enabledRentalTypes.includes('COLIVING') &&
+					quoteData.activeSubscription.enabledRentalTypes.length === 1
+				)
+					plannedColivingRooms += missingRooms;
+				else plannedStandardRooms += missingRooms;
+			}
+			selectedTier = tierForRoomCount(plannedStandardRooms + plannedColivingRooms);
 			requests = requestData;
+			if (
+				plannedStandardRooms !== quoteData.standardRoomCount ||
+				plannedColivingRooms !== quoteData.colivingRoomCount
+			) {
+				await refreshQuote();
+			}
 		} catch (error: any) {
 			toast.error(error.message);
 		} finally {
@@ -90,11 +121,16 @@
 		}
 	}
 
-	async function refreshQuote(tier = selectedTier, period = selectedPeriod) {
+	async function refreshQuote(
+		tier = selectedTier,
+		period = selectedPeriod,
+		standardRooms = plannedStandardRooms,
+		colivingRooms = plannedColivingRooms
+	) {
 		isQuoteLoading = true;
 		try {
 			const res = await fetch(
-				`/api/subscription/quote?tier=${encodeURIComponent(tier)}&period=${period}`
+				`/api/subscription/quote?tier=${encodeURIComponent(tier)}&period=${period}&standardRoomCount=${standardRooms}&colivingRoomCount=${colivingRooms}`
 			);
 			const data = await res.json();
 			if (!res.ok) throw new Error(data.error || 'Không tính được giá gói');
@@ -106,14 +142,30 @@
 		}
 	}
 
-	function chooseTier(tier: string) {
-		selectedTier = tier;
-		refreshQuote(tier, selectedPeriod);
-	}
-
 	function choosePeriod(period: Period) {
 		selectedPeriod = period;
 		refreshQuote(selectedTier, period);
+	}
+
+	function tierForRoomCount(roomCount: number) {
+		return (
+			TIER_OPTIONS.find(
+				(option) =>
+					roomCount >= option.minRooms && (option.maxRooms === null || roomCount <= option.maxRooms)
+			)?.value ?? 'ROOMS_101_PLUS'
+		);
+	}
+
+	function updatePlannedRooms(group: 'STANDARD' | 'COLIVING', rawValue: string) {
+		if (!quote) return;
+		const value = Math.max(0, Math.floor(Number(rawValue) || 0));
+		if (group === 'STANDARD') {
+			plannedStandardRooms = Math.max(value, quote.actualRoomCounts.standard);
+		} else {
+			plannedColivingRooms = Math.max(value, quote.actualRoomCounts.coliving);
+		}
+		selectedTier = tierForRoomCount(plannedStandardRooms + plannedColivingRooms);
+		refreshQuote();
 	}
 
 	async function submitRequest() {
@@ -131,6 +183,8 @@
 					requestedTier: selectedTier,
 					requestedPeriod: selectedPeriod,
 					addRentalTypes,
+					standardRoomCount: plannedStandardRooms,
+					colivingRoomCount: plannedColivingRooms,
 					note
 				})
 			});
@@ -181,9 +235,19 @@
 	}
 
 	function toggleRentalType(type: string) {
-		addRentalTypes = addRentalTypes.includes(type)
+		const removing = addRentalTypes.includes(type);
+		addRentalTypes = removing
 			? addRentalTypes.filter((item) => item !== type)
 			: [...addRentalTypes, type];
+		if (
+			removing &&
+			type === 'COLIVING' &&
+			!quote?.activeSubscription.enabledRentalTypes.includes('COLIVING')
+		) {
+			plannedColivingRooms = quote?.actualRoomCounts.coliving ?? 0;
+			selectedTier = tierForRoomCount(plannedStandardRooms + plannedColivingRooms);
+			refreshQuote();
+		}
 	}
 
 	function money(value: number | null) {
@@ -209,6 +273,12 @@
 			(option) => !quote?.activeSubscription.enabledRentalTypes.includes(option.value)
 		)
 	);
+	const canPlanColiving = $derived(
+		Boolean(
+			quote?.activeSubscription.enabledRentalTypes.includes('COLIVING') ||
+			addRentalTypes.includes('COLIVING')
+		)
+	);
 </script>
 
 {#if isLoading}
@@ -220,19 +290,36 @@
 		<section class="rounded-lg border-2 border-black bg-white p-5">
 			<div class="flex flex-wrap items-start justify-between gap-4">
 				<div>
-					<p class="text-xs font-bold text-zinc-500">Gói hiện tại</p>
+					<p class="text-xs font-bold text-zinc-500">Gói và loại hình hiện tại</p>
 					<h2 class="mt-1 text-xl font-black">{tierLabel(quote.activeSubscription.tier)}</h2>
 					<p class="mt-1 text-xs font-bold text-zinc-500">
 						{quote.activeSubscription.period === 'YEARLY' ? 'Theo năm' : 'Theo tháng'} · Hạn
 						{date(quote.activeSubscription.validUntil)}
 					</p>
+					<div class="mt-3 flex flex-wrap gap-1.5">
+						{#each quote.activeSubscription.enabledRentalTypes as type}
+							<span
+								class="rounded-[5px] bg-zinc-100 px-2.5 py-1 text-[10px] font-black text-zinc-600"
+							>
+								{rentalTypeLabel(type)}
+							</span>
+						{/each}
+					</div>
 				</div>
 				<div class="rounded-lg bg-blue-50 px-4 py-3 text-right">
-					<p class="text-xs font-bold text-blue-800">Số phòng thực tế</p>
-					<p class="mt-1 text-lg font-black">{quote.roomCount} phòng</p>
-					<p class="text-[10px] font-bold text-zinc-500">
-						{quote.standardRoomCount} chuẩn + {quote.colivingRoomCount} co-living
+					<p class="text-xs font-bold text-blue-800">Đang sử dụng</p>
+					<p class="mt-1 text-lg font-black">
+						{quote.actualRoomCounts.standard + quote.actualRoomCounts.coliving} phòng
 					</p>
+					<p class="text-[10px] font-bold text-zinc-500">
+						{quote.actualRoomCounts.standard} chuẩn + {quote.actualRoomCounts.coliving} co-living
+					</p>
+					{#if quote.activeSubscription.standardRoomLimit !== null || quote.activeSubscription.colivingRoomLimit !== null}
+						<p class="mt-1 text-[10px] font-black text-blue-800">
+							Hạn mức {quote.activeSubscription.standardRoomLimit ?? 0} + {quote.activeSubscription
+								.colivingRoomLimit ?? 0}
+						</p>
+					{/if}
 				</div>
 			</div>
 		</section>
@@ -245,72 +332,59 @@
 				</p>
 			</div>
 
-			<div class="space-y-3 rounded-lg border-2 border-black bg-white p-4">
+			{#if availableRentalTypes.length > 0}
 				<div class="space-y-2">
-					<p class="text-xs font-bold text-zinc-600">Loại hình đang quản lý</p>
+					<p class="text-xs font-bold text-zinc-600">Thêm loại hình quản lý khác</p>
 					<div class="flex flex-wrap gap-2">
-						{#each quote.activeSubscription.enabledRentalTypes as type}
-							<span class="rounded-[6px] bg-zinc-100 px-3 py-2 text-xs font-black text-zinc-600">
-								{rentalTypeLabel(type)}
-							</span>
+						{#each availableRentalTypes as option}
+							<button
+								type="button"
+								disabled={hasPendingRequest}
+								onclick={() => toggleRentalType(option.value)}
+								class="rounded-[6px] border-2 border-black px-3 py-2 text-xs font-black transition-colors disabled:opacity-50 {addRentalTypes.includes(
+									option.value
+								)
+									? 'bg-blue-300 text-black'
+									: 'bg-white text-zinc-500 hover:bg-zinc-100'}"
+							>
+								{option.label}
+							</button>
 						{/each}
 					</div>
 				</div>
-
-				{#if availableRentalTypes.length > 0}
-					<div class="space-y-2">
-						<p class="text-xs font-bold text-zinc-600">Thêm loại hình quản lý khác</p>
-						<div class="grid grid-cols-2 gap-2 sm:grid-cols-3">
-							{#each availableRentalTypes as option}
-								<button
-									type="button"
-									disabled={hasPendingRequest}
-									onclick={() => toggleRentalType(option.value)}
-									class="rounded-[6px] border-2 border-black px-3 py-2 text-left text-xs font-black transition-colors disabled:opacity-50 {addRentalTypes.includes(
-										option.value
-									)
-										? 'bg-blue-300 text-black'
-										: 'bg-white text-zinc-500 hover:bg-zinc-100'}"
-								>
-									{option.label}
-								</button>
-							{/each}
-						</div>
-						<p class="text-[10px] font-bold text-zinc-500">
-							Loại hình mới chỉ được bật sau khi Super Admin duyệt và chỉ ảnh hưởng giá khi có phòng
-							thực tế.
-						</p>
-					</div>
-				{:else}
-					<p class="text-xs font-bold text-green-700">Đã bật tất cả loại hình.</p>
-				{/if}
-			</div>
+			{/if}
 
 			<div class="space-y-2">
-				<p class="text-xs font-bold text-zinc-600">Gói số phòng</p>
-				<div class="grid grid-cols-2 gap-2 sm:grid-cols-3">
-					{#each TIER_OPTIONS as option}
-						{@const unavailable = option.maxRooms !== null && quote.roomCount > option.maxRooms}
-						<button
-							type="button"
-							disabled={unavailable || isQuoteLoading}
-							onclick={() => chooseTier(option.value)}
-							class="rounded-[6px] border-2 border-black px-3 py-3 text-left transition-colors disabled:cursor-not-allowed disabled:opacity-40 {selectedTier ===
-							option.value
-								? 'bg-blue-300 text-black'
-								: 'bg-white text-zinc-500 hover:bg-zinc-100'}"
-						>
-							<span class="block text-xs font-black">{option.label}</span>
-							<span class="mt-1 block text-[10px] font-bold">
-								{unavailable
-									? 'Không đủ sức chứa'
-									: option.value === quote.recommendedTier
-										? 'Phù hợp hiện tại'
-										: 'Xem giá'}
-							</span>
-						</button>
-					{/each}
+				<div class="flex items-end justify-between gap-3">
+					<p class="text-xs font-bold text-zinc-600">Số phòng dự kiến sau điều chỉnh</p>
+					<p class="text-xs font-black text-blue-700">Gói đề xuất: {tierLabel(selectedTier)}</p>
 				</div>
+				<div class="grid grid-cols-2 gap-2">
+					<label class="text-[10px] font-bold text-zinc-500">
+						Trọ / Chung cư / CHDV / Sleepbox
+						<input
+							type="number"
+							min={quote.actualRoomCounts.standard}
+							value={plannedStandardRooms}
+							onchange={(event) => updatePlannedRooms('STANDARD', event.currentTarget.value)}
+							class="mt-1 w-full rounded-[6px] border-2 border-black px-3 py-2 text-sm font-black text-black"
+						/>
+					</label>
+					<label class="text-[10px] font-bold text-zinc-500">
+						Co-living / share căn
+						<input
+							type="number"
+							min={quote.actualRoomCounts.coliving}
+							value={plannedColivingRooms}
+							disabled={!canPlanColiving}
+							onchange={(event) => updatePlannedRooms('COLIVING', event.currentTarget.value)}
+							class="mt-1 w-full rounded-[6px] border-2 border-black px-3 py-2 text-sm font-black text-black disabled:bg-zinc-100 disabled:text-zinc-400"
+						/>
+					</label>
+				</div>
+				<p class="text-[10px] font-bold text-zinc-500">
+					Hệ thống tính gói từ số phòng dự kiến. Sau khi duyệt, không thể tạo vượt hạn mức này.
+				</p>
 			</div>
 
 			<div class="space-y-2">
@@ -413,6 +487,10 @@
 									{money(request.quotedPeriodPrice)} · {new Date(
 										request.createdAt
 									).toLocaleDateString('vi-VN')}
+								</p>
+								<p class="mt-1 text-xs font-bold text-zinc-500">
+									Dự kiến {request.standardRoomCount} phòng chuẩn + {request.colivingRoomCount}
+									co-living
 								</p>
 								{#if request.requestedRentalTypes}
 									<p class="mt-1 text-xs font-bold text-blue-700">
