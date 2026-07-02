@@ -666,26 +666,15 @@
 			editRentalTypes = editRentalTypes.filter((item) => item !== type);
 			if (type === 'COLIVING') editColivingRooms = 0;
 			if (!editRentalTypes.some((item) => item !== 'COLIVING')) editStandardRooms = 0;
-			subType = suggestedTierForRoomCount(editStandardRooms + editColivingRooms);
 			return;
 		}
 		editRentalTypes = [...editRentalTypes, type];
-	}
-
-	function suggestedTierForRoomCount(roomCount: number) {
-		if (roomCount <= 3) return 'FREE';
-		if (roomCount <= 10) return 'ROOMS_4_10';
-		if (roomCount <= 25) return 'ROOMS_11_25';
-		if (roomCount <= 50) return 'ROOMS_26_50';
-		if (roomCount <= 100) return 'ROOMS_51_100';
-		return 'ROOMS_101_PLUS';
 	}
 
 	function updateEditRoomLimit(group: 'STANDARD' | 'COLIVING', rawValue: string) {
 		const value = Math.max(0, Math.floor(Number(rawValue) || 0));
 		if (group === 'STANDARD') editStandardRooms = value;
 		else editColivingRooms = value;
-		subType = suggestedTierForRoomCount(editStandardRooms + editColivingRooms);
 	}
 
 	function toggleCreateRentalType(type: string) {
@@ -709,11 +698,7 @@
 		const value = Math.max(0, Math.floor(Number(rawValue) || 0));
 		createForm = {
 			...createForm,
-			...(group === 'STANDARD' ? { standardRoomLimit: value } : { colivingRoomLimit: value }),
-			subscriptionType: suggestedTierForRoomCount(
-				(group === 'STANDARD' ? value : createForm.standardRoomLimit) +
-					(group === 'COLIVING' ? value : createForm.colivingRoomLimit)
-			)
+			...(group === 'STANDARD' ? { standardRoomLimit: value } : { colivingRoomLimit: value })
 		};
 	}
 </script>
@@ -1317,14 +1302,7 @@
 					</div>
 
 					<div class="space-y-2">
-						<div class="flex items-end justify-between gap-3">
-							<p class="block text-xs font-bold text-zinc-600">Số phòng đã thương lượng</p>
-							<p class="text-xs font-black text-blue-700">
-								Gợi ý: {subscriptionTierLabel(
-									suggestedTierForRoomCount(editStandardRooms + editColivingRooms)
-								)}
-							</p>
-						</div>
+						<p class="block text-xs font-bold text-zinc-600">Số phòng đã thương lượng</p>
 						<div class="grid grid-cols-2 gap-2">
 							{#if editRentalTypes.some((type) => type !== 'COLIVING')}
 								<label class="text-[10px] font-bold text-zinc-500">
@@ -1539,16 +1517,7 @@
 					</div>
 
 					<div class="space-y-2">
-						<div class="flex items-end justify-between gap-3">
-							<p class="block text-xs font-bold text-zinc-600">Số phòng đã thương lượng</p>
-							<p class="text-xs font-black text-blue-700">
-								Gợi ý: {subscriptionTierLabel(
-									suggestedTierForRoomCount(
-										createForm.standardRoomLimit + createForm.colivingRoomLimit
-									)
-								)}
-							</p>
-						</div>
+						<p class="block text-xs font-bold text-zinc-600">Số phòng đã thương lượng</p>
 						<div class="grid grid-cols-2 gap-2">
 							{#if createForm.enabledRentalTypes.some((type) => type !== 'COLIVING')}
 								<label class="text-[10px] font-bold text-zinc-500">
