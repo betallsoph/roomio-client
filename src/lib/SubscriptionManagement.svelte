@@ -294,6 +294,9 @@
 	}
 
 	const hasPendingRequest = $derived(requests.some((request) => request.status === 'pending'));
+	const selectedExpansionTypes = $derived(
+		RENTAL_TYPE_OPTIONS.filter((option) => roomAdditions[option.value] !== undefined)
+	);
 </script>
 
 {#if isLoading}
@@ -354,38 +357,43 @@
 				</div>
 				<div class="grid grid-cols-2 gap-2 sm:grid-cols-3">
 					{#each RENTAL_TYPE_OPTIONS as option}
-						<div class="space-y-1.5">
-							<button
-								type="button"
-								disabled={hasPendingRequest}
-								onclick={() => toggleRentalType(option.value)}
-								class="w-full rounded-[6px] border-2 border-black px-3 py-2 text-left text-xs font-black transition-colors disabled:opacity-50 {roomAdditions[
-									option.value
-								] !== undefined
-									? 'bg-blue-300 text-black'
-									: 'bg-white text-zinc-500 hover:bg-zinc-100'}"
-							>
-								{option.label}
-								{#if quote.activeSubscription.enabledRentalTypes.includes(option.value)}
-									<span class="mt-0.5 block text-[9px]">Đang quản lý</span>
-								{/if}
-							</button>
-							{#if roomAdditions[option.value] !== undefined}
+						<button
+							type="button"
+							disabled={hasPendingRequest}
+							onclick={() => toggleRentalType(option.value)}
+							class="min-h-14 rounded-[6px] border-2 border-black px-3 py-2 text-left text-xs font-black transition-colors disabled:opacity-50 {roomAdditions[
+								option.value
+							] !== undefined
+								? 'bg-blue-300 text-black'
+								: 'bg-white text-zinc-500 hover:bg-zinc-100'}"
+						>
+							{option.label}
+							{#if quote.activeSubscription.enabledRentalTypes.includes(option.value)}
+								<span class="mt-0.5 block text-[9px]">Đang quản lý</span>
+							{/if}
+						</button>
+					{/each}
+				</div>
+				{#if selectedExpansionTypes.length > 0}
+					<div class="mt-3 rounded-lg bg-zinc-50 p-3">
+						<p class="mb-2 text-xs font-black text-zinc-600">Số phòng muốn thêm</p>
+						<div class="grid grid-cols-2 gap-2 sm:grid-cols-3">
+							{#each selectedExpansionTypes as option}
 								<label class="block text-[10px] font-bold text-zinc-500">
-									Số phòng muốn thêm
+									{option.label}
 									<input
 										type="number"
 										min="1"
 										value={roomAdditions[option.value]}
 										onchange={(event) =>
 											updateRoomAddition(option.value, event.currentTarget.value)}
-										class="mt-1 w-full rounded-[6px] border-2 border-black px-3 py-2 text-sm font-black text-black"
+										class="mt-1 w-full rounded-[6px] border-2 border-black bg-white px-3 py-2 text-sm font-black text-black"
 									/>
 								</label>
-							{/if}
+							{/each}
 						</div>
-					{/each}
-				</div>
+					</div>
+				{/if}
 				<p class="text-[10px] font-bold text-zinc-500">
 					Sau điều chỉnh: {plannedStandardRooms} trọ/CHDV/Sleepbox + {plannedColivingRooms} chung cư/co-living.
 					Hệ thống cộng phần mở rộng vào hạn mức hiện tại để tính giá.
