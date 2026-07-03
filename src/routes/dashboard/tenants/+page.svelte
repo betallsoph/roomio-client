@@ -553,6 +553,14 @@
 		return new Intl.NumberFormat('vi-VN').format(amount) + 'đ';
 	}
 
+	function openTenantDetail(tenant: Tenant) {
+		window.setTimeout(() => {
+			selectedTenant = tenant;
+			generatedLink = null;
+			isDetailDrawerOpen = true;
+		}, 200);
+	}
+
 	// Tự tải hợp đồng mỗi khi mở/đổi khách đang xem trong drawer
 	$effect(() => {
 		if (selectedTenant) loadTenantContracts(selectedTenant.id);
@@ -753,7 +761,11 @@
 			<div class="divide-y-2 divide-black bg-white sm:hidden">
 				{#each tenants as tenant}
 					{@const activeRoom = tenant.rooms[0]}
-					<div class="space-y-2 p-4">
+					<button
+						type="button"
+						onclick={() => openTenantDetail(tenant)}
+						class="block w-full space-y-2 p-4 text-left transition-colors hover:bg-blue-50"
+					>
 						<div class="flex items-start justify-between gap-2">
 							<div class="min-w-0">
 								<p class="text-sm font-black text-black">{tenant.user.name}</p>
@@ -767,23 +779,10 @@
 								<span class="shrink-0 text-xs font-black text-red-500">Chưa có phòng</span>
 							{/if}
 						</div>
-						<div class="flex items-center justify-between">
-							<span class="text-xs font-bold text-zinc-500">
-								Cọ: {formatCurrency(tenant.deposit)}
-							</span>
-							<button
-								onclick={() =>
-									window.setTimeout(() => {
-										selectedTenant = tenant;
-										generatedLink = null;
-										isDetailDrawerOpen = true;
-									}, 200)}
-								class="cursor-pointer rounded-[6px] border-2 border-black bg-white px-3 py-1.5 text-xs font-bold text-black shadow-secondary transition-all"
-							>
-								Hồ sơ
-							</button>
-						</div>
-					</div>
+						<p class="text-xs font-bold text-zinc-500">
+							Cọc: {formatCurrency(tenant.deposit)}
+						</p>
+					</button>
 				{/each}
 			</div>
 			<!-- Desktop table -->
@@ -795,16 +794,24 @@
 							<th class:hidden={isDetailDrawerOpen} class="px-4 py-3">Số điện thoại</th>
 							<th class="px-4 py-3">Đang ở phòng</th>
 							<th class:hidden={isDetailDrawerOpen} class="px-4 py-3">Ngày nhận phòng</th>
-							<th class="px-4 py-3">Tiền đặt cọc</th>
+							<th class:hidden={isDetailDrawerOpen} class="px-4 py-3">Tiền đặt cọc</th>
 							<th class:hidden={isDetailDrawerOpen} class="px-4 py-3">Số CCCD</th>
-							<th class="px-4 py-3 text-right">Hồ sơ</th>
 						</tr>
 					</thead>
 					<tbody>
 						{#each tenants as tenant}
 							{@const activeRoom = tenant.rooms[0]}
 							<tr
-								class="border-b border-black/15 font-semibold text-black transition-all hover:bg-slate-50 {selectedTenant?.id ===
+								onclick={() => openTenantDetail(tenant)}
+								onkeydown={(event) => {
+									if (event.key === 'Enter' || event.key === ' ') {
+										event.preventDefault();
+										openTenantDetail(tenant);
+									}
+								}}
+								tabindex="0"
+								aria-label={`Mở hồ sơ ${tenant.user.name}`}
+								class="cursor-pointer border-b border-black/15 font-semibold text-black transition-all hover:bg-slate-50 focus:bg-blue-50 focus:outline-none {selectedTenant?.id ===
 									tenant.id && isDetailDrawerOpen
 									? 'bg-blue-50'
 									: ''}"
@@ -823,22 +830,11 @@
 								<td class:hidden={isDetailDrawerOpen} class="px-4 py-4">
 									{new Date(tenant.moveInDate).toLocaleDateString('vi-VN')}
 								</td>
-								<td class="px-4 py-4 font-black">{formatCurrency(tenant.deposit)}</td>
+								<td class:hidden={isDetailDrawerOpen} class="px-4 py-4 font-black">
+									{formatCurrency(tenant.deposit)}
+								</td>
 								<td class:hidden={isDetailDrawerOpen} class="px-4 py-4 font-mono">
 									{tenant.idNumber}
-								</td>
-								<td class="px-4 py-4 text-right">
-									<button
-										onclick={() =>
-											window.setTimeout(() => {
-												selectedTenant = tenant;
-												generatedLink = null;
-												isDetailDrawerOpen = true;
-											}, 200)}
-										class="hover:bg-zinc-150 cursor-pointer rounded-[6px] border-2 border-black bg-white px-3 py-1.5 text-xs font-bold text-black shadow-secondary transition-all"
-									>
-										Hồ sơ
-									</button>
 								</td>
 							</tr>
 						{/each}
