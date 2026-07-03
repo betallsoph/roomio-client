@@ -46,11 +46,10 @@
 	let isSubmitting = $state(false);
 	const TAP_ACTION_DELAY = 200;
 	const RENTAL_TYPE_OPTIONS = [
-		{ value: 'APARTMENT', label: 'Chung cư' },
+		{ value: 'APARTMENT', label: 'Chung cư / Co-living' },
 		{ value: 'MOTEL', label: 'Phòng trọ' },
 		{ value: 'SERVICED_APARTMENT', label: 'Căn hộ dịch vụ' },
-		{ value: 'DORM', label: 'KTX / Sleepbox' },
-		{ value: 'COLIVING', label: 'Co-living / share căn' }
+		{ value: 'DORM', label: 'KTX / Sleepbox' }
 	];
 
 	onMount(() => {

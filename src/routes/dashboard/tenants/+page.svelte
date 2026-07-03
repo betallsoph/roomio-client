@@ -120,11 +120,10 @@
 	let quickPropertyRentalType = $state('APARTMENT');
 	let isCreatingProperty = $state(false);
 	const RENTAL_TYPE_OPTIONS = [
-		{ value: 'APARTMENT', label: 'Chung cư' },
+		{ value: 'APARTMENT', label: 'Chung cư / Co-living' },
 		{ value: 'MOTEL', label: 'Phòng trọ' },
 		{ value: 'SERVICED_APARTMENT', label: 'Căn hộ dịch vụ' },
-		{ value: 'DORM', label: 'KTX / Sleepbox' },
-		{ value: 'COLIVING', label: 'Co-living / share căn' }
+		{ value: 'DORM', label: 'KTX / Sleepbox' }
 	];
 
 	// Telegram Link Generation

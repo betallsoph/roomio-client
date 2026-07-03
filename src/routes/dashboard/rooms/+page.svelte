@@ -149,11 +149,10 @@
 	let isAddingAsset = $state(false);
 	const TAP_ACTION_DELAY = 200;
 	const RENTAL_TYPE_OPTIONS = [
-		{ value: 'APARTMENT', label: 'Chung cư' },
+		{ value: 'APARTMENT', label: 'Chung cư / Co-living' },
 		{ value: 'MOTEL', label: 'Phòng trọ' },
 		{ value: 'SERVICED_APARTMENT', label: 'Căn hộ dịch vụ' },
-		{ value: 'DORM', label: 'KTX / Sleepbox' },
-		{ value: 'COLIVING', label: 'Co-living / share căn' }
+		{ value: 'DORM', label: 'KTX / Sleepbox' }
 	];
 
 	onMount(() => {
@@ -593,7 +592,7 @@
 
 	function propertyLabel() {
 		const type = activeRentalType();
-		if (type === 'COLIVING') return 'Co-living / share căn';
+		if (type === 'COLIVING') return 'Chung cư / Co-living';
 		if (type === 'MOTEL') return 'Khu trọ';
 		if (type === 'SERVICED_APARTMENT') return 'Căn hộ dịch vụ';
 		if (type === 'DORM') return 'KTX / Sleepbox';

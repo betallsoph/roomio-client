@@ -236,11 +236,10 @@
 	}
 
 	const RENTAL_TYPE_OPTIONS = [
-		{ value: 'APARTMENT', label: 'Chung cư' },
+		{ value: 'APARTMENT', label: 'Chung cư / Co-living' },
 		{ value: 'MOTEL', label: 'Phòng trọ' },
 		{ value: 'SERVICED_APARTMENT', label: 'Căn hộ dịch vụ' },
-		{ value: 'DORM', label: 'KTX / Sleepbox' },
-		{ value: 'COLIVING', label: 'Co-living / share căn' }
+		{ value: 'DORM', label: 'KTX / Sleepbox' }
 	];
 
 	const SUBSCRIPTION_TIER_OPTIONS = [
@@ -645,9 +644,9 @@
 	function parseRentalTypes(value: string | null | undefined) {
 		const parsed = (value || 'APARTMENT')
 			.split(',')
-			.map((type) => type.trim())
+			.map((type) => (type.trim() === 'COLIVING' ? 'APARTMENT' : type.trim()))
 			.filter(Boolean);
-		return parsed.length > 0 ? parsed : ['APARTMENT'];
+		return parsed.length > 0 ? [...new Set(parsed)] : ['APARTMENT'];
 	}
 
 	function rentalTypesLabel(value: string | null | undefined) {
@@ -1332,7 +1331,7 @@
 							{/if}
 							{#if editRentalTypes.some(isColivingPricingType)}
 								<label class="text-[10px] font-bold text-zinc-500">
-									Co-living / share căn
+									Chung cư / share phòng
 									<input
 										type="number"
 										min="0"
@@ -1548,7 +1547,7 @@
 							{/if}
 							{#if createForm.enabledRentalTypes.some(isColivingPricingType)}
 								<label class="text-[10px] font-bold text-zinc-500">
-									Co-living / share căn
+									Chung cư / share phòng
 									<input
 										type="number"
 										min="0"
