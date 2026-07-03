@@ -689,7 +689,11 @@
 	}
 </script>
 
-<div class="space-y-6">
+<div
+	class="space-y-6 transition-[padding] duration-200 {isDetailDrawerOpen
+		? 'tenant-split-open xl:pr-[calc(clamp(38rem,42vw,46rem)+1.5rem)]'
+		: ''}"
+>
 	<div class="flex justify-start">
 		<button
 			onclick={() => (isAddDialogOpen = true)}
@@ -788,11 +792,11 @@
 					<thead>
 						<tr class="border-b-2 border-black bg-blue-300 text-xs font-black text-black">
 							<th class="px-4 py-3">Tên khách thuê</th>
-							<th class="px-4 py-3">Số điện thoại</th>
+							<th class:hidden={isDetailDrawerOpen} class="px-4 py-3">Số điện thoại</th>
 							<th class="px-4 py-3">Đang ở phòng</th>
-							<th class="px-4 py-3">Ngày nhận phòng</th>
-							<th class="px-4 py-3">Tiền đặt cọ</th>
-							<th class="px-4 py-3">Số CCCD</th>
+							<th class:hidden={isDetailDrawerOpen} class="px-4 py-3">Ngày nhận phòng</th>
+							<th class="px-4 py-3">Tiền đặt cọc</th>
+							<th class:hidden={isDetailDrawerOpen} class="px-4 py-3">Số CCCD</th>
 							<th class="px-4 py-3 text-right">Hồ sơ</th>
 						</tr>
 					</thead>
@@ -800,10 +804,13 @@
 						{#each tenants as tenant}
 							{@const activeRoom = tenant.rooms[0]}
 							<tr
-								class="border-b border-black/15 font-semibold text-black transition-all hover:bg-slate-50"
+								class="border-b border-black/15 font-semibold text-black transition-all hover:bg-slate-50 {selectedTenant?.id ===
+									tenant.id && isDetailDrawerOpen
+									? 'bg-blue-50'
+									: ''}"
 							>
 								<td class="px-4 py-4 font-black">{tenant.user.name}</td>
-								<td class="px-4 py-4">{tenant.user.phone}</td>
+								<td class:hidden={isDetailDrawerOpen} class="px-4 py-4">{tenant.user.phone}</td>
 								<td class="px-4 py-4">
 									{#if activeRoom}
 										<span class="font-black text-blue-600">
@@ -813,9 +820,13 @@
 										<span class="font-black text-red-500">Chưa nhận phòng</span>
 									{/if}
 								</td>
-								<td class="px-4 py-4">{new Date(tenant.moveInDate).toLocaleDateString('vi-VN')}</td>
+								<td class:hidden={isDetailDrawerOpen} class="px-4 py-4">
+									{new Date(tenant.moveInDate).toLocaleDateString('vi-VN')}
+								</td>
 								<td class="px-4 py-4 font-black">{formatCurrency(tenant.deposit)}</td>
-								<td class="px-4 py-4 font-mono">{tenant.idNumber}</td>
+								<td class:hidden={isDetailDrawerOpen} class="px-4 py-4 font-mono">
+									{tenant.idNumber}
+								</td>
 								<td class="px-4 py-4 text-right">
 									<button
 										onclick={() =>
@@ -1281,7 +1292,7 @@
 	{#if isDetailDrawerOpen && selectedTenant}
 		<!-- Overlay -->
 		<div
-			class="fixed inset-0 z-50 flex justify-end bg-slate-900/50 backdrop-blur-sm"
+			class="fixed inset-0 z-50 flex justify-end bg-slate-900/50 backdrop-blur-sm xl:pointer-events-none xl:bg-transparent xl:backdrop-blur-none"
 			onclick={() => (isDetailDrawerOpen = false)}
 			onkeydown={(e) => e.key === 'Escape' && (isDetailDrawerOpen = false)}
 			role="button"
@@ -1289,7 +1300,7 @@
 		>
 			<!-- Drawer Content: Brutallist Panel border-l-2 -->
 			<div
-				class="flex h-full w-full max-w-md animate-[slide-left_0.2s_ease-out] flex-col justify-between overflow-hidden border-l-2 border-black bg-white shadow-primary"
+				class="flex h-full w-full max-w-xl animate-[slide-left_0.2s_ease-out] flex-col justify-between overflow-hidden border-l-2 border-black bg-white xl:pointer-events-auto xl:w-[clamp(38rem,42vw,46rem)] xl:max-w-none"
 				onclick={(e) => e.stopPropagation()}
 				onkeydown={(e) => e.stopPropagation()}
 				role="dialog"

@@ -246,6 +246,12 @@
 	}
 }
 
+@media (min-width: 1280px) {
+	.dashboard-main:has(.tenant-split-open) {
+		max-width: none;
+	}
+}
+
 @keyframes tap-bounce {
 	0% {
 		transform: translate(var(--tap-depth, 1px), var(--tap-depth, 1px));

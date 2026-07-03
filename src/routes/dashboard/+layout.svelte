@@ -178,7 +178,7 @@
 					</button>
 				</header>
 
-				<main class="mx-auto w-full max-w-7xl flex-1 px-5 py-6 sm:px-6 sm:py-8">
+				<main class="dashboard-main mx-auto w-full max-w-7xl flex-1 px-5 py-6 sm:px-6 sm:py-8">
 					{@render children()}
 				</main>
 			</div>
