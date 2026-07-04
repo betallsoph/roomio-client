@@ -149,10 +149,17 @@
 	let isAddingAsset = $state(false);
 	const TAP_ACTION_DELAY = 200;
 	const RENTAL_TYPE_OPTIONS = [
-		{ value: 'APARTMENT', label: 'Chung cư / Co-living' },
-		{ value: 'MOTEL', label: 'Phòng trọ' },
-		{ value: 'SERVICED_APARTMENT', label: 'Căn hộ dịch vụ' },
-		{ value: 'DORM', label: 'KTX / Sleepbox' }
+		{
+			value: 'APARTMENT',
+			label: 'Share phòng chung cư / Co-living / Share phòng',
+			lines: ['Share phòng chung cư', 'Co-living', 'Share phòng']
+		},
+		{
+			value: 'MOTEL',
+			label: 'Phòng trọ truyền thống / Căn hộ dịch vụ',
+			lines: ['Phòng trọ truyền thống', 'Căn hộ dịch vụ']
+		},
+		{ value: 'DORM', label: 'KTX / Sleepbox', lines: ['KTX', 'Sleepbox'] }
 	];
 
 	onMount(() => {
@@ -1176,7 +1183,7 @@
 												? 'bg-blue-300 text-black'
 												: 'bg-white text-zinc-500 hover:bg-zinc-100'}"
 										>
-											{option.label}
+											{#each option.lines as line}<span class="block">{line}</span>{/each}
 										</button>
 									{/each}
 								</div>

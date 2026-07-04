@@ -236,10 +236,17 @@
 	}
 
 	const RENTAL_TYPE_OPTIONS = [
-		{ value: 'APARTMENT', label: 'Chung cư / Co-living' },
-		{ value: 'MOTEL', label: 'Phòng trọ' },
-		{ value: 'SERVICED_APARTMENT', label: 'Căn hộ dịch vụ' },
-		{ value: 'DORM', label: 'KTX / Sleepbox' }
+		{
+			value: 'APARTMENT',
+			label: 'Share phòng chung cư / Co-living / Share phòng',
+			lines: ['Share phòng chung cư', 'Co-living', 'Share phòng']
+		},
+		{
+			value: 'MOTEL',
+			label: 'Phòng trọ truyền thống / Căn hộ dịch vụ',
+			lines: ['Phòng trọ truyền thống', 'Căn hộ dịch vụ']
+		},
+		{ value: 'DORM', label: 'KTX / Sleepbox', lines: ['KTX', 'Sleepbox'] }
 	];
 
 	const SUBSCRIPTION_TIER_OPTIONS = [
@@ -644,7 +651,12 @@
 	function parseRentalTypes(value: string | null | undefined) {
 		const parsed = (value || 'APARTMENT')
 			.split(',')
-			.map((type) => (type.trim() === 'COLIVING' ? 'APARTMENT' : type.trim()))
+			.map((type) => {
+				const normalized = type.trim();
+				if (normalized === 'COLIVING') return 'APARTMENT';
+				if (normalized === 'SERVICED_APARTMENT') return 'MOTEL';
+				return normalized;
+			})
 			.filter(Boolean);
 		return parsed.length > 0 ? [...new Set(parsed)] : ['APARTMENT'];
 	}
@@ -1308,7 +1320,7 @@
 										? 'bg-blue-300 text-black'
 										: 'bg-white text-zinc-500 hover:bg-zinc-100'}"
 								>
-									{option.label}
+									{#each option.lines as line}<span class="block">{line}</span>{/each}
 								</button>
 							{/each}
 						</div>
@@ -1523,7 +1535,7 @@
 										? 'bg-blue-300 text-black'
 										: 'bg-white text-zinc-500 hover:bg-zinc-100'}"
 								>
-									{option.label}
+									{#each option.lines as line}<span class="block">{line}</span>{/each}
 								</button>
 							{/each}
 						</div>
