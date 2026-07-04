@@ -254,8 +254,10 @@
 		{ value: 'ROOMS_4_10', label: '4–10 phòng', range: 'Tối đa 10 phòng' },
 		{ value: 'ROOMS_11_25', label: '11–25 phòng', range: 'Tối đa 25 phòng' },
 		{ value: 'ROOMS_26_50', label: '26–50 phòng', range: 'Tối đa 50 phòng' },
-		{ value: 'ROOMS_51_100', label: '51–100 phòng', range: 'Tối đa 100 phòng' },
-		{ value: 'ROOMS_101_PLUS', label: 'Trên 100 phòng', range: 'Báo giá riêng' }
+		{ value: 'ROOMS_51_80', label: '51–80 phòng', range: 'Tối đa 80 phòng' },
+		{ value: 'ROOMS_81_100', label: '81–100 phòng', range: 'Tối đa 100 phòng' },
+		{ value: 'ROOMS_101_150', label: '101–150 phòng', range: 'Tối đa 150 phòng' },
+		{ value: 'ROOMS_151_PLUS', label: 'Trên 150 phòng', range: 'Báo giá riêng' }
 	];
 
 	const STANDARD_TIER_PRICES: Record<string, number | null> = {
@@ -263,16 +265,20 @@
 		ROOMS_4_10: 149_000,
 		ROOMS_11_25: 349_000,
 		ROOMS_26_50: 699_000,
-		ROOMS_51_100: 1_399_000,
-		ROOMS_101_PLUS: null
+		ROOMS_51_80: 1_119_000,
+		ROOMS_81_100: 1_399_000,
+		ROOMS_101_150: 2_099_000,
+		ROOMS_151_PLUS: null
 	};
 	const COLIVING_TIER_PRICES: Record<string, number | null> = {
 		FREE: 0,
 		ROOMS_4_10: 129_000,
 		ROOMS_11_25: 319_000,
 		ROOMS_26_50: 629_000,
-		ROOMS_51_100: 1_199_000,
-		ROOMS_101_PLUS: null
+		ROOMS_51_80: 959_000,
+		ROOMS_81_100: 1_199_000,
+		ROOMS_101_150: 1_799_000,
+		ROOMS_151_PLUS: null
 	};
 
 	function isColivingPricingType(type: string) {
@@ -280,7 +286,7 @@
 	}
 
 	function selectedTierPrice(tier: string, rentalTypes: string[], period: 'MONTHLY' | 'YEARLY') {
-		if (tier === 'ROOMS_101_PLUS') return null;
+		if (tier === 'ROOMS_151_PLUS') return null;
 		const hasStandard = rentalTypes.some((type) => !isColivingPricingType(type));
 		const hasColiving = rentalTypes.some(isColivingPricingType);
 		const monthly = hasStandard
@@ -298,7 +304,7 @@
 	) {
 		const hasStandard = rentalTypes.some((type) => !isColivingPricingType(type));
 		const hasColiving = rentalTypes.some(isColivingPricingType);
-		if (tier !== 'FREE' && tier !== 'ROOMS_101_PLUS' && hasStandard && hasColiving) {
+		if (tier !== 'FREE' && tier !== 'ROOMS_151_PLUS' && hasStandard && hasColiving) {
 			return 'Tự chọn giá tốt nhất';
 		}
 		const price = selectedTierPrice(tier, rentalTypes, period);
@@ -631,7 +637,7 @@
 	}
 
 	function planBadgeClass(plan: string) {
-		if (plan === 'ROOMS_101_PLUS') return 'bg-amber-100 text-amber-900';
+		if (plan === 'ROOMS_151_PLUS') return 'bg-amber-100 text-amber-900';
 		if (plan !== 'FREE') return 'bg-blue-100 text-blue-800';
 		return 'bg-zinc-100 text-zinc-600';
 	}

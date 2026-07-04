@@ -51,8 +51,10 @@
 		{ value: 'ROOMS_4_10', label: '4–10 phòng', minRooms: 4, maxRooms: 10 },
 		{ value: 'ROOMS_11_25', label: '11–25 phòng', minRooms: 11, maxRooms: 25 },
 		{ value: 'ROOMS_26_50', label: '26–50 phòng', minRooms: 26, maxRooms: 50 },
-		{ value: 'ROOMS_51_100', label: '51–100 phòng', minRooms: 51, maxRooms: 100 },
-		{ value: 'ROOMS_101_PLUS', label: 'Trên 100 phòng', minRooms: 101, maxRooms: null }
+		{ value: 'ROOMS_51_80', label: '51–80 phòng', minRooms: 51, maxRooms: 80 },
+		{ value: 'ROOMS_81_100', label: '81–100 phòng', minRooms: 81, maxRooms: 100 },
+		{ value: 'ROOMS_101_150', label: '101–150 phòng', minRooms: 101, maxRooms: 150 },
+		{ value: 'ROOMS_151_PLUS', label: 'Trên 150 phòng', minRooms: 151, maxRooms: null }
 	];
 	const RENTAL_TYPE_OPTIONS = [
 		{
@@ -171,7 +173,7 @@
 			TIER_OPTIONS.find(
 				(option) =>
 					roomCount >= option.minRooms && (option.maxRooms === null || roomCount <= option.maxRooms)
-			)?.value ?? 'ROOMS_101_PLUS'
+			)?.value ?? 'ROOMS_151_PLUS'
 		);
 	}
 
