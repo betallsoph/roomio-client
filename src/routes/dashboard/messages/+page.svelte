@@ -13,6 +13,7 @@
 		MessageSquare,
 		Pin,
 		Plus,
+		RefreshCcw,
 		Send,
 		Trash2,
 		X
@@ -33,10 +34,26 @@
 	}
 
 	interface TelegramDelivery {
-		status: 'sent' | 'failed' | 'skipped';
+		status: 'sent' | 'queued' | 'failed' | 'skipped';
 		delivered: boolean;
+		notificationId?: string;
 		code?: string;
 		message?: string;
+	}
+
+	interface TelegramDeliveryRow {
+		id: string;
+		title: string;
+		content: string;
+		status: string;
+		attemptCount: number;
+		lastError: string | null;
+		nextAttemptAt: string | null;
+		createdAt: string;
+		tenant?: {
+			user?: { name: string; phone: string };
+			rooms?: { roomNumber: string }[];
+		} | null;
 	}
 
 	interface SpecialNote {
@@ -98,10 +115,13 @@
 
 	let isLoadingNotes = $state(true);
 	let isLoadingAnnouncements = $state(true);
+	let isLoadingTelegramDeliveries = $state(false);
 	let isSubmitting = $state(false);
 	let notes = $state<SpecialNote[]>([]);
 	let announcements = $state<Announcement[]>([]);
 	let properties = $state<Property[]>([]);
+	let telegramDeliveries = $state<TelegramDeliveryRow[]>([]);
+	let retryingDeliveryId = $state('');
 
 	let isAddDialogOpen = $state(false);
 	let annTitle = $state('');
@@ -128,6 +148,7 @@
 			userId = session.id;
 			loadTenants();
 			fetchNotes(session.landlordProfileId);
+			fetchTelegramDeliveries();
 			fetchAnnouncements(session.id);
 			fetchProperties(session.landlordProfileId);
 			fetchTenantOptions(session.landlordProfileId);
@@ -204,6 +225,10 @@
 			if (!res.ok) throw new Error(data.error);
 			draft = '';
 			showTelegramDelivery(data.telegramDelivery);
+			if (data.telegramDelivery?.status !== 'sent') {
+				fetchTelegramDeliveries();
+				window.setTimeout(fetchTelegramDeliveries, 2500);
+			}
 			await loadMessages(true);
 		} catch (e) {
 			toast.error(e instanceof Error ? e.message : 'Lỗi gửi tin nhắn');
@@ -218,11 +243,69 @@
 			toast.success('Đã gửi tin nhắn qua Telegram');
 			return;
 		}
+		if (delivery.status === 'queued') {
+			toast.info('Tin đã lưu, Telegram đang gửi nền');
+			return;
+		}
 		if (delivery.code === 'tenant_not_linked') {
 			toast.info('Tin đã lưu, khách chưa liên kết Telegram');
 			return;
 		}
 		toast.error(`Tin đã lưu nhưng Telegram chưa gửi được: ${delivery.message ?? 'lỗi không rõ'}`);
+	}
+
+	async function fetchTelegramDeliveries() {
+		if (!landlordId) return;
+		isLoadingTelegramDeliveries = true;
+		try {
+			const res = await fetch('/api/telegram-deliveries?limit=12');
+			const data = await res.json();
+			if (res.ok) telegramDeliveries = data;
+		} catch {
+			// Không chặn trang chat nếu tải trạng thái Telegram lỗi
+		} finally {
+			isLoadingTelegramDeliveries = false;
+		}
+	}
+
+	async function retryTelegramDelivery(id: string) {
+		retryingDeliveryId = id;
+		try {
+			const res = await fetch('/api/telegram-deliveries', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ action: 'retry', id })
+			});
+			const data = await res.json();
+			if (!res.ok) throw new Error(data.error || 'Không gửi lại được Telegram');
+			if (data.result?.delivered) toast.success('Đã gửi lại Telegram');
+			else toast.error(data.result?.message || 'Telegram vẫn chưa gửi được');
+			await fetchTelegramDeliveries();
+		} catch (e) {
+			toast.error(e instanceof Error ? e.message : 'Lỗi gửi lại Telegram');
+		} finally {
+			retryingDeliveryId = '';
+		}
+	}
+
+	async function retryAllTelegramDeliveries() {
+		retryingDeliveryId = 'all';
+		try {
+			const res = await fetch('/api/telegram-deliveries', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ action: 'retry_all', limit: 10 })
+			});
+			const data = await res.json();
+			if (!res.ok) throw new Error(data.error || 'Không gửi lại được Telegram');
+			const delivered = data.results?.filter((item: any) => item.result?.delivered).length ?? 0;
+			toast.success(`Đã thử gửi lại ${data.results?.length ?? 0} tin, thành công ${delivered}`);
+			await fetchTelegramDeliveries();
+		} catch (e) {
+			toast.error(e instanceof Error ? e.message : 'Lỗi gửi lại Telegram');
+		} finally {
+			retryingDeliveryId = '';
+		}
 	}
 
 	async function fetchNotes(profileId: string) {
@@ -434,6 +517,12 @@
 		if (targetType === 'TENANT') return 'Khách thuê';
 		return targetType;
 	}
+
+	function telegramDeliveryTenantLabel(delivery: TelegramDeliveryRow) {
+		const name = delivery.tenant?.user?.name || 'Khách thuê';
+		const room = delivery.tenant?.rooms?.[0]?.roomNumber;
+		return room ? `${name} · P.${room}` : name;
+	}
 </script>
 
 <div class="space-y-5">
@@ -470,6 +559,58 @@
 				<Loader2 class="h-8 w-8 animate-spin text-zinc-400" />
 			</div>
 		{:else}
+			{#if telegramDeliveries.length > 0}
+				<section class="rounded-lg border border-amber-300 bg-amber-50 p-3">
+					<div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+						<div>
+							<h2 class="text-sm font-black text-black">
+								{telegramDeliveries.length} tin Telegram chưa gửi xong
+							</h2>
+							<p class="mt-0.5 text-xs font-bold text-amber-800">
+								Tin trong Roomio vẫn đã lưu. Gửi lại khi bot hoặc kết nối đã ổn.
+							</p>
+						</div>
+						<button
+							onclick={retryAllTelegramDeliveries}
+							disabled={retryingDeliveryId === 'all' || isLoadingTelegramDeliveries}
+							class="inline-flex items-center justify-center gap-2 rounded-[6px] border border-amber-400 bg-white px-3 py-2 text-xs font-black text-black disabled:opacity-50"
+						>
+							{#if retryingDeliveryId === 'all'}
+								<Loader2 class="h-4 w-4 animate-spin" />
+							{:else}
+								<RefreshCcw class="h-4 w-4" />
+							{/if}
+							Gửi lại
+						</button>
+					</div>
+					<div class="mt-3 grid gap-2 lg:grid-cols-2">
+						{#each telegramDeliveries.slice(0, 4) as delivery (delivery.id)}
+							<div class="rounded-[6px] border border-amber-200 bg-white/75 p-3">
+								<div class="flex items-start justify-between gap-3">
+									<div class="min-w-0">
+										<p class="truncate text-xs font-black text-black">
+											{telegramDeliveryTenantLabel(delivery)}
+										</p>
+										<p class="mt-1 line-clamp-2 text-xs font-semibold text-zinc-600">
+											{delivery.content}
+										</p>
+										<p class="mt-1 text-[10px] font-bold text-amber-800">
+											Thử {delivery.attemptCount} lần · {delivery.lastError || delivery.status}
+										</p>
+									</div>
+									<button
+										onclick={() => retryTelegramDelivery(delivery.id)}
+										disabled={!!retryingDeliveryId}
+										class="shrink-0 rounded-[6px] border border-black/20 bg-white px-2 py-1 text-[10px] font-black disabled:opacity-50"
+									>
+										{retryingDeliveryId === delivery.id ? 'Đang gửi' : 'Retry'}
+									</button>
+								</div>
+							</div>
+						{/each}
+					</div>
+				</section>
+			{/if}
 			<div
 				class="grid grid-cols-1 gap-4 xl:h-[calc(100vh-210px)] xl:grid-cols-[280px_minmax(0,1fr)_320px]"
 			>
