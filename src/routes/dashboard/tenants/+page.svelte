@@ -702,42 +702,27 @@
 		? 'tenant-split-open xl:pr-[calc(clamp(38rem,42vw,46rem)+1.5rem)]'
 		: ''}"
 >
-	<div class="flex justify-start">
+	<div
+		class="flex flex-col gap-4 border-b border-black/15 pb-5 sm:flex-row sm:items-end sm:justify-between"
+	>
 		<button
 			onclick={() => (isAddDialogOpen = true)}
 			class="toolbar-action flex w-full cursor-pointer items-center justify-center rounded-[6px] border-2 border-black bg-blue-300 px-4 py-2.5 text-sm font-black text-black shadow-secondary transition-[transform,box-shadow] sm:w-auto sm:justify-start"
 		>
 			<span class="toolbar-action-label">Thêm khách thuê</span>
 		</button>
-	</div>
 
-	<!-- Quick stats -->
-	<!-- Mobile: 1-line inline strip -->
-	<div
-		class="flex items-center divide-x-2 divide-black overflow-hidden rounded-lg border-2 border-black text-center sm:hidden"
-	>
-		<div class="flex-1 px-2 py-3">
-			<p class="text-[9px] font-bold text-zinc-400">Khách thuê</p>
-			<p class="mt-0.5 text-xs font-black text-black">{tenants.length} người</p>
-		</div>
-		<div class="flex-1 px-2 py-3">
-			<p class="text-[9px] font-bold text-zinc-400">Tiền cọc giữ</p>
-			<p class="mt-0.5 truncate text-xs font-black text-black">
-				{formatCurrency(tenants.reduce((sum, t) => sum + t.deposit, 0))}
-			</p>
-		</div>
-	</div>
-	<!-- Desktop: stat cards -->
-	<div class="hidden gap-3 sm:grid sm:grid-cols-2">
-		<div class="rounded-lg border-2 border-black bg-white p-4 shadow-secondary">
-			<p class="text-[10px] font-bold text-zinc-500">Khách thuê</p>
-			<h3 class="mt-0.5 text-base font-black text-black sm:text-xl">{tenants.length} người</h3>
-		</div>
-		<div class="rounded-lg border-2 border-black bg-white p-4 shadow-secondary">
-			<p class="text-[10px] font-bold text-zinc-500">Tiền cọc giữ</p>
-			<h3 class="mt-0.5 truncate text-base font-black text-black sm:text-xl">
-				{formatCurrency(tenants.reduce((sum, t) => sum + t.deposit, 0))}
-			</h3>
+		<div class="grid grid-cols-2 divide-x divide-black/20 sm:min-w-[22rem]">
+			<div class="pr-5">
+				<p class="text-[10px] font-bold text-zinc-500">Khách thuê</p>
+				<p class="mt-1 text-base font-black text-black">{tenants.length} người</p>
+			</div>
+			<div class="min-w-0 pl-5">
+				<p class="text-[10px] font-bold text-zinc-500">Tiền cọc giữ</p>
+				<p class="mt-1 truncate text-base font-black text-black">
+					{formatCurrency(tenants.reduce((sum, t) => sum + t.deposit, 0))}
+				</p>
+			</div>
 		</div>
 	</div>
 
@@ -1296,32 +1281,25 @@
 		>
 			<!-- Drawer Content: Brutallist Panel border-l-2 -->
 			<div
-				class="flex h-full w-full max-w-xl animate-[slide-left_0.2s_ease-out] flex-col justify-between overflow-hidden border-l-2 border-black bg-white xl:pointer-events-auto xl:w-[clamp(38rem,42vw,46rem)] xl:max-w-none"
+				class="relative flex h-full w-full max-w-xl animate-[slide-left_0.2s_ease-out] flex-col justify-between overflow-hidden border-l-2 border-black bg-white xl:pointer-events-auto xl:w-[clamp(38rem,42vw,46rem)] xl:max-w-none"
 				onclick={(e) => e.stopPropagation()}
 				onkeydown={(e) => e.stopPropagation()}
 				role="dialog"
 				tabindex="-1"
 			>
-				<div class="flex shrink-0 items-center px-6 pt-5 select-none">
-					<span class="text-base font-black text-black">Hồ sơ khách thuê</span>
-					<button
-						onclick={() => (isDetailDrawerOpen = false)}
-						class="ml-auto cursor-pointer rounded-[6px] p-1 text-black hover:bg-zinc-100"
-					>
-						<X class="h-4.5 w-4.5" />
-					</button>
-				</div>
+				<button
+					onclick={() => (isDetailDrawerOpen = false)}
+					class="absolute top-5 right-5 z-10 cursor-pointer rounded-[6px] p-1 text-black hover:bg-zinc-100"
+					aria-label="Đóng"
+				>
+					<X class="h-4.5 w-4.5" />
+				</button>
 
 				<div class="flex-1 space-y-6 overflow-y-auto p-6">
 					<!-- Drawer Header Title -->
-					<div>
-						<div>
-							<h3 class="text-lg leading-tight font-black text-black">
-								{selectedTenant.user.name}
-							</h3>
-							<p class="mt-1 text-xs font-bold text-zinc-600">Hồ sơ khách thuê Roomio</p>
-						</div>
-					</div>
+					<h3 class="pr-10 text-lg leading-tight font-black text-black">
+						{selectedTenant.user.name}
+					</h3>
 
 					<!-- Contact info details -->
 					<div class="space-y-3">
