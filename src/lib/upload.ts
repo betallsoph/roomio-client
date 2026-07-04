@@ -76,3 +76,22 @@ export async function uploadImage(file: File, watermarkLabel?: string): Promise<
 
 	return data.url;
 }
+
+export async function uploadContractFile(file: File): Promise<string> {
+	if (file.type.startsWith('image/')) return uploadImage(file);
+	if (file.type !== 'application/pdf') {
+		throw new Error('Chỉ chấp nhận ảnh hoặc file PDF');
+	}
+	if (file.size > 5 * 1024 * 1024) {
+		throw new Error('File PDF vượt quá 5MB');
+	}
+
+	const formData = new FormData();
+	formData.append('file', file);
+
+	const res = await fetch('/api/upload', { method: 'POST', body: formData });
+	const data = await res.json();
+	if (!res.ok) throw new Error(data.error || 'Upload file hợp đồng thất bại');
+
+	return data.url;
+}

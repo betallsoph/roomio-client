@@ -2,8 +2,8 @@
 	import { onMount } from 'svelte';
 	import { toast } from 'svelte-sonner';
 	import { confirmPopup } from '$lib/confirm-popup';
-	import { X, Loader2 } from '@lucide/svelte';
-	import { uploadImage } from '$lib/upload';
+	import { Eye, ExternalLink, FileText, Loader2, X } from '@lucide/svelte';
+	import { uploadContractFile } from '$lib/upload';
 	import RoomioSelect from '$lib/RoomioSelect.svelte';
 
 	interface Room {
@@ -72,6 +72,7 @@
 	// Hợp đồng của khách đang xem (gộp từ trang Hợp đồng cũ vào tenant detail)
 	let tenantContracts = $state<ContractRow[]>([]);
 	let loadingContracts = $state(false);
+	let expandedContractId = $state<string | null>(null);
 	let showContractForm = $state(false);
 	let savingContract = $state(false);
 	let uploadingContractFile = $state(false);
@@ -569,6 +570,7 @@
 	async function loadTenantContracts(tenantId: string) {
 		loadingContracts = true;
 		showContractForm = false;
+		expandedContractId = null;
 		try {
 			const res = await fetch(`/api/contracts?tenantId=${tenantId}`);
 			const data = await res.json();
@@ -598,7 +600,7 @@
 		if (!file) return;
 		uploadingContractFile = true;
 		try {
-			cForm.fileUrl = await uploadImage(file);
+			cForm.fileUrl = await uploadContractFile(file);
 			toast.success('Đã tải file hợp đồng lên');
 		} catch (e: any) {
 			toast.error(e.message || 'Lỗi upload file');
@@ -694,6 +696,14 @@
 		if (c.status === 'active' && c.endDate <= in30DaysStr)
 			return { text: 'Sắp hết hạn', cls: 'bg-yellow-200 text-yellow-800' };
 		return { text: 'Hiệu lực', cls: 'bg-green-200 text-green-800' };
+	}
+
+	function formatContractDate(value: string) {
+		return new Date(`${value}T00:00:00`).toLocaleDateString('vi-VN');
+	}
+
+	function isPdfContractFile(value: string) {
+		return value.toLowerCase().split('?')[0].endsWith('.pdf');
 	}
 </script>
 
@@ -1377,47 +1387,106 @@
 							<div class="space-y-2">
 								{#each tenantContracts as c (c.id)}
 									{@const badge = contractBadge(c)}
-									<div class="rounded-lg border-2 border-black bg-white p-3 shadow-secondary">
-										<div class="flex items-center justify-between gap-2">
+									<div
+										class="overflow-hidden rounded-lg border-2 border-black bg-white shadow-secondary"
+									>
+										<div class="flex items-center justify-between gap-3 px-3 py-2.5">
 											<span
 												class="rounded border-2 border-black px-1.5 text-[10px] font-black {badge.cls}"
 												>{badge.text}</span
 											>
-											<div class="flex items-center gap-1.5">
-												{#if c.fileUrl}
-													<a
-														href={c.fileUrl}
-														target="_blank"
-														rel="noreferrer"
-														class="rounded-[6px] border-2 border-black bg-white px-2 py-1 text-[10px] font-black hover:bg-zinc-50"
-														>File</a
-													>
-												{/if}
-												{#if c.status === 'active'}
-													<button
-														onclick={() => terminateTenantContract(c)}
-														title="Chấm dứt"
-														class="rounded-[6px] border-2 border-black bg-yellow-200 px-2 py-1 text-[10px] font-black"
-													>
-														Chấm dứt
-													</button>
-												{/if}
-												<button
-													onclick={() => deleteTenantContract(c)}
-													title="Xóa"
-													class="rounded-[6px] border-2 border-black bg-red-200 px-2 py-1 text-[10px] font-black text-red-800"
-												>
-													Xóa
-												</button>
-											</div>
+											<button
+												onclick={() =>
+													(expandedContractId = expandedContractId === c.id ? null : c.id)}
+												class="flex items-center gap-1.5 rounded-[6px] border-2 border-black bg-white px-2.5 py-1 text-[10px] font-black hover:bg-zinc-50"
+												aria-expanded={expandedContractId === c.id}
+											>
+												<Eye class="h-3.5 w-3.5" />
+												{expandedContractId === c.id ? 'Thu gọn' : 'Xem chi tiết'}
+											</button>
 										</div>
-										<p class="mt-1.5 text-[11px] font-bold text-zinc-600">
-											{c.startDate} → {c.endDate} · {formatCurrency(c.monthlyRent)}/tháng · cọc {formatCurrency(
-												c.deposit
-											)}
-										</p>
-										{#if c.notes}
-											<p class="mt-1 text-[11px] font-semibold text-zinc-400">{c.notes}</p>
+
+										<div class="grid grid-cols-2 border-t border-black/15 text-xs">
+											<dl class="space-y-2 p-3">
+												<div>
+													<dt class="text-[10px] font-bold text-zinc-500">Ngày bắt đầu</dt>
+													<dd class="mt-0.5 font-black text-black">
+														{formatContractDate(c.startDate)}
+													</dd>
+												</div>
+												<div>
+													<dt class="text-[10px] font-bold text-zinc-500">Ngày kết thúc</dt>
+													<dd class="mt-0.5 font-black text-black">
+														{formatContractDate(c.endDate)}
+													</dd>
+												</div>
+											</dl>
+											<dl class="space-y-2 border-l border-black/15 p-3">
+												<div>
+													<dt class="text-[10px] font-bold text-zinc-500">Tiền phòng</dt>
+													<dd class="mt-0.5 font-black text-black">
+														{formatCurrency(c.monthlyRent)}/tháng
+													</dd>
+												</div>
+												<div>
+													<dt class="text-[10px] font-bold text-zinc-500">Tiền cọc</dt>
+													<dd class="mt-0.5 font-black text-black">{formatCurrency(c.deposit)}</dd>
+												</div>
+											</dl>
+										</div>
+
+										{#if expandedContractId === c.id}
+											<div class="space-y-3 border-t-2 border-black bg-zinc-50 p-3">
+												{#if c.fileUrl}
+													<div class="space-y-2">
+														<p class="text-[10px] font-black text-zinc-500">File hợp đồng</p>
+														{#if isPdfContractFile(c.fileUrl)}
+															<div class="flex items-center gap-2 text-xs font-bold text-black">
+																<FileText class="h-5 w-5 shrink-0" />
+																<span>Hợp đồng PDF</span>
+															</div>
+														{:else}
+															<img
+																src={c.fileUrl}
+																alt="Ảnh hợp đồng"
+																class="max-h-48 w-full rounded-[6px] border-2 border-black object-contain"
+															/>
+														{/if}
+														<a
+															href={c.fileUrl}
+															target="_blank"
+															rel="noreferrer"
+															class="inline-flex items-center gap-1.5 rounded-[6px] border-2 border-black bg-white px-2.5 py-1.5 text-[10px] font-black hover:bg-zinc-100"
+														>
+															<ExternalLink class="h-3.5 w-3.5" /> Mở file hợp đồng
+														</a>
+													</div>
+												{/if}
+
+												<div>
+													<p class="text-[10px] font-black text-zinc-500">Ghi chú hợp đồng</p>
+													<p class="mt-1 text-xs font-semibold text-black">
+														{c.notes || 'Không có ghi chú.'}
+													</p>
+												</div>
+
+												<div class="flex justify-end gap-2 border-t border-black/15 pt-3">
+													{#if c.status === 'active'}
+														<button
+															onclick={() => terminateTenantContract(c)}
+															class="rounded-[6px] border-2 border-black bg-yellow-200 px-2.5 py-1.5 text-[10px] font-black"
+														>
+															Chấm dứt
+														</button>
+													{/if}
+													<button
+														onclick={() => deleteTenantContract(c)}
+														class="rounded-[6px] border-2 border-black bg-red-200 px-2.5 py-1.5 text-[10px] font-black text-red-800"
+													>
+														Xóa hợp đồng
+													</button>
+												</div>
+											</div>
 										{/if}
 									</div>
 								{/each}
@@ -1461,10 +1530,10 @@
 									</label>
 								</div>
 								<label class="block text-[10px] font-black text-zinc-500"
-									>File hợp đồng (ảnh scan)
+									>File hợp đồng
 									<input
 										type="file"
-										accept="image/*"
+										accept="image/*,application/pdf"
 										onchange={handleContractFile}
 										class="mt-1 w-full rounded-[6px] border-2 border-black px-2 py-1.5 text-xs font-bold file:hidden"
 									/>
@@ -1473,6 +1542,10 @@
 									<p class="flex items-center gap-1 text-[10px] font-bold text-zinc-500">
 										<Loader2 class="h-3 w-3 animate-spin" /> Đang tải...
 									</p>
+								{:else if cForm.fileUrl && isPdfContractFile(cForm.fileUrl)}
+									<div class="flex items-center gap-2 text-xs font-bold text-black">
+										<FileText class="h-5 w-5" /> Đã tải lên file PDF
+									</div>
 								{:else if cForm.fileUrl}
 									<img
 										src={cForm.fileUrl}
