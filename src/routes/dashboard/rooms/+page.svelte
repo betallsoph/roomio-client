@@ -830,7 +830,7 @@
 
 <div
 	class="space-y-6 transition-[padding] duration-200 {isDetailOpen
-		? 'rooms-split-open xl:pr-[calc(clamp(34rem,36vw,42rem)+1.5rem)]'
+		? 'rooms-split-open xl:pr-[calc(clamp(26rem,27vw,32rem)+1.5rem)]'
 		: ''}"
 >
 	<div class="flex justify-start">
@@ -990,7 +990,7 @@
 			</div>
 		</div>
 	{:else if viewMode === 'grid'}
-		<div class="grid grid-cols-[repeat(auto-fill,minmax(10rem,1fr))] gap-4">
+		<div class="grid grid-cols-[repeat(auto-fill,minmax(10rem,12rem))] justify-start gap-4">
 			{#each visibleRooms as room}
 				{@const statusColor =
 					room.status === 'empty'
@@ -1007,7 +1007,7 @@
 
 				<button
 					onclick={(e) => tapBounce(e, () => openRoomDetail(room))}
-					class="room-card flex h-32 cursor-pointer flex-col items-start justify-between rounded-lg border-2 p-4 text-left shadow-secondary transition-[transform,box-shadow] focus:ring-2 focus:ring-blue-300 focus:outline-none {statusColor} {selectedRoom?.id ===
+					class="room-card flex aspect-[3/2] cursor-pointer flex-col items-start justify-between rounded-lg border-2 p-4 text-left shadow-secondary transition-[transform,box-shadow] focus:ring-2 focus:ring-blue-300 focus:outline-none {statusColor} {selectedRoom?.id ===
 						room.id && isDetailOpen
 						? 'ring-2 ring-blue-400 ring-offset-2'
 						: ''}"
@@ -1501,7 +1501,7 @@
 		>
 			<!-- Drawer Content -->
 			<div
-				class="flex h-full w-full max-w-[920px] animate-[slide-left_0.2s_ease-out] flex-col justify-between overflow-hidden border-l-2 border-black bg-white shadow-primary sm:w-[85vw] lg:w-[52vw] xl:pointer-events-auto xl:w-[clamp(34rem,36vw,42rem)] xl:max-w-none"
+				class="flex h-full w-full max-w-[920px] animate-[slide-left_0.2s_ease-out] flex-col justify-between overflow-hidden border-l-2 border-black bg-white shadow-primary sm:w-[85vw] lg:w-[52vw] xl:pointer-events-auto xl:w-[clamp(26rem,27vw,32rem)] xl:max-w-none"
 				onclick={(e) => e.stopPropagation()}
 				onkeydown={(e) => e.stopPropagation()}
 				role="dialog"
