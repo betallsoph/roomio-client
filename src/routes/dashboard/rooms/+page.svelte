@@ -830,7 +830,7 @@
 
 <div
 	class="space-y-6 transition-[padding] duration-200 {isDetailOpen
-		? 'rooms-split-open xl:pr-[calc(clamp(40rem,46vw,52rem)+1.5rem)]'
+		? 'rooms-split-open xl:pr-[calc(clamp(34rem,36vw,42rem)+1.5rem)]'
 		: ''}"
 >
 	<div class="flex justify-start">
@@ -990,9 +990,7 @@
 			</div>
 		</div>
 	{:else if viewMode === 'grid'}
-		<div
-			class="grid grid-cols-1 gap-4 min-[430px]:grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6"
-		>
+		<div class="grid grid-cols-[repeat(auto-fill,minmax(10rem,1fr))] gap-4">
 			{#each visibleRooms as room}
 				{@const statusColor =
 					room.status === 'empty'
@@ -1503,7 +1501,7 @@
 		>
 			<!-- Drawer Content -->
 			<div
-				class="flex h-full w-full max-w-[920px] animate-[slide-left_0.2s_ease-out] flex-col justify-between overflow-hidden border-l-2 border-black bg-white shadow-primary sm:w-[85vw] lg:w-[52vw] xl:pointer-events-auto xl:w-[clamp(40rem,46vw,52rem)] xl:max-w-none"
+				class="flex h-full w-full max-w-[920px] animate-[slide-left_0.2s_ease-out] flex-col justify-between overflow-hidden border-l-2 border-black bg-white shadow-primary sm:w-[85vw] lg:w-[52vw] xl:pointer-events-auto xl:w-[clamp(34rem,36vw,42rem)] xl:max-w-none"
 				onclick={(e) => e.stopPropagation()}
 				onkeydown={(e) => e.stopPropagation()}
 				role="dialog"
