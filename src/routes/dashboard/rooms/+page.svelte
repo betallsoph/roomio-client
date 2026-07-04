@@ -1046,7 +1046,7 @@
 	{:else}
 		<div class="overflow-hidden rounded-lg border-2 border-black bg-white shadow-secondary">
 			<div
-				class="hidden gap-3 border-b-2 border-black bg-zinc-50 px-4 py-3 text-[10px] font-black text-zinc-500 md:grid {isDetailOpen
+				class="hidden gap-3 border-b-2 border-black bg-zinc-50 px-4 py-3 text-xs font-black text-zinc-600 md:grid {isDetailOpen
 					? 'md:grid-cols-[1.2fr_1.5fr_1fr]'
 					: 'md:grid-cols-[1fr_1.2fr_1.5fr_1fr_1fr_1fr]'}"
 			>
@@ -1060,28 +1060,34 @@
 
 			<div class="divide-y-2 divide-black">
 				{#each visibleRooms as room}
-					{@const statusBg =
+					{@const statusHover =
 						room.status === 'empty'
-							? 'bg-white'
+							? 'hover:bg-zinc-50 focus:bg-zinc-50'
+							: room.status === 'paid'
+								? 'hover:bg-green-50 focus:bg-green-50'
+								: 'hover:bg-red-50 focus:bg-red-50'}
+					{@const selectedStatusBg =
+						room.status === 'empty'
+							? 'bg-zinc-50'
 							: room.status === 'paid'
 								? 'bg-green-50'
 								: 'bg-red-50'}
-					{@const statusPill =
+					{@const statusText =
 						room.status === 'empty'
-							? 'bg-white text-zinc-600'
+							? 'text-zinc-500'
 							: room.status === 'paid'
-								? 'bg-green-200 text-green-900'
-								: 'bg-red-200 text-red-900'}
+								? 'text-green-700'
+								: 'text-red-700'}
 					{@const statusLabel = roomStatusLabel(room.status)}
 					<button
 						type="button"
 						onclick={() => openRoomDetail(room)}
-						class="grid w-full cursor-pointer gap-3 px-4 py-3 text-left text-sm font-bold transition-colors hover:bg-blue-50 focus:bg-blue-50 focus:outline-none md:items-center {isDetailOpen
+						class="grid w-full cursor-pointer gap-3 px-4 py-3 text-left text-sm font-bold transition-colors focus:outline-none md:items-center {statusHover} {isDetailOpen
 							? 'md:grid-cols-[1.2fr_1.5fr_1fr]'
 							: 'md:grid-cols-[1fr_1.2fr_1.5fr_1fr_1fr_1fr]'} {selectedRoom?.id === room.id &&
 						isDetailOpen
-							? 'bg-blue-50'
-							: statusBg}"
+							? selectedStatusBg
+							: 'bg-white'}"
 					>
 						<div>
 							<p class="truncate text-lg leading-none font-black text-black">
@@ -1112,9 +1118,7 @@
 							{/if}
 						</div>
 
-						<span
-							class="w-fit rounded-md border-2 border-black px-2 py-1 text-[10px] font-black {statusPill}"
-						>
+						<span class="w-fit text-sm font-black {statusText}">
 							{statusLabel}
 						</span>
 
