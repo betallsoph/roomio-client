@@ -56,6 +56,14 @@
 		} | null;
 	}
 
+	interface TelegramDeliveryBatch {
+		status: 'queued' | 'failed';
+		totalRecipients: number;
+		queued: number;
+		skippedUnlinked: number;
+		message?: string;
+	}
+
 	interface SpecialNote {
 		id: string;
 		content: string;
@@ -445,6 +453,11 @@
 			if (!res.ok) throw new Error(data.error || 'Lỗi đăng thông báo');
 
 			toast.success('Đã đăng bảng tin thông báo mới');
+			showAnnouncementTelegramDelivery(data.telegramDelivery);
+			if (data.telegramDelivery?.queued > 0 || data.telegramDelivery?.status === 'failed') {
+				fetchTelegramDeliveries();
+				window.setTimeout(fetchTelegramDeliveries, 2500);
+			}
 			isAddDialogOpen = false;
 			resetAnnouncementForm();
 			fetchAnnouncements(userId);
@@ -516,6 +529,26 @@
 		if (targetType === 'ROOM') return 'Phòng';
 		if (targetType === 'TENANT') return 'Khách thuê';
 		return targetType;
+	}
+
+	function showAnnouncementTelegramDelivery(delivery?: TelegramDeliveryBatch | null) {
+		if (!delivery) return;
+		if (delivery.status === 'failed') {
+			toast.error(delivery.message || 'Đã đăng thông báo nhưng Telegram chưa gửi được');
+			return;
+		}
+		if (delivery.totalRecipients === 0) {
+			toast.info('Không có khách phù hợp để gửi Telegram');
+			return;
+		}
+		if (delivery.queued === 0) {
+			toast.info(`${delivery.skippedUnlinked} khách chưa liên kết Telegram`);
+			return;
+		}
+		const skipped = delivery.skippedUnlinked
+			? `, ${delivery.skippedUnlinked} khách chưa liên kết`
+			: '';
+		toast.info(`Telegram đang gửi cho ${delivery.queued} khách${skipped}`);
 	}
 
 	function telegramDeliveryTenantLabel(delivery: TelegramDeliveryRow) {
@@ -763,6 +796,59 @@
 				Đăng thông báo <Plus class="h-4 w-4" />
 			</button>
 		</div>
+
+		{#if telegramDeliveries.length > 0}
+			<section class="rounded-lg border border-amber-300 bg-amber-50 p-3">
+				<div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+					<div>
+						<h2 class="text-sm font-black text-black">
+							{telegramDeliveries.length} tin Telegram chưa gửi xong
+						</h2>
+						<p class="mt-0.5 text-xs font-bold text-amber-800">
+							Bảng tin trong Roomio vẫn đã lưu. Gửi lại khi bot hoặc kết nối đã ổn.
+						</p>
+					</div>
+					<button
+						onclick={retryAllTelegramDeliveries}
+						disabled={retryingDeliveryId === 'all' || isLoadingTelegramDeliveries}
+						class="inline-flex items-center justify-center gap-2 rounded-[6px] border border-amber-400 bg-white px-3 py-2 text-xs font-black text-black disabled:opacity-50"
+					>
+						{#if retryingDeliveryId === 'all'}
+							<Loader2 class="h-4 w-4 animate-spin" />
+						{:else}
+							<RefreshCcw class="h-4 w-4" />
+						{/if}
+						Gửi lại
+					</button>
+				</div>
+				<div class="mt-3 grid gap-2 lg:grid-cols-2">
+					{#each telegramDeliveries.slice(0, 4) as delivery (delivery.id)}
+						<div class="rounded-[6px] border border-amber-200 bg-white/75 p-3">
+							<div class="flex items-start justify-between gap-3">
+								<div class="min-w-0">
+									<p class="truncate text-xs font-black text-black">
+										{telegramDeliveryTenantLabel(delivery)}
+									</p>
+									<p class="mt-1 line-clamp-2 text-xs font-semibold text-zinc-600">
+										{delivery.content}
+									</p>
+									<p class="mt-1 text-[10px] font-bold text-amber-800">
+										Thử {delivery.attemptCount} lần · {delivery.lastError || delivery.status}
+									</p>
+								</div>
+								<button
+									onclick={() => retryTelegramDelivery(delivery.id)}
+									disabled={!!retryingDeliveryId}
+									class="shrink-0 rounded-[6px] border border-black/20 bg-white px-2 py-1 text-[10px] font-black disabled:opacity-50"
+								>
+									{retryingDeliveryId === delivery.id ? 'Đang gửi' : 'Retry'}
+								</button>
+							</div>
+						</div>
+					{/each}
+				</div>
+			</section>
+		{/if}
 
 		<div class="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
 			<section class="min-h-[520px] overflow-hidden rounded-lg border-2 border-black bg-white">
