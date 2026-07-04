@@ -31,6 +31,13 @@
 		senderId: string;
 		content: string;
 		createdAt: string;
+		telegramDelivery: {
+			notificationId: string;
+			status: 'queued' | 'sent' | 'failed';
+			attemptCount: number;
+			lastError: string | null;
+			sentAt: string | null;
+		} | null;
 	}
 
 	interface TelegramDelivery {
@@ -50,6 +57,8 @@
 		lastError: string | null;
 		nextAttemptAt: string | null;
 		createdAt: string;
+		relatedType: string | null;
+		relatedId: string | null;
 		tenant?: {
 			user?: { name: string; phone: string };
 			rooms?: { roomNumber: string }[];
@@ -235,7 +244,10 @@
 			showTelegramDelivery(data.telegramDelivery);
 			if (data.telegramDelivery?.status !== 'sent') {
 				fetchTelegramDeliveries();
-				window.setTimeout(fetchTelegramDeliveries, 2500);
+				window.setTimeout(() => {
+					fetchTelegramDeliveries();
+					loadMessages(false);
+				}, 2500);
 			}
 			await loadMessages(true);
 		} catch (e) {
@@ -268,7 +280,11 @@
 		try {
 			const res = await fetch('/api/telegram-deliveries?limit=12');
 			const data = await res.json();
-			if (res.ok) telegramDeliveries = data;
+			if (res.ok) {
+				telegramDeliveries = data.filter(
+					(delivery: TelegramDeliveryRow) => delivery.relatedType !== 'message'
+				);
+			}
 		} catch {
 			// Không chặn trang chat nếu tải trạng thái Telegram lỗi
 		} finally {
@@ -289,6 +305,7 @@
 			if (data.result?.delivered) toast.success('Đã gửi lại Telegram');
 			else toast.error(data.result?.message || 'Telegram vẫn chưa gửi được');
 			await fetchTelegramDeliveries();
+			if (selectedTenant) await loadMessages(false);
 		} catch (e) {
 			toast.error(e instanceof Error ? e.message : 'Lỗi gửi lại Telegram');
 		} finally {
@@ -556,6 +573,17 @@
 		const room = delivery.tenant?.rooms?.[0]?.roomNumber;
 		return room ? `${name} · P.${room}` : name;
 	}
+
+	function telegramMessageStatusLabel(message: MessageRow) {
+		const delivery = message.telegramDelivery;
+		if (!delivery) return '';
+		if (delivery.status === 'queued') return 'Đang gửi Telegram...';
+		if (delivery.status === 'failed') {
+			return delivery.lastError ? `Telegram lỗi: ${delivery.lastError}` : 'Telegram gửi lỗi';
+		}
+		if (delivery.status === 'sent') return 'Đã gửi Telegram';
+		return '';
+	}
 </script>
 
 <div class="space-y-5">
@@ -708,6 +736,30 @@
 										<p class="mt-0.5 text-[10px] font-bold text-zinc-500">
 											{formatTime(message.createdAt)}
 										</p>
+										{#if mine && message.telegramDelivery}
+											<div
+												class="mt-1 flex items-center justify-end gap-2 text-[10px] font-bold {message
+													.telegramDelivery.status === 'failed'
+													? 'text-red-700'
+													: message.telegramDelivery.status === 'queued'
+														? 'text-amber-700'
+														: 'text-zinc-500'}"
+											>
+												<span>{telegramMessageStatusLabel(message)}</span>
+												{#if message.telegramDelivery.status === 'failed'}
+													<button
+														onclick={() =>
+															retryTelegramDelivery(message.telegramDelivery!.notificationId)}
+														disabled={!!retryingDeliveryId}
+														class="rounded border border-black/20 bg-white/70 px-1.5 py-0.5 text-[10px] font-black text-black disabled:opacity-50"
+													>
+														{retryingDeliveryId === message.telegramDelivery.notificationId
+															? 'Đang gửi'
+															: 'Gửi lại'}
+													</button>
+												{/if}
+											</div>
+										{/if}
 									</div>
 								</div>
 							{/each}
