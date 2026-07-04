@@ -580,10 +580,14 @@
 		selectedBlockId = 'all';
 		selectedUnitCode = '';
 		newBlockId = getActiveProperty()?.blocks[0]?.id ?? '';
+		isDetailOpen = false;
+		selectedRoom = null;
 	}
 
 	function selectBlock(blockId: string) {
 		selectedBlockId = blockId;
+		isDetailOpen = false;
+		selectedRoom = null;
 	}
 
 	function activeRentalType() {
@@ -824,7 +828,11 @@
 	}
 </script>
 
-<div class="space-y-6">
+<div
+	class="space-y-6 transition-[padding] duration-200 {isDetailOpen
+		? 'rooms-split-open xl:pr-[calc(clamp(40rem,46vw,52rem)+1.5rem)]'
+		: ''}"
+>
 	<div class="flex justify-start">
 		<button
 			onclick={(e) => tapBounce(e, openAddRoomDialog)}
@@ -836,7 +844,11 @@
 
 	<!-- Filter bar -->
 	<div class="space-y-3">
-		<div class="grid gap-3 xl:grid-cols-[minmax(220px,0.9fr)_minmax(0,1fr)_minmax(0,1fr)_auto]">
+		<div
+			class="grid gap-3 {isDetailOpen
+				? 'xl:grid-cols-2'
+				: 'xl:grid-cols-[minmax(220px,0.9fr)_minmax(0,1fr)_minmax(0,1fr)_auto]'}"
+		>
 			<div class="space-y-1">
 				<label for="room-search" class="block text-[10px] font-black text-zinc-500">Tìm phòng</label
 				>
@@ -997,7 +1009,10 @@
 
 				<button
 					onclick={(e) => tapBounce(e, () => openRoomDetail(room))}
-					class="room-card flex h-32 cursor-pointer flex-col items-start justify-between rounded-lg border-2 p-4 text-left shadow-secondary transition-[transform,box-shadow] focus:ring-2 focus:ring-blue-300 focus:outline-none {statusColor}"
+					class="room-card flex h-32 cursor-pointer flex-col items-start justify-between rounded-lg border-2 p-4 text-left shadow-secondary transition-[transform,box-shadow] focus:ring-2 focus:ring-blue-300 focus:outline-none {statusColor} {selectedRoom?.id ===
+						room.id && isDetailOpen
+						? 'ring-2 ring-blue-400 ring-offset-2'
+						: ''}"
 				>
 					<div class="w-full min-w-0">
 						<span
@@ -1026,15 +1041,16 @@
 	{:else}
 		<div class="overflow-hidden rounded-lg border-2 border-black bg-white shadow-secondary">
 			<div
-				class="hidden grid-cols-[1fr_1.2fr_1.5fr_1fr_1fr_1fr_90px] gap-3 border-b-2 border-black bg-zinc-50 px-4 py-3 text-[10px] font-black text-zinc-500 md:grid"
+				class="hidden gap-3 border-b-2 border-black bg-zinc-50 px-4 py-3 text-[10px] font-black text-zinc-500 md:grid {isDetailOpen
+					? 'md:grid-cols-[1.2fr_1.5fr_1fr]'
+					: 'md:grid-cols-[1fr_1.2fr_1.5fr_1fr_1fr_1fr]'}"
 			>
 				<span>Phòng</span>
-				<span>Loại</span>
+				<span class:hidden={isDetailOpen}>Loại</span>
 				<span>Khách thuê</span>
 				<span>Trạng thái</span>
-				<span>Giá thuê</span>
-				<span>Công nợ</span>
-				<span class="text-right">Thao tác</span>
+				<span class:hidden={isDetailOpen}>Giá thuê</span>
+				<span class:hidden={isDetailOpen}>Công nợ</span>
 			</div>
 
 			<div class="divide-y-2 divide-black">
@@ -1052,8 +1068,15 @@
 								? 'bg-green-200 text-green-900'
 								: 'bg-red-200 text-red-900'}
 					{@const statusLabel = roomStatusLabel(room.status)}
-					<div
-						class="grid gap-3 px-4 py-3 text-sm font-bold md:grid-cols-[1fr_1.2fr_1.5fr_1fr_1fr_1fr_90px] md:items-center {statusBg}"
+					<button
+						type="button"
+						onclick={() => openRoomDetail(room)}
+						class="grid w-full cursor-pointer gap-3 px-4 py-3 text-left text-sm font-bold transition-colors hover:bg-blue-50 focus:bg-blue-50 focus:outline-none md:items-center {isDetailOpen
+							? 'md:grid-cols-[1.2fr_1.5fr_1fr]'
+							: 'md:grid-cols-[1fr_1.2fr_1.5fr_1fr_1fr_1fr]'} {selectedRoom?.id === room.id &&
+						isDetailOpen
+							? 'bg-blue-50'
+							: statusBg}"
 					>
 						<div>
 							<p class="truncate text-lg leading-none font-black text-black">
@@ -1069,7 +1092,9 @@
 							{/if}
 						</div>
 
-						<p class="text-zinc-700">{getRoomTypeLabel(room.roomType)}</p>
+						<p class:hidden={isDetailOpen} class="text-zinc-700">
+							{getRoomTypeLabel(room.roomType)}
+						</p>
 
 						<div class="min-w-0">
 							<p class="truncate text-black">
@@ -1088,18 +1113,16 @@
 							{statusLabel}
 						</span>
 
-						<p class="text-black">{formatCurrency(room.monthlyRent)}</p>
-						<p class={room.debtAmount > 0 ? 'text-red-700' : 'text-zinc-500'}>
+						<p class:hidden={isDetailOpen} class="text-black">
+							{formatCurrency(room.monthlyRent)}
+						</p>
+						<p
+							class:hidden={isDetailOpen}
+							class={room.debtAmount > 0 ? 'text-red-700' : 'text-zinc-500'}
+						>
 							{formatCurrency(room.debtAmount)}
 						</p>
-
-						<button
-							onclick={(e) => tapBounce(e, () => openRoomDetail(room))}
-							class="w-full rounded-[6px] border-2 border-black bg-blue-300 px-3 py-2 text-xs font-black text-black shadow-secondary transition-[background-color,transform,box-shadow] hover:bg-blue-400 md:w-auto"
-						>
-							Chi tiết
-						</button>
-					</div>
+					</button>
 				{/each}
 			</div>
 		</div>
@@ -1472,7 +1495,7 @@
 	{#if isDetailOpen && selectedRoom}
 		<!-- Overlay -->
 		<div
-			class="fixed inset-0 z-50 flex justify-end bg-slate-900/50 backdrop-blur-sm"
+			class="fixed inset-0 z-50 flex justify-end bg-slate-900/50 backdrop-blur-sm xl:pointer-events-none xl:bg-transparent xl:backdrop-blur-none"
 			onclick={() => (isDetailOpen = false)}
 			onkeydown={(e) => e.key === 'Escape' && (isDetailOpen = false)}
 			role="button"
@@ -1480,7 +1503,7 @@
 		>
 			<!-- Drawer Content -->
 			<div
-				class="flex h-full w-full max-w-[920px] animate-[slide-left_0.2s_ease-out] flex-col justify-between overflow-hidden border-l-2 border-black bg-white shadow-primary sm:w-[85vw] lg:w-[52vw]"
+				class="flex h-full w-full max-w-[920px] animate-[slide-left_0.2s_ease-out] flex-col justify-between overflow-hidden border-l-2 border-black bg-white shadow-primary sm:w-[85vw] lg:w-[52vw] xl:pointer-events-auto xl:w-[clamp(40rem,46vw,52rem)] xl:max-w-none"
 				onclick={(e) => e.stopPropagation()}
 				onkeydown={(e) => e.stopPropagation()}
 				role="dialog"
