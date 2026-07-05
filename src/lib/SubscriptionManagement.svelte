@@ -261,20 +261,20 @@
 	}
 
 	function rentalTypeLabel(type: string) {
-		if (type === 'COLIVING') return 'Chung cư / Co-living';
+		if (type === 'COLIVING') return 'Share phòng chung cư / Co-living / Share phòng';
 		if (type === 'SERVICED_APARTMENT') return 'Phòng trọ truyền thống / Căn hộ dịch vụ';
 		return RENTAL_TYPE_OPTIONS.find((option) => option.value === type)?.label ?? type;
 	}
 
-	function roomAdditionsLabel(value: string | null) {
-		if (!value) return '';
+	function roomAdditionEntries(value: string | null) {
+		if (!value) return [];
 		try {
 			const additions = JSON.parse(value) as Record<string, number>;
 			return Object.entries(additions)
-				.map(([type, count]) => `${rentalTypeLabel(type)} +${count}`)
-				.join(', ');
+				.filter(([, count]) => Number(count) > 0)
+				.map(([type, count]) => ({ type, label: rentalTypeLabel(type), count: Number(count) }));
 		} catch {
-			return '';
+			return [];
 		}
 	}
 
@@ -340,7 +340,8 @@
 						{quote.actualRoomCounts.standard + quote.actualRoomCounts.coliving} phòng
 					</p>
 					<p class="text-[10px] font-bold text-zinc-500">
-						{quote.actualRoomCounts.standard} trọ/CHDV + {quote.actualRoomCounts.coliving} chung cư/co-living
+						{quote.actualRoomCounts.standard} trọ/CHDV/KTX/Sleepbox + {quote.actualRoomCounts.coliving}
+						share phòng/co-living
 					</p>
 					{#if quote.activeSubscription.standardRoomLimit !== null || quote.activeSubscription.colivingRoomLimit !== null}
 						<p class="mt-1 text-[10px] font-black text-blue-800">
@@ -407,7 +408,8 @@
 					</div>
 				{/if}
 				<p class="text-[10px] font-bold text-zinc-500">
-					Sau điều chỉnh: {plannedStandardRooms} trọ/CHDV/Sleepbox + {plannedColivingRooms} chung cư/co-living.
+					Sau điều chỉnh: {plannedStandardRooms} trọ/CHDV/KTX/Sleepbox + {plannedColivingRooms}
+					share phòng/co-living.
 					Hệ thống cộng phần mở rộng vào hạn mức hiện tại để tính giá.
 				</p>
 			</div>
@@ -514,8 +516,8 @@
 									).toLocaleDateString('vi-VN')}
 								</p>
 								<p class="mt-1 text-xs font-bold text-zinc-500">
-									Dự kiến {request.standardRoomCount} phòng chuẩn + {request.colivingRoomCount}
-									co-living
+									Dự kiến {request.standardRoomCount} trọ/CHDV/KTX/Sleepbox + {request.colivingRoomCount}
+									share phòng/co-living
 								</p>
 								{#if request.requestedRentalTypes}
 									<p class="mt-1 text-xs font-bold text-blue-700">
@@ -526,9 +528,15 @@
 									</p>
 								{/if}
 								{#if request.requestedRoomAdditions}
-									<p class="mt-1 text-xs font-bold text-blue-700">
-										Mở rộng: {roomAdditionsLabel(request.requestedRoomAdditions)}
-									</p>
+									<div class="mt-2 flex flex-wrap gap-1.5">
+										{#each roomAdditionEntries(request.requestedRoomAdditions) as addition}
+											<span
+												class="rounded-[5px] bg-blue-50 px-2 py-1 text-[10px] font-black text-blue-800"
+											>
+												{addition.label}: +{addition.count} phòng
+											</span>
+										{/each}
+									</div>
 								{/if}
 								{#if request.adminNote}<p class="mt-1 text-xs font-bold">
 										Phản hồi: {request.adminNote}
