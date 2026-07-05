@@ -17,6 +17,7 @@
 		Gauge,
 		TrendingUp,
 		MessageSquare,
+		PhoneCall,
 		Plug,
 		Bot
 	} from '@lucide/svelte';
@@ -83,7 +84,8 @@
 			items: [
 				{ name: 'Chốt số', path: '/dashboard/meters', icon: Gauge },
 				{ name: 'Sự cố', path: '/dashboard/requests', icon: Wrench },
-				{ name: 'Liên lạc', path: '/dashboard/messages', icon: MessageSquare }
+				{ name: 'Liên lạc', path: '/dashboard/messages', icon: MessageSquare },
+				{ name: 'Danh bạ hỗ trợ', path: '/dashboard/support-contacts', icon: PhoneCall }
 			]
 		},
 		{
