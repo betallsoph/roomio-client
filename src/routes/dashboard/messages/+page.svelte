@@ -8,7 +8,6 @@
 		AlertCircle,
 		Bell,
 		Calendar,
-		CheckCircle2,
 		Loader2,
 		MessageSquare,
 		Pin,
@@ -73,23 +72,6 @@
 		message?: string;
 	}
 
-	interface SpecialNote {
-		id: string;
-		content: string;
-		sender: string;
-		isRead: boolean;
-		createdAt: string;
-		tenant: {
-			user: {
-				name: string;
-				phone: string;
-			};
-			rooms: {
-				roomNumber: string;
-			}[];
-		};
-	}
-
 	interface Announcement {
 		id: string;
 		title: string;
@@ -130,11 +112,9 @@
 	let pollTimer: ReturnType<typeof setInterval> | null = null;
 	let scrollContainer = $state<HTMLDivElement | null>(null);
 
-	let isLoadingNotes = $state(true);
 	let isLoadingAnnouncements = $state(true);
 	let isLoadingTelegramDeliveries = $state(false);
 	let isSubmitting = $state(false);
-	let notes = $state<SpecialNote[]>([]);
 	let announcements = $state<Announcement[]>([]);
 	let properties = $state<Property[]>([]);
 	let telegramDeliveries = $state<TelegramDeliveryRow[]>([]);
@@ -150,11 +130,6 @@
 	let tenantOptions = $state<TenantOption[]>([]);
 	let roomOptions = $state<RoomOption[]>([]);
 
-	let isNoteDialogOpen = $state(false);
-	let noteTenantId = $state('');
-	let noteContent = $state('');
-	let isSendingNote = $state(false);
-
 	onMount(() => {
 		activeTab = page.url.searchParams.get('tab') === 'announcements' ? 'announcements' : 'messages';
 
@@ -164,7 +139,6 @@
 			landlordId = session.landlordProfileId;
 			userId = session.id;
 			loadTenants();
-			fetchNotes(session.landlordProfileId);
 			fetchTelegramDeliveries();
 			fetchAnnouncements(session.id);
 			fetchProperties(session.landlordProfileId);
@@ -333,19 +307,6 @@
 		}
 	}
 
-	async function fetchNotes(profileId: string) {
-		isLoadingNotes = true;
-		try {
-			const res = await fetch(`/api/notifications?landlordId=${profileId}`);
-			const data = await res.json();
-			if (res.ok) notes = data;
-		} catch (e: any) {
-			toast.error('Lỗi khi tải lời nhắn của khách: ' + e.message);
-		} finally {
-			isLoadingNotes = false;
-		}
-	}
-
 	async function fetchAnnouncements(senderId: string) {
 		isLoadingAnnouncements = true;
 		try {
@@ -388,48 +349,6 @@
 			if (res.ok) tenantOptions = data;
 		} catch {
 			// Bỏ qua
-		}
-	}
-
-	async function markNoteAsRead(noteId: string) {
-		try {
-			const res = await fetch('/api/notifications', {
-				method: 'PUT',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ id: noteId, isRead: true })
-			});
-			const data = await res.json();
-			if (!res.ok) throw new Error(data.error || 'Lỗi cập nhật');
-			toast.success('Đã đánh dấu đã đọc lời nhắn');
-			if (landlordId) fetchNotes(landlordId);
-		} catch (err: any) {
-			toast.error(err.message);
-		}
-	}
-
-	async function sendNoteToTenant() {
-		if (!noteTenantId || !noteContent.trim()) {
-			toast.error('Vui lòng chọn khách và nhập nội dung lời nhắn');
-			return;
-		}
-		isSendingNote = true;
-		try {
-			const res = await fetch('/api/notifications', {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ tenantId: noteTenantId, content: noteContent, sender: 'LANDLORD' })
-			});
-			const data = await res.json();
-			if (!res.ok) throw new Error(data.error || 'Lỗi gửi lời nhắn');
-			toast.success('Đã gửi lời nhắn cho khách');
-			isNoteDialogOpen = false;
-			noteContent = '';
-			noteTenantId = '';
-			if (landlordId) fetchNotes(landlordId);
-		} catch (err: any) {
-			toast.error(err.message);
-		} finally {
-			isSendingNote = false;
 		}
 	}
 
@@ -535,10 +454,6 @@
 			: 'Chưa có phòng';
 	}
 
-	function noteRoomLabel(note: SpecialNote) {
-		return note.tenant.rooms[0]?.roomNumber || '--';
-	}
-
 	function announcementTargetLabel(targetType: string) {
 		if (targetType === 'ALL') return 'Tất cả';
 		if (targetType === 'PROPERTY') return 'Tòa nhà';
@@ -615,7 +530,7 @@
 	</div>
 
 	{#if activeTab === 'messages'}
-		{#if isLoadingTenants || isLoadingNotes}
+		{#if isLoadingTenants}
 			<div class="flex justify-center py-16">
 				<Loader2 class="h-8 w-8 animate-spin text-zinc-400" />
 			</div>
@@ -672,9 +587,7 @@
 					</div>
 				</section>
 			{/if}
-			<div
-				class="grid grid-cols-1 gap-4 xl:h-[calc(100vh-210px)] xl:grid-cols-[280px_minmax(0,1fr)_320px]"
-			>
+			<div class="grid grid-cols-1 gap-5 xl:h-[calc(100vh-210px)] xl:grid-cols-[300px_minmax(0,1fr)]">
 				<section
 					class="flex min-h-72 flex-col overflow-hidden rounded-lg border-2 border-black bg-white"
 				>
@@ -701,24 +614,17 @@
 					</div>
 				</section>
 
-				<section class="flex min-h-[460px] flex-col rounded-lg border-2 border-black bg-white">
+				<section class="flex min-h-[460px] flex-col">
 					{#if !selectedTenant}
-						<div class="flex flex-1 flex-col items-center justify-center gap-2 p-8 text-center">
-							<MessageSquare class="h-8 w-8 text-zinc-300" />
+						<div class="flex flex-1 flex-col items-center justify-center p-8 text-center">
 							<p class="text-sm font-black text-zinc-400">
 								Chọn một khách thuê để bắt đầu trò chuyện.
 							</p>
 						</div>
 					{:else}
-						<div class="border-b-2 border-black px-4 py-3">
-							<p class="text-sm font-black">{selectedTenant.user.name}</p>
-							<p class="text-xs font-bold text-zinc-500">
-								{selectedTenant.user.phone} · {tenantRoomLabel(selectedTenant)}
-							</p>
-						</div>
-						<div bind:this={scrollContainer} class="flex-1 space-y-2 overflow-y-auto p-4">
+						<div bind:this={scrollContainer} class="min-h-0 flex-1 space-y-2 overflow-y-auto px-1 py-2">
 							{#if messageList.length === 0}
-								<p class="py-8 text-center text-xs font-bold text-zinc-400">
+								<p class="py-16 text-center text-sm font-bold text-zinc-400">
 									Chưa có tin nhắn nào.
 								</p>
 							{/if}
@@ -764,13 +670,13 @@
 								</div>
 							{/each}
 						</div>
-						<div class="flex gap-2 border-t-2 border-black p-3">
+						<div class="flex gap-2 pt-3">
 							<input
 								type="text"
 								bind:value={draft}
 								onkeydown={(e) => e.key === 'Enter' && sendMessage()}
 								placeholder="Nhập tin nhắn..."
-								class="flex-1 rounded-[6px] border-2 border-black px-3 py-2 text-sm font-bold"
+								class="flex-1 rounded-[6px] border-2 border-black bg-white px-3 py-2 text-sm font-bold"
 							/>
 							<button
 								onclick={sendMessage}
@@ -781,54 +687,6 @@
 							</button>
 						</div>
 					{/if}
-				</section>
-
-				<section
-					class="flex min-h-72 flex-col overflow-hidden rounded-lg border-2 border-black bg-white"
-				>
-					<div class="flex items-center justify-between gap-3 border-b-2 border-black px-4 py-3">
-						<h2 class="text-sm font-black text-black">Lời nhắn riêng</h2>
-						<button
-							onclick={() => window.setTimeout(() => (isNoteDialogOpen = true), 200)}
-							class="rounded-[6px] border-2 border-black bg-blue-300 px-2.5 py-1.5 text-xs font-black shadow-secondary transition-all"
-						>
-							Gửi
-						</button>
-					</div>
-					<div class="min-h-0 flex-1 overflow-y-auto">
-						{#if notes.length === 0}
-							<div class="flex h-full flex-col items-center justify-center p-6 text-center">
-								<CheckCircle2 class="mb-2 h-8 w-8 text-green-500" />
-								<p class="text-sm font-black text-black">Không có lời nhắn</p>
-							</div>
-						{:else}
-							{#each notes as note}
-								<div class="border-b border-zinc-200 p-4">
-									<div class="flex items-start justify-between gap-3">
-										<div class="min-w-0">
-											<p class="truncate text-sm font-black">
-												P.{noteRoomLabel(note)} · {note.tenant.user.name}
-											</p>
-											<p class="text-[10px] font-bold text-zinc-500">
-												{formatTime(note.createdAt)}
-											</p>
-										</div>
-										{#if !note.isRead}
-											<button
-												onclick={() => markNoteAsRead(note.id)}
-												class="shrink-0 rounded-[6px] border-2 border-black bg-blue-100 px-2 py-1 text-[10px] font-black"
-											>
-												Đã đọc
-											</button>
-										{/if}
-									</div>
-									<p class="mt-2 text-xs leading-relaxed font-semibold text-zinc-700">
-										{note.content}
-									</p>
-								</div>
-							{/each}
-						{/if}
-					</div>
 				</section>
 			</div>
 		{/if}
@@ -1224,60 +1082,3 @@
 		</div>
 	{/if}
 </div>
-
-{#if isNoteDialogOpen}
-	<div
-		class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4 backdrop-blur-sm"
-	>
-		<div class="w-full max-w-md rounded-lg border-2 border-black bg-white">
-			<div class="flex items-center justify-between border-b-2 border-black p-4">
-				<h2 class="text-base font-black">Gửi lời nhắn cho khách thuê</h2>
-				<button
-					onclick={() => window.setTimeout(() => (isNoteDialogOpen = false), 200)}
-					class="rounded-[6px] border-2 border-black p-1.5 hover:bg-zinc-50"
-				>
-					<X class="h-4 w-4" />
-				</button>
-			</div>
-			<div class="space-y-3 p-4">
-				<div class="space-y-1">
-					<label for="note-tenant" class="block text-[10px] font-bold text-zinc-600"
-						>Khách thuê</label
-					>
-					<RoomioSelect
-						id="note-tenant"
-						bind:value={noteTenantId}
-						options={[
-							{ value: '', label: 'Chọn khách' },
-							...tenantOptions.map((tenant) => ({
-								value: tenant.id,
-								label: `${tenant.user.name} (P.${tenant.rooms[0]?.roomNumber || '--'})`
-							}))
-						]}
-					/>
-				</div>
-				<div class="space-y-1">
-					<label for="note-content" class="block text-[10px] font-bold text-zinc-600"
-						>Nội dung lưu ý</label
-					>
-					<textarea
-						id="note-content"
-						bind:value={noteContent}
-						rows="4"
-						placeholder="Lời nhắn/lưu ý riêng gửi khách, tách biệt với chat để không bị trôi..."
-						class="w-full rounded-lg border-2 border-black bg-white p-3 text-xs font-semibold text-black focus:outline-none"
-					></textarea>
-				</div>
-				<button
-					onclick={sendNoteToTenant}
-					disabled={isSendingNote}
-					class="modal-action w-full rounded-[6px] border-2 border-black bg-blue-300 py-2.5 text-sm font-black shadow-secondary transition-all disabled:opacity-50"
-				>
-					<span class="modal-action-label">
-						{isSendingNote ? 'Đang gửi...' : 'Gửi lời nhắn'}
-					</span>
-				</button>
-			</div>
-		</div>
-	</div>
-{/if}
