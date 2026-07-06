@@ -1,10 +1,10 @@
 // Xử lý ảnh phía client rồi upload THẲNG lên Cloudflare R2 (qua pre-signed URL, KHÔNG đi qua server
 // API) để giảm tải VPS 1 nhân — nhất là lúc cao điểm cuối tháng (ảnh chốt số/bill).
-// Nén sang WebP, resize tối đa 1080px, chất lượng ~0.62: nhẹ nhất có thể mà vẫn đọc rõ đồng hồ/CCCD.
+// Nén sang WebP với preset theo purpose: ảnh thường ưu tiên nhẹ, giấy tờ/hợp đồng giữ nét chữ.
 // Đóng dấu thời gian + nhãn lên góc ảnh để chống dùng lại ảnh cũ.
 
-const MAX_DIMENSION = 1080;
-const IMAGE_QUALITY = 0.62;
+const MAX_DIMENSION = 960;
+const IMAGE_QUALITY = 0.56;
 const OUTPUT_TYPE = 'image/webp';
 const MAX_SOURCE_BYTES = 12 * 1024 * 1024;
 const MAX_PDF_BYTES = 5 * 1024 * 1024;
@@ -24,6 +24,15 @@ type CompressOptions = {
 	quality?: number;
 	aspectRatio?: number;
 };
+
+function compressionOptionsForPurpose(purpose: UploadPurpose): CompressOptions {
+	if (purpose === 'tenant-document') return { maxDimension: 1280, quality: 0.62 };
+	if (purpose === 'contract') return { maxDimension: 1280, quality: 0.62 };
+	if (purpose === 'meter-reading') return { maxDimension: 1080, quality: 0.58 };
+	if (purpose === 'payment-proof') return { maxDimension: 1080, quality: 0.58 };
+	if (purpose === 'maintenance-request') return { maxDimension: 960, quality: 0.54 };
+	return { maxDimension: MAX_DIMENSION, quality: IMAGE_QUALITY };
+}
 
 function validateImageFile(file: File) {
 	if (!file.type.startsWith('image/')) {
@@ -176,7 +185,10 @@ export async function uploadImageToR2(
 	watermarkLabel?: string,
 	options: CompressOptions = {}
 ): Promise<string> {
-	const blob = await compressImage(file, watermarkLabel, options);
+	const blob = await compressImage(file, watermarkLabel, {
+		...compressionOptionsForPurpose(purpose),
+		...options
+	});
 	return uploadBlobToR2(blob, purpose);
 }
 
@@ -186,8 +198,7 @@ export async function uploadImage(
 	watermarkLabel?: string,
 	purpose: UploadPurpose = 'tenant-document'
 ): Promise<string> {
-	const blob = await compressImage(file, watermarkLabel);
-	return uploadBlobToR2(blob, purpose);
+	return uploadImageToR2(file, purpose, watermarkLabel);
 }
 
 // Hợp đồng: ảnh thì nén như thường; PDF thì upload thẳng (không nén) lên R2.

@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	import { toast } from 'svelte-sonner';
 	import { FileText, Plus, Trash2, Ban, Loader2, X } from '@lucide/svelte';
-	import { uploadImage } from '$lib/upload';
+	import { uploadContractFile } from '$lib/upload';
 	import { confirmPopup } from '$lib/confirm-popup';
 	import RoomioSelect from '$lib/RoomioSelect.svelte';
 
@@ -104,7 +104,7 @@
 		if (!file) return;
 		isUploadingFile = true;
 		try {
-			form.fileUrl = await uploadImage(file);
+			form.fileUrl = await uploadContractFile(file);
 			toast.success('Đã tải file hợp đồng lên');
 		} catch (e) {
 			toast.error(e instanceof Error ? e.message : 'Lỗi upload file');
@@ -361,10 +361,10 @@
 					</label>
 				</div>
 				<label class="block text-xs font-black text-zinc-500">
-					File hợp đồng (ảnh scan)
+					File hợp đồng (ảnh scan/PDF)
 					<input
 						type="file"
-						accept="image/*"
+						accept="image/*,application/pdf"
 						onchange={handleFileChange}
 						class="mt-1 w-full rounded-[6px] border-2 border-black px-3 py-2 text-sm font-bold file:hidden"
 					/>

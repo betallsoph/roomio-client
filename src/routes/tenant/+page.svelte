@@ -2,7 +2,11 @@
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { toast } from 'svelte-sonner';
-	import { uploadImage } from '$lib/upload';
+	import {
+		METER_PHOTO_ASPECT_RATIO,
+		uploadImageToR2,
+		type UploadPurpose
+	} from '$lib/upload';
 	import {
 		Home,
 		Receipt,
@@ -219,13 +223,18 @@
 		}
 	});
 
-	// Đọc file từ input, nén + upload, trả về URL (null nếu lỗi/không chọn file)
-	async function uploadFromInput(e: Event, watermarkLabel?: string): Promise<string | null> {
+	// Đọc file từ input, nén + upload thẳng R2, trả về URL (null nếu lỗi/không chọn file).
+	async function uploadFromInput(
+		e: Event,
+		purpose: UploadPurpose,
+		watermarkLabel?: string,
+		options: Parameters<typeof uploadImageToR2>[3] = {}
+	): Promise<string | null> {
 		const input = e.target as HTMLInputElement;
 		const file = input.files?.[0];
 		if (!file) return null;
 		try {
-			return await uploadImage(file, watermarkLabel);
+			return await uploadImageToR2(file, purpose, watermarkLabel, options);
 		} catch (err: any) {
 			toast.error(err.message);
 			return null;
@@ -237,7 +246,9 @@
 	async function handleMeterPhotoChange(e: Event) {
 		if (isUploadingMeterPhoto) return;
 		isUploadingMeterPhoto = true;
-		const url = await uploadFromInput(e, 'Phòng ' + (fullRoomData?.roomNumber || ''));
+		const url = await uploadFromInput(e, 'meter-reading', 'Phòng ' + (fullRoomData?.roomNumber || ''), {
+			aspectRatio: METER_PHOTO_ASPECT_RATIO
+		});
 		if (url) meterPhotoUrl = url;
 		isUploadingMeterPhoto = false;
 	}
@@ -245,7 +256,7 @@
 	async function handleReqImageChange(e: Event) {
 		if (isUploadingReqImage) return;
 		isUploadingReqImage = true;
-		const url = await uploadFromInput(e, 'Sự cố');
+		const url = await uploadFromInput(e, 'maintenance-request', 'Sự cố');
 		if (url) reqImage = url;
 		isUploadingReqImage = false;
 	}
@@ -253,7 +264,7 @@
 	async function handleProofImageChange(e: Event) {
 		if (isUploadingProofImage || !payingInvoice) return;
 		isUploadingProofImage = true;
-		const url = await uploadFromInput(e, 'TT ' + payingInvoice.id);
+		const url = await uploadFromInput(e, 'payment-proof', 'TT ' + payingInvoice.id);
 		if (url) proofImageUrl = url;
 		isUploadingProofImage = false;
 	}
@@ -261,7 +272,8 @@
 	async function handleDocImageChange(e: Event, field: 'front' | 'back' | 'vehicle' | 'checkin') {
 		if (uploadingDocField) return;
 		uploadingDocField = field;
-		const url = await uploadFromInput(e);
+		const purpose: UploadPurpose = field === 'checkin' ? 'room-asset' : 'tenant-document';
+		const url = await uploadFromInput(e, purpose);
 		if (url) {
 			if (field === 'front') tenantIdFrontImage = url;
 			else if (field === 'back') tenantIdBackImage = url;
