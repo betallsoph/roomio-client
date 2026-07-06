@@ -246,7 +246,12 @@
 			label: 'Phòng trọ truyền thống / Căn hộ dịch vụ',
 			lines: ['Phòng trọ truyền thống', 'Căn hộ dịch vụ']
 		},
-		{ value: 'DORM', label: 'KTX / Sleepbox', lines: ['KTX', 'Sleepbox'] }
+		{ value: 'DORM', label: 'KTX / Sleepbox', lines: ['KTX', 'Sleepbox'] },
+		{
+			value: 'WHOLE_UNIT',
+			label: 'Căn hộ chung cư nguyên căn / Nhà nguyên căn',
+			lines: ['Căn hộ chung cư nguyên căn', 'Nhà nguyên căn']
+		}
 	];
 
 	const SUBSCRIPTION_TIER_OPTIONS = [
@@ -617,7 +622,7 @@
 	function pricingStrategyLabel(quote: SubscriptionQuote) {
 		if (quote.roomCount === 0) return 'Chưa có phòng';
 		if (quote.standardRoomCount === 0) return 'Bảng share phòng / Co-living';
-		if (quote.colivingRoomCount === 0) return 'Bảng trọ / CHDV / Sleepbox';
+		if (quote.colivingRoomCount === 0) return 'Bảng trọ / CHDV / Sleepbox / nguyên căn';
 		return quote.strategy === 'SPLIT' ? 'Tách hai bảng có lợi hơn' : 'Gộp chung có lợi hơn';
 	}
 
@@ -974,8 +979,8 @@
 										</div>
 										<p class="mt-2 text-xs font-bold text-zinc-600">
 											{pricingStrategyLabel(selectedLandlord.subscriptionQuote)} ·
-											{selectedLandlord.subscriptionQuote.standardRoomCount} trọ/CHDV +
-											{selectedLandlord.subscriptionQuote.colivingRoomCount} share phòng/co-living
+											{selectedLandlord.subscriptionQuote.standardRoomCount} trọ/CHDV/KTX/Sleepbox/nguyên căn
+											+ {selectedLandlord.subscriptionQuote.colivingRoomCount} share phòng/co-living
 										</p>
 										{#if selectedLandlord.subscriptionQuote.splitEligible}
 											<p class="mt-1 text-[10px] font-bold text-zinc-500">
@@ -1016,9 +1021,8 @@
 														<p class="mt-0.5 text-[10px] font-bold text-zinc-500">
 															{request.quotedPeriodPrice === null
 																? 'Liên hệ'
-																: formatCurrency(request.quotedPeriodPrice)} · Phòng dự kiến: {request.standardRoomCount}
-															trọ/CHDV/KTX/Sleepbox + {request.colivingRoomCount}
-															share phòng/co-living
+																: formatCurrency(request.quotedPeriodPrice)} · Dự kiến: {request.standardRoomCount}
+															trọ/CHDV/KTX/Sleepbox/nguyên căn + {request.colivingRoomCount} share phòng/co-living
 														</p>
 														{#if request.requestedRentalTypes}
 															<p class="mt-1 text-[10px] font-black text-blue-700">
@@ -1031,7 +1035,7 @@
 																	<span
 																		class="rounded-[5px] bg-blue-50 px-2 py-1 text-[10px] font-black text-blue-800"
 																	>
-																		{addition.label}: +{addition.count} phòng
+																		{addition.label}: +{addition.count} đơn vị
 																	</span>
 																{/each}
 															</div>
@@ -1339,11 +1343,11 @@
 					</div>
 
 					<div class="space-y-2">
-						<p class="block text-xs font-bold text-zinc-600">Số phòng đã thương lượng</p>
+						<p class="block text-xs font-bold text-zinc-600">Số đơn vị đã thương lượng</p>
 						<div class="grid grid-cols-2 gap-2">
 							{#if editRentalTypes.some((type) => !isColivingPricingType(type))}
 								<label class="text-[10px] font-bold text-zinc-500">
-									Nhóm phòng tiêu chuẩn
+									Nhóm chuẩn / nguyên căn
 									<input
 										type="number"
 										min="0"
@@ -1355,7 +1359,7 @@
 							{/if}
 							{#if editRentalTypes.some(isColivingPricingType)}
 								<label class="text-[10px] font-bold text-zinc-500">
-									Chung cư / share phòng
+									Share phòng chung cư / co-living
 									<input
 										type="number"
 										min="0"
@@ -1554,11 +1558,11 @@
 					</div>
 
 					<div class="space-y-2">
-						<p class="block text-xs font-bold text-zinc-600">Số phòng đã thương lượng</p>
+						<p class="block text-xs font-bold text-zinc-600">Số đơn vị đã thương lượng</p>
 						<div class="grid grid-cols-2 gap-2">
 							{#if createForm.enabledRentalTypes.some((type) => !isColivingPricingType(type))}
 								<label class="text-[10px] font-bold text-zinc-500">
-									Nhóm phòng tiêu chuẩn
+									Nhóm chuẩn / nguyên căn
 									<input
 										type="number"
 										min="0"
@@ -1571,7 +1575,7 @@
 							{/if}
 							{#if createForm.enabledRentalTypes.some(isColivingPricingType)}
 								<label class="text-[10px] font-bold text-zinc-500">
-									Chung cư / share phòng
+									Share phòng chung cư / co-living
 									<input
 										type="number"
 										min="0"

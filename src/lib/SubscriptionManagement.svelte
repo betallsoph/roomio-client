@@ -67,7 +67,12 @@
 			label: 'Phòng trọ truyền thống / Căn hộ dịch vụ',
 			lines: ['Phòng trọ truyền thống', 'Căn hộ dịch vụ']
 		},
-		{ value: 'DORM', label: 'KTX / Sleepbox', lines: ['KTX', 'Sleepbox'] }
+		{ value: 'DORM', label: 'KTX / Sleepbox', lines: ['KTX', 'Sleepbox'] },
+		{
+			value: 'WHOLE_UNIT',
+			label: 'Căn hộ chung cư nguyên căn / Nhà nguyên căn',
+			lines: ['Căn hộ chung cư nguyên căn', 'Nhà nguyên căn']
+		}
 	];
 
 	function isColivingPricingType(type: string) {
@@ -337,11 +342,11 @@
 				<div class="rounded-lg bg-blue-50 px-4 py-3 text-right">
 					<p class="text-xs font-bold text-blue-800">Đang sử dụng</p>
 					<p class="mt-1 text-lg font-black">
-						{quote.actualRoomCounts.standard + quote.actualRoomCounts.coliving} phòng
+						{quote.actualRoomCounts.standard + quote.actualRoomCounts.coliving} đơn vị
 					</p>
 					<p class="text-[10px] font-bold text-zinc-500">
-						{quote.actualRoomCounts.standard} trọ/CHDV/KTX/Sleepbox + {quote.actualRoomCounts.coliving}
-						share phòng/co-living
+						{quote.actualRoomCounts.standard} trọ/CHDV/KTX/Sleepbox/nguyên căn + {quote.actualRoomCounts
+							.coliving} share phòng/co-living
 					</p>
 					{#if quote.activeSubscription.standardRoomLimit !== null || quote.activeSubscription.colivingRoomLimit !== null}
 						<p class="mt-1 text-[10px] font-black text-blue-800">
@@ -389,7 +394,7 @@
 				</div>
 				{#if selectedExpansionTypes.length > 0}
 					<div class="mt-3 rounded-lg bg-zinc-50 p-3">
-						<p class="mb-2 text-xs font-black text-zinc-600">Số phòng muốn thêm</p>
+						<p class="mb-2 text-xs font-black text-zinc-600">Số phòng/căn muốn thêm</p>
 						<div class="grid grid-cols-2 gap-2 sm:grid-cols-3">
 							{#each selectedExpansionTypes as option}
 								<label class="block text-[10px] font-bold text-zinc-500">
@@ -408,7 +413,7 @@
 					</div>
 				{/if}
 				<p class="text-[10px] font-bold text-zinc-500">
-					Sau điều chỉnh: {plannedStandardRooms} trọ/CHDV/KTX/Sleepbox + {plannedColivingRooms}
+					Sau điều chỉnh: {plannedStandardRooms} trọ/CHDV/KTX/Sleepbox/nguyên căn + {plannedColivingRooms}
 					share phòng/co-living.
 					Hệ thống cộng phần mở rộng vào hạn mức hiện tại để tính giá.
 				</p>
@@ -462,7 +467,7 @@
 					<p class="mt-2 text-xs font-bold text-zinc-600">
 						{quote.colivingRoomCount > 0
 							? 'Áp dụng bảng giá Co-living.'
-							: 'Áp dụng bảng giá trọ / CHDV / Sleepbox.'}
+							: 'Áp dụng bảng giá trọ / CHDV / Sleepbox / nguyên căn.'}
 					</p>
 				{/if}
 			</div>
@@ -516,8 +521,8 @@
 									).toLocaleDateString('vi-VN')}
 								</p>
 								<p class="mt-1 text-xs font-bold text-zinc-500">
-									Dự kiến {request.standardRoomCount} trọ/CHDV/KTX/Sleepbox + {request.colivingRoomCount}
-									share phòng/co-living
+									Dự kiến {request.standardRoomCount} trọ/CHDV/KTX/Sleepbox/nguyên căn + {request
+										.colivingRoomCount} share phòng/co-living
 								</p>
 								{#if request.requestedRentalTypes}
 									<p class="mt-1 text-xs font-bold text-blue-700">
@@ -533,7 +538,7 @@
 											<span
 												class="rounded-[5px] bg-blue-50 px-2 py-1 text-[10px] font-black text-blue-800"
 											>
-												{addition.label}: +{addition.count} phòng
+												{addition.label}: +{addition.count} đơn vị
 											</span>
 										{/each}
 									</div>

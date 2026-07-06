@@ -159,7 +159,12 @@
 			label: 'Phòng trọ truyền thống / Căn hộ dịch vụ',
 			lines: ['Phòng trọ truyền thống', 'Căn hộ dịch vụ']
 		},
-		{ value: 'DORM', label: 'KTX / Sleepbox', lines: ['KTX', 'Sleepbox'] }
+		{ value: 'DORM', label: 'KTX / Sleepbox', lines: ['KTX', 'Sleepbox'] },
+		{
+			value: 'WHOLE_UNIT',
+			label: 'Căn hộ chung cư nguyên căn / Nhà nguyên căn',
+			lines: ['Căn hộ chung cư nguyên căn', 'Nhà nguyên căn']
+		}
 	];
 
 	onMount(() => {
@@ -607,6 +612,7 @@
 		if (type === 'MOTEL') return 'Khu trọ';
 		if (type === 'SERVICED_APARTMENT') return 'Căn hộ dịch vụ';
 		if (type === 'DORM') return 'KTX / Sleepbox';
+		if (type === 'WHOLE_UNIT') return 'Nguyên căn';
 		return 'Tòa nhà';
 	}
 
@@ -615,6 +621,7 @@
 		if (type === 'MOTEL') return 'khu trọ';
 		if (type === 'SERVICED_APARTMENT') return 'tòa nhà căn hộ dịch vụ';
 		if (type === 'DORM') return 'khu KTX / sleepbox';
+		if (type === 'WHOLE_UNIT') return 'bất động sản nguyên căn';
 		return 'tòa nhà';
 	}
 
@@ -623,6 +630,7 @@
 		if (type === 'MOTEL') return 'Dãy';
 		if (type === 'SERVICED_APARTMENT') return 'Tầng / khu';
 		if (type === 'DORM') return 'Phòng / khu';
+		if (type === 'WHOLE_UNIT') return 'Cụm / dự án';
 		return 'Block';
 	}
 
@@ -631,6 +639,7 @@
 		if (type === 'MOTEL') return 'Ví dụ: Khu trọ An Bình';
 		if (type === 'SERVICED_APARTMENT') return 'Ví dụ: CHDV Nguyễn Trãi';
 		if (type === 'DORM') return 'Ví dụ: Sleepbox Cầu Giấy';
+		if (type === 'WHOLE_UNIT') return 'Ví dụ: Căn A1205 Masteri / Nhà nguyên căn Bình Thạnh';
 		return 'Ví dụ: Hoàng Anh Gia Lai 3';
 	}
 
@@ -639,6 +648,7 @@
 		if (type === 'MOTEL') return 'Ví dụ: Dãy A, Dãy B';
 		if (type === 'SERVICED_APARTMENT') return 'Ví dụ: Tầng 1, Tầng 2';
 		if (type === 'DORM') return 'Ví dụ: Phòng nam, Phòng nữ';
+		if (type === 'WHOLE_UNIT') return 'Ví dụ: Masteri Thảo Điền, Nhà phố Quận 7';
 		return 'Ví dụ: A1, A2, B1, B2';
 	}
 
@@ -699,6 +709,7 @@
 		if (type === 'MOTEL') return 'Dãy';
 		if (type === 'SERVICED_APARTMENT') return 'Tầng / khu';
 		if (type === 'DORM') return 'Phòng / khu';
+		if (type === 'WHOLE_UNIT') return 'Cụm / dự án';
 		return 'Block';
 	}
 
@@ -706,6 +717,7 @@
 		const type = activeRentalType();
 		if (type === 'MOTEL') return 'Mã phòng';
 		if (type === 'DORM') return 'Mã giường / box';
+		if (type === 'WHOLE_UNIT') return 'Mã căn/nhà';
 		return 'Mã căn hộ';
 	}
 
