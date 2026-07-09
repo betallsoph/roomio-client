@@ -76,6 +76,11 @@
 		}
 	}
 
+	function fillDemoCredentials() {
+		if (!demoEmail || !demoPassword) return;
+		email = demoEmail;
+		password = demoPassword;
+	}
 </script>
 
 <div class="relative min-h-screen overflow-hidden bg-white font-sans text-black">
@@ -129,6 +134,19 @@
 							<span>{loginButtonLabel}</span>
 						{/if}
 					</button>
+
+					{#if hasDemoCredentials && !shouldAutoLoginDemo}
+						<p class="text-center text-xs font-semibold text-slate-500">
+							Demo account:
+							<button
+								type="button"
+								onclick={fillDemoCredentials}
+								class="font-black text-blue-600 underline decoration-2 underline-offset-2 transition-colors hover:text-black"
+							>
+								{demoEmail} / {demoPassword}
+							</button>
+						</p>
+					{/if}
 				</form>
 
 				{#if officialUrl}
