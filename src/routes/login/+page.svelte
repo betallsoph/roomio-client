@@ -9,9 +9,11 @@
 	const officialUrl = import.meta.env.VITE_OFFICIAL_URL?.trim();
 	const officialLabel = import.meta.env.VITE_OFFICIAL_LABEL?.trim() || 'Dùng bản chính thức';
 	const loginButtonLabel = import.meta.env.VITE_LOGIN_BUTTON_LABEL?.trim() || 'Léc gô';
+	const demoAutoLogin = import.meta.env.VITE_DEMO_AUTO_LOGIN === 'true';
 	const demoEmail = import.meta.env.VITE_DEMO_EMAIL?.trim();
 	const demoPassword = import.meta.env.VITE_DEMO_PASSWORD?.trim();
 	const hasDemoCredentials = Boolean(demoEmail && demoPassword);
+	const shouldAutoLoginDemo = demoAutoLogin && hasDemoCredentials;
 
 	onMount(() => {
 		const sessionStr = localStorage.getItem('roomio_user');
@@ -32,14 +34,17 @@
 		e.preventDefault();
 		if (isLoading) return;
 
-		if (!email) {
+		if (!shouldAutoLoginDemo && !email) {
 			toast.error('Vui lòng nhập Email hoặc Số điện thoại');
 			return;
 		}
-		if (!password) {
+		if (!shouldAutoLoginDemo && !password) {
 			toast.error('Vui lòng nhập mật khẩu');
 			return;
 		}
+
+		const loginIdentity = shouldAutoLoginDemo ? demoEmail! : email;
+		const loginPassword = shouldAutoLoginDemo ? demoPassword! : password;
 
 		isLoading = true;
 		try {
@@ -48,9 +53,9 @@
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({
 					action: 'login',
-					email: email.includes('@') ? email : undefined,
-					phone: !email.includes('@') ? email : undefined,
-					password
+					email: loginIdentity.includes('@') ? loginIdentity : undefined,
+					phone: !loginIdentity.includes('@') ? loginIdentity : undefined,
+					password: loginPassword
 				})
 			});
 			const data = await res.json();
@@ -100,8 +105,8 @@
 							id="email"
 							type="text"
 							bind:value={email}
-							required
-							placeholder="Email hoặc SĐT đăng nhập"
+							required={!shouldAutoLoginDemo}
+							placeholder={shouldAutoLoginDemo ? 'Nhập bất kỳ để vào demo' : 'Email hoặc SĐT đăng nhập'}
 							class="w-full rounded-lg border-2 border-black bg-white px-3 py-2 text-sm font-semibold focus:ring-2 focus:ring-blue-300 focus:outline-none"
 						/>
 					</div>
@@ -112,8 +117,8 @@
 							id="password"
 							type="password"
 							bind:value={password}
-							required
-							placeholder="••••••••"
+							required={!shouldAutoLoginDemo}
+							placeholder={shouldAutoLoginDemo ? 'Nhập gì cũng được' : '••••••••'}
 							class="w-full rounded-lg border-2 border-black bg-white px-3 py-2 text-sm font-semibold focus:ring-2 focus:ring-blue-300 focus:outline-none"
 						/>
 					</div>
@@ -130,7 +135,7 @@
 						{/if}
 					</button>
 
-					{#if hasDemoCredentials}
+					{#if hasDemoCredentials && !shouldAutoLoginDemo}
 						<p class="text-center text-xs font-semibold text-slate-500">
 							Demo account:
 							<button
