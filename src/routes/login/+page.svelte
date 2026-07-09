@@ -9,11 +9,7 @@
 	const officialUrl = import.meta.env.VITE_OFFICIAL_URL?.trim();
 	const officialLabel = import.meta.env.VITE_OFFICIAL_LABEL?.trim() || 'Dùng bản chính thức';
 	const loginButtonLabel = import.meta.env.VITE_LOGIN_BUTTON_LABEL?.trim() || 'Léc gô';
-	const demoAutoLogin = import.meta.env.VITE_DEMO_AUTO_LOGIN === 'true';
-	const demoEmail = import.meta.env.VITE_DEMO_EMAIL?.trim();
-	const demoPassword = import.meta.env.VITE_DEMO_PASSWORD?.trim();
-	const hasDemoCredentials = Boolean(demoEmail && demoPassword);
-	const shouldAutoLoginDemo = demoAutoLogin && hasDemoCredentials;
+	const shouldAutoLoginDemo = import.meta.env.VITE_DEMO_AUTO_LOGIN === 'true';
 
 	onMount(() => {
 		const sessionStr = localStorage.getItem('roomio_user');
@@ -43,20 +39,21 @@
 			return;
 		}
 
-		const loginIdentity = shouldAutoLoginDemo ? demoEmail! : email;
-		const loginPassword = shouldAutoLoginDemo ? demoPassword! : password;
-
 		isLoading = true;
 		try {
 			const res = await fetch('/api/auth', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({
-					action: 'login',
-					email: loginIdentity.includes('@') ? loginIdentity : undefined,
-					phone: !loginIdentity.includes('@') ? loginIdentity : undefined,
-					password: loginPassword
-				})
+				body: JSON.stringify(
+					shouldAutoLoginDemo
+						? { action: 'demo-login' }
+						: {
+								action: 'login',
+								email: email.includes('@') ? email : undefined,
+								phone: !email.includes('@') ? email : undefined,
+								password
+							}
+				)
 			});
 			const data = await res.json();
 
