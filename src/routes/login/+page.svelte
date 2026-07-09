@@ -132,7 +132,7 @@
 
 					{#if hasDemoCredentials}
 						<p class="text-center text-xs font-semibold text-slate-500">
-							Acc demo:
+							Demo account:
 							<button
 								type="button"
 								onclick={fillDemoCredentials}
