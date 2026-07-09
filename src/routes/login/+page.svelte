@@ -6,12 +6,6 @@
 	let email = $state('');
 	let password = $state('');
 	let isLoading = $state(false);
-	const demoUrl = import.meta.env.VITE_DEMO_URL?.trim() || 'https://roomiodemo.roomieverse.me';
-	const demoLabel = import.meta.env.VITE_DEMO_LABEL?.trim() || 'Xem bản demo';
-	const demoEmail = import.meta.env.VITE_DEMO_EMAIL?.trim();
-	const demoPassword = import.meta.env.VITE_DEMO_PASSWORD?.trim();
-	const demoRole = import.meta.env.VITE_DEMO_ROLE?.trim() || 'Landlord demo';
-	const hasDemoCredentials = Boolean(demoEmail && demoPassword);
 
 	onMount(() => {
 		const sessionStr = localStorage.getItem('roomio_user');
@@ -70,12 +64,6 @@
 			isLoading = false;
 		}
 	}
-
-	function fillDemoCredentials() {
-		if (!demoEmail || !demoPassword) return;
-		email = demoEmail;
-		password = demoPassword;
-	}
 </script>
 
 <div class="relative min-h-screen overflow-hidden bg-white font-sans text-black">
@@ -92,35 +80,6 @@
 				<div class="mb-5 flex justify-center">
 					<img src="/brand/roomio-wordmark-blue600.png" alt="Roomio" class="h-auto w-48 sm:w-64" />
 				</div>
-
-				{#if hasDemoCredentials}
-					<div class="mb-5 rounded-xl border-2 border-black bg-blue-50 p-4 shadow-secondary">
-						<div class="mb-3 flex items-center justify-between gap-3">
-							<div>
-								<p class="text-xs font-black tracking-[0.18em] text-blue-600 uppercase">Demo account</p>
-								<p class="text-sm font-black text-black">{demoRole}</p>
-							</div>
-							<button
-								type="button"
-								onclick={fillDemoCredentials}
-								class="rounded-[6px] border-2 border-black bg-white px-3 py-1.5 text-xs font-black text-black transition-all hover:-translate-y-0.5 hover:bg-blue-100"
-							>
-								Điền nhanh
-							</button>
-						</div>
-
-						<div class="grid gap-2 text-sm">
-							<div class="flex items-center justify-between gap-3 rounded-lg bg-white px-3 py-2">
-								<span class="font-bold text-slate-500">Email</span>
-								<span class="font-black text-black">{demoEmail}</span>
-							</div>
-							<div class="flex items-center justify-between gap-3 rounded-lg bg-white px-3 py-2">
-								<span class="font-bold text-slate-500">Password</span>
-								<span class="font-black text-black">{demoPassword}</span>
-							</div>
-						</div>
-					</div>
-				{/if}
 
 				<form onsubmit={handleSubmit} class="space-y-4">
 					<div>
@@ -159,23 +118,6 @@
 						{/if}
 					</button>
 				</form>
-
-				{#if demoUrl}
-					<div class="my-5 flex items-center gap-3 text-xs font-bold text-slate-400">
-						<div class="h-px flex-1 bg-slate-200"></div>
-						<span>hoặc</span>
-						<div class="h-px flex-1 bg-slate-200"></div>
-					</div>
-
-					<a
-						href={demoUrl}
-						target="_blank"
-						rel="noreferrer"
-						class="inline-flex w-full items-center justify-center rounded-[6px] border-2 border-black bg-white px-4 py-2 text-sm font-bold text-black shadow-secondary transition-all hover:-translate-y-0.5 hover:bg-blue-50"
-					>
-						{demoLabel}
-					</a>
-				{/if}
 			</div>
 		</section>
 	</main>
