@@ -8,9 +8,9 @@
 	let isLoading = $state(false);
 	const officialUrl = import.meta.env.VITE_OFFICIAL_URL?.trim();
 	const officialLabel = import.meta.env.VITE_OFFICIAL_LABEL?.trim() || 'Dùng bản chính thức';
-	const loginButtonLabel = import.meta.env.VITE_LOGIN_BUTTON_LABEL?.trim() || 'Léc gô';
 	const demoEmail = import.meta.env.VITE_DEMO_EMAIL?.trim();
 	const demoPassword = import.meta.env.VITE_DEMO_PASSWORD?.trim();
+	const demoRole = import.meta.env.VITE_DEMO_ROLE?.trim() || 'Landlord demo';
 	const hasDemoCredentials = Boolean(demoEmail && demoPassword);
 
 	onMount(() => {
@@ -93,6 +93,35 @@
 					<img src="/brand/roomio-wordmark-blue600.png" alt="Roomio" class="h-auto w-48 sm:w-64" />
 				</div>
 
+				{#if hasDemoCredentials}
+					<div class="mb-5 rounded-xl border-2 border-black bg-blue-50 p-4 shadow-secondary">
+						<div class="mb-3 flex items-center justify-between gap-3">
+							<div>
+								<p class="text-xs font-black tracking-[0.18em] text-blue-600 uppercase">Demo account</p>
+								<p class="text-sm font-black text-black">{demoRole}</p>
+							</div>
+							<button
+								type="button"
+								onclick={fillDemoCredentials}
+								class="rounded-[6px] border-2 border-black bg-white px-3 py-1.5 text-xs font-black text-black transition-all hover:-translate-y-0.5 hover:bg-blue-100"
+							>
+								Điền nhanh
+							</button>
+						</div>
+
+						<div class="grid gap-2 text-sm">
+							<div class="flex items-center justify-between gap-3 rounded-lg bg-white px-3 py-2">
+								<span class="font-bold text-slate-500">Email</span>
+								<span class="font-black text-black">{demoEmail}</span>
+							</div>
+							<div class="flex items-center justify-between gap-3 rounded-lg bg-white px-3 py-2">
+								<span class="font-bold text-slate-500">Password</span>
+								<span class="font-black text-black">{demoPassword}</span>
+							</div>
+						</div>
+					</div>
+				{/if}
+
 				<form onsubmit={handleSubmit} class="space-y-4">
 					<div>
 						<label for="email" class="mb-1 block text-sm font-bold">Email hoặc số điện thoại</label>
@@ -126,22 +155,9 @@
 						{#if isLoading}
 							Đang xử lý
 						{:else}
-							<span>{loginButtonLabel}</span>
+							<span>Léc gô</span>
 						{/if}
 					</button>
-
-					{#if hasDemoCredentials}
-						<p class="text-center text-xs font-semibold text-slate-500">
-							Acc demo:
-							<button
-								type="button"
-								onclick={fillDemoCredentials}
-								class="font-black text-blue-600 underline decoration-2 underline-offset-2 transition-colors hover:text-black"
-							>
-								{demoEmail} / {demoPassword}
-							</button>
-						</p>
-					{/if}
 				</form>
 
 				{#if officialUrl}
