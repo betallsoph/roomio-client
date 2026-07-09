@@ -6,8 +6,8 @@
 	let email = $state('');
 	let password = $state('');
 	let isLoading = $state(false);
-	const officialUrl = import.meta.env.VITE_OFFICIAL_URL?.trim();
-	const officialLabel = import.meta.env.VITE_OFFICIAL_LABEL?.trim() || 'Dùng bản chính thức';
+	const demoUrl = import.meta.env.VITE_DEMO_URL?.trim() || 'https://roomiodemo.roomieverse.me';
+	const demoLabel = import.meta.env.VITE_DEMO_LABEL?.trim() || 'Xem bản demo';
 	const demoEmail = import.meta.env.VITE_DEMO_EMAIL?.trim();
 	const demoPassword = import.meta.env.VITE_DEMO_PASSWORD?.trim();
 	const demoRole = import.meta.env.VITE_DEMO_ROLE?.trim() || 'Landlord demo';
@@ -160,7 +160,7 @@
 					</button>
 				</form>
 
-				{#if officialUrl}
+				{#if demoUrl}
 					<div class="my-5 flex items-center gap-3 text-xs font-bold text-slate-400">
 						<div class="h-px flex-1 bg-slate-200"></div>
 						<span>hoặc</span>
@@ -168,12 +168,12 @@
 					</div>
 
 					<a
-						href={officialUrl}
+						href={demoUrl}
 						target="_blank"
 						rel="noreferrer"
 						class="inline-flex w-full items-center justify-center rounded-[6px] border-2 border-black bg-white px-4 py-2 text-sm font-bold text-black shadow-secondary transition-all hover:-translate-y-0.5 hover:bg-blue-50"
 					>
-						{officialLabel}
+						{demoLabel}
 					</a>
 				{/if}
 			</div>
