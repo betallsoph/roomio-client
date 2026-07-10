@@ -13,11 +13,23 @@
 		roomCode?: string | null;
 		floor?: number | null;
 		block?: Block | null;
+		paymentAccountId?: string | null;
+		paymentAccount?: PaymentAccount | null;
 		property: {
 			name: string;
 			shortName: string;
 			rentalType?: string;
 		};
+	}
+
+	interface PaymentAccount {
+		id: string;
+		name: string;
+		provider: string;
+		isDefault: boolean;
+		bankName: string;
+		bankCode: string;
+		accountNumber: string;
 	}
 
 	interface Block {
@@ -58,6 +70,8 @@
 		fileUrl: string | null;
 		status: string;
 		notes: string | null;
+		paymentAccountId?: string | null;
+		paymentAccount?: PaymentAccount | null;
 		room: { roomNumber: string };
 	}
 
@@ -66,6 +80,7 @@
 	let tenants = $state<Tenant[]>([]);
 	let emptyRooms = $state<Room[]>([]);
 	let properties = $state<PropertyOption[]>([]);
+	let paymentAccounts = $state<PaymentAccount[]>([]);
 	let enabledRentalTypes = $state<string[]>(['APARTMENT']);
 	let selectedTenant = $state<Tenant | null>(null);
 
@@ -82,7 +97,8 @@
 		monthlyRent: 0,
 		deposit: 0,
 		fileUrl: '',
-		notes: ''
+		notes: '',
+		paymentAccountId: ''
 	});
 	const todayStr = new Date().toISOString().split('T')[0];
 	const in30DaysStr = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
@@ -114,6 +130,7 @@
 	let quickMonthlyRent = $state('');
 	let quickArea = $state('');
 	let quickRoomType = $state('standard');
+	let tenantPaymentAccountId = $state('');
 	let quickPropertyName = $state('');
 	let quickPropertyShortName = $state('');
 	let quickPropertyAddress = $state('');
@@ -153,6 +170,7 @@
 			quickPropertyRentalType = enabledRentalTypes[0] ?? 'APARTMENT';
 		}
 		fetchSettings();
+		fetchPaymentAccounts();
 		fetchTenants(session.landlordProfileId);
 		fetchEmptyRooms(session.landlordProfileId);
 	});
@@ -192,6 +210,19 @@
 		}
 	}
 
+	async function fetchPaymentAccounts() {
+		try {
+			const res = await fetch('/api/payment-accounts');
+			const data = await res.json();
+			if (res.ok) {
+				paymentAccounts = data.accounts ?? [];
+				if (!tenantPaymentAccountId) tenantPaymentAccountId = defaultPaymentAccountId();
+			}
+		} catch {
+			// Không chặn trang khách thuê nếu tải tài khoản nhận tiền lỗi.
+		}
+	}
+
 	async function fetchEmptyRooms(profileId: string) {
 		try {
 			const propRes = await fetch(`/api/properties?landlordId=${profileId}`);
@@ -225,6 +256,8 @@
 									roomCode: r.roomCode,
 									floor: r.floor,
 									block: r.block,
+									paymentAccountId: r.paymentAccountId,
+									paymentAccount: r.paymentAccount,
 									property: {
 										name: prop.name,
 										shortName: prop.shortName,
@@ -238,9 +271,11 @@
 				if (emptyRooms.length > 0) {
 					roomId = emptyRooms[0].id;
 					roomAssignMode = 'existing';
+					tenantPaymentAccountId = selectedRoomPaymentAccountId();
 				} else {
 					roomId = '';
 					roomAssignMode = 'new';
+					tenantPaymentAccountId = defaultPaymentAccountId();
 				}
 			}
 		} catch (e) {
@@ -298,6 +333,27 @@
 		return room.roomCode ? ` · ${room.roomCode}` : '';
 	}
 
+	function defaultPaymentAccountId() {
+		return paymentAccounts.find((account) => account.isDefault)?.id ?? paymentAccounts[0]?.id ?? '';
+	}
+
+	function paymentAccountOptions() {
+		return paymentAccounts.map((account) => ({
+			value: account.id,
+			label: `${account.name}${account.isDefault ? ' · mặc định' : ''}`
+		}));
+	}
+
+	function selectedRoomPaymentAccountId() {
+		return (
+			emptyRooms.find((room) => room.id === roomId)?.paymentAccountId ?? defaultPaymentAccountId()
+		);
+	}
+
+	function tenantPaymentAccountPayload() {
+		return tenantPaymentAccountId || selectedRoomPaymentAccountId() || null;
+	}
+
 	function resetTenantForm() {
 		email = '';
 		phone = '';
@@ -315,6 +371,7 @@
 		quickMonthlyRent = '';
 		quickArea = '';
 		quickRoomType = 'standard';
+		tenantPaymentAccountId = defaultPaymentAccountId();
 	}
 
 	function quickPropertyLabel(type = quickPropertyRentalType) {
@@ -453,7 +510,8 @@
 						roomType: quickRoomType,
 						floor: quickFloor ? Number(quickFloor) : null,
 						monthlyRent: Number(quickMonthlyRent),
-						area: quickArea ? Number(quickArea) : null
+						area: quickArea ? Number(quickArea) : null,
+						paymentAccountId: tenantPaymentAccountPayload()
 					})
 				});
 				const createdRoom = await createRoomRes.json();
@@ -476,7 +534,8 @@
 					deposit: Number(deposit),
 					notes,
 					initialElectricity: Number(initialElectricity),
-					initialWater: Number(initialWater)
+					initialWater: Number(initialWater),
+					paymentAccountId: tenantPaymentAccountPayload()
 				})
 			});
 			const data = await res.json();
@@ -605,7 +664,11 @@
 			monthlyRent: 0,
 			deposit: selectedTenant?.deposit ?? 0,
 			fileUrl: '',
-			notes: ''
+			notes: '',
+			paymentAccountId:
+				selectedTenant?.rooms[0]?.paymentAccountId ??
+				tenantPaymentAccountPayload() ??
+				defaultPaymentAccountId()
 		};
 		showContractForm = true;
 	}
@@ -649,7 +712,9 @@
 					monthlyRent: Number(cForm.monthlyRent),
 					deposit: Number(cForm.deposit),
 					fileUrl: cForm.fileUrl || null,
-					notes: cForm.notes || null
+					notes: cForm.notes || null,
+					paymentAccountId:
+						cForm.paymentAccountId || room.paymentAccountId || defaultPaymentAccountId()
 				})
 			});
 			const data = await res.json();
@@ -953,7 +1018,10 @@
 							<button
 								type="button"
 								disabled={emptyRooms.length === 0}
-								onclick={() => (roomAssignMode = 'existing')}
+								onclick={() => {
+									roomAssignMode = 'existing';
+									tenantPaymentAccountId = selectedRoomPaymentAccountId();
+								}}
 								class="rounded-[6px] border-2 border-black px-3 py-2 text-xs font-black transition-colors disabled:opacity-40 {roomAssignMode ===
 								'existing'
 									? 'bg-blue-300 text-black'
@@ -963,7 +1031,10 @@
 							</button>
 							<button
 								type="button"
-								onclick={() => (roomAssignMode = 'new')}
+								onclick={() => {
+									roomAssignMode = 'new';
+									tenantPaymentAccountId = defaultPaymentAccountId();
+								}}
 								class="rounded-[6px] border-2 border-black px-3 py-2 text-xs font-black transition-colors {roomAssignMode ===
 								'new'
 									? 'bg-blue-300 text-black'
@@ -981,6 +1052,7 @@
 									<RoomioSelect
 										id="t-room"
 										bind:value={roomId}
+										onchange={() => (tenantPaymentAccountId = selectedRoomPaymentAccountId())}
 										required
 										options={emptyRooms.map((room) => ({
 											value: room.id,
@@ -1083,6 +1155,20 @@
 								/>
 							</div>
 						</div>
+						{#if paymentAccounts.length > 0}
+							<div class="space-y-1">
+								<label for="t-payment-account" class="block text-[10px] font-bold text-zinc-600"
+									>Tài khoản nhận tiền</label
+								>
+								<RoomioSelect
+									id="t-payment-account"
+									bind:value={tenantPaymentAccountId}
+									options={paymentAccountOptions()}
+									placeholder="Chọn tài khoản nhận tiền"
+									compact
+								/>
+							</div>
+						{/if}
 						{#if roomAssignMode === 'new'}
 							<div class="grid grid-cols-2 gap-3">
 								{#if quickPropertyIsApartment()}
@@ -1545,6 +1631,17 @@
 										/>
 									</label>
 								</div>
+								{#if paymentAccounts.length > 0}
+									<label class="block text-[10px] font-black text-zinc-500"
+										>Tài khoản nhận tiền
+										<RoomioSelect
+											bind:value={cForm.paymentAccountId}
+											options={paymentAccountOptions()}
+											compact
+											class="mt-1"
+										/>
+									</label>
+								{/if}
 								<label class="block text-[10px] font-black text-zinc-500"
 									>File hợp đồng
 									<input

@@ -10,6 +10,7 @@
 		id: string;
 		tenantId: string;
 		roomId: string;
+		paymentAccountId?: string | null;
 		startDate: string;
 		endDate: string;
 		monthlyRent: number;
@@ -18,7 +19,11 @@
 		status: string;
 		notes: string | null;
 		tenant: { user: { name: string; phone: string } };
-		room: { roomNumber: string; property: { name: string; shortName: string } };
+		room: {
+			roomNumber: string;
+			paymentAccountId?: string | null;
+			property: { name: string; shortName: string };
+		};
 	}
 
 	interface TenantOption {
@@ -28,13 +33,22 @@
 			id: string;
 			roomNumber: string;
 			monthlyRent: number;
+			paymentAccountId?: string | null;
 			property: { shortName: string };
 		}[];
+	}
+
+	interface PaymentAccount {
+		id: string;
+		name: string;
+		provider: string;
+		isDefault: boolean;
 	}
 
 	let landlordId = $state('');
 	let contractList = $state<ContractRow[]>([]);
 	let tenantOptions = $state<TenantOption[]>([]);
+	let paymentAccounts = $state<PaymentAccount[]>([]);
 	let isLoading = $state(true);
 	let showCreateModal = $state(false);
 	let isSaving = $state(false);
@@ -47,6 +61,7 @@
 		monthlyRent: 0,
 		deposit: 0,
 		fileUrl: '',
+		paymentAccountId: '',
 		notes: ''
 	});
 
@@ -69,15 +84,18 @@
 	async function loadContracts() {
 		isLoading = true;
 		try {
-			const [contractsRes, tenantsRes] = await Promise.all([
+			const [contractsRes, tenantsRes, paymentAccountsRes] = await Promise.all([
 				fetch(`/api/contracts?landlordId=${landlordId}`),
-				fetch(`/api/tenants?landlordId=${landlordId}`)
+				fetch(`/api/tenants?landlordId=${landlordId}`),
+				fetch('/api/payment-accounts')
 			]);
 			const contractsData = await contractsRes.json();
 			const tenantsData = await tenantsRes.json();
+			const paymentAccountsData = await paymentAccountsRes.json();
 			if (!contractsRes.ok) throw new Error(contractsData.error);
 			contractList = contractsData;
 			if (tenantsRes.ok) tenantOptions = tenantsData;
+			if (paymentAccountsRes.ok) paymentAccounts = paymentAccountsData.accounts ?? [];
 		} catch (e) {
 			toast.error(e instanceof Error ? e.message : 'Lỗi tải danh sách hợp đồng');
 		} finally {
@@ -93,6 +111,7 @@
 			monthlyRent: 0,
 			deposit: 0,
 			fileUrl: '',
+			paymentAccountId: defaultPaymentAccountId(),
 			notes: ''
 		};
 		showCreateModal = true;
@@ -133,6 +152,8 @@
 					monthlyRent: form.monthlyRent,
 					deposit: form.deposit,
 					fileUrl: form.fileUrl || null,
+					paymentAccountId:
+						form.paymentAccountId || room.paymentAccountId || defaultPaymentAccountId() || null,
 					notes: form.notes || null
 				})
 			});
@@ -195,6 +216,17 @@
 		if (c.endDate < today) return { text: 'Hết hạn', cls: 'bg-red-200' };
 		if (isExpiringSoon(c)) return { text: 'Sắp hết hạn', cls: 'bg-yellow-200' };
 		return { text: 'Hiệu lực', cls: 'bg-green-200' };
+	}
+
+	function defaultPaymentAccountId() {
+		return paymentAccounts.find((account) => account.isDefault)?.id ?? paymentAccounts[0]?.id ?? '';
+	}
+
+	function paymentAccountOptions() {
+		return paymentAccounts.map((account) => ({
+			value: account.id,
+			label: `${account.name}${account.isDefault ? ' · mặc định' : ''}`
+		}));
 	}
 
 	const formatMoney = (n: number) => new Intl.NumberFormat('vi-VN').format(n) + 'đ';
@@ -312,7 +344,10 @@
 						bind:value={form.tenantId}
 						onchange={() => {
 							const room = selectedTenant?.rooms[0];
-							if (room) form.monthlyRent = room.monthlyRent;
+							if (room) {
+								form.monthlyRent = room.monthlyRent;
+								form.paymentAccountId = room.paymentAccountId ?? defaultPaymentAccountId();
+							}
 						}}
 						class="mt-1"
 						options={[
@@ -326,6 +361,17 @@
 						]}
 					/>
 				</label>
+				{#if paymentAccounts.length > 0}
+					<label class="block text-xs font-black text-zinc-500">
+						Tài khoản nhận tiền
+						<RoomioSelect
+							bind:value={form.paymentAccountId}
+							class="mt-1"
+							options={paymentAccountOptions()}
+							placeholder="Chọn tài khoản nhận tiền"
+						/>
+					</label>
+				{/if}
 				<div class="grid grid-cols-2 gap-3">
 					<label class="block text-xs font-black text-zinc-500">
 						Ngày bắt đầu

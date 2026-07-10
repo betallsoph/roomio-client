@@ -70,6 +70,16 @@
 		deposit: number;
 	}
 
+	interface PaymentAccount {
+		id: string;
+		name: string;
+		provider: string;
+		isDefault: boolean;
+		bankName: string;
+		bankCode: string;
+		accountNumber: string;
+	}
+
 	interface Room {
 		id: string;
 		propertyId: string;
@@ -84,6 +94,8 @@
 		debtAmount: number;
 		tenantId: string | null;
 		tenant: Tenant | null;
+		paymentAccountId?: string | null;
+		paymentAccount?: PaymentAccount | null;
 		services: ServiceConfig[];
 		meterReadings: MeterReading[];
 		assets: RoomAsset[];
@@ -101,6 +113,7 @@
 	let isLoading = $state(true);
 	let properties = $state<Property[]>([]);
 	let rooms = $state<Room[]>([]);
+	let paymentAccounts = $state<PaymentAccount[]>([]);
 	let enabledRentalTypes = $state<string[]>(['APARTMENT']);
 
 	// Filtering states
@@ -113,6 +126,7 @@
 	let selectedRoom = $state<Room | null>(null);
 	let isDetailOpen = $state(false);
 	let activeTab = $state<'general' | 'services' | 'meters' | 'assets'>('general');
+	let detailPaymentAccountId = $state('');
 
 	// Add Room Dialog states
 	let isAddDialogOpen = $state(false);
@@ -124,6 +138,7 @@
 	let newMonthlyRent = $state('');
 	let newArea = $state('');
 	let newBlockId = $state('');
+	let newPaymentAccountId = $state('');
 	let isCreatingRoom = $state(false);
 	let selectedUnitCode = $state(''); // '' = tạo căn mới; khác '' = thêm phòng vào căn đã có
 	let quickPropertyName = $state('');
@@ -226,11 +241,13 @@
 	function openAddRoomDialog() {
 		selectedUnitCode = '';
 		newBlockId = getActiveProperty()?.blocks[0]?.id ?? '';
+		newPaymentAccountId = defaultPaymentAccountId();
 		isAddDialogOpen = true;
 	}
 
 	function openRoomDetail(room: Room) {
 		selectedRoom = room;
+		detailPaymentAccountId = room.paymentAccountId ?? defaultPaymentAccountId();
 		activeTab = 'general';
 		isDetailOpen = true;
 	}
@@ -238,6 +255,7 @@
 	async function loadInitialData(profileId: string) {
 		isLoading = true;
 		try {
+			await fetchPaymentAccounts();
 			// Fetch properties first
 			const propRes = await fetch(`/api/properties?landlordId=${profileId}`);
 			const propData = await propRes.json();
@@ -269,6 +287,19 @@
 			if (res.ok) rooms = data;
 		} catch (e: any) {
 			toast.error('Lỗi khi tải danh sách phòng: ' + e.message);
+		}
+	}
+
+	async function fetchPaymentAccounts() {
+		try {
+			const res = await fetch('/api/payment-accounts');
+			const data = await res.json();
+			if (res.ok) {
+				paymentAccounts = data.accounts ?? [];
+				if (!newPaymentAccountId) newPaymentAccountId = defaultPaymentAccountId();
+			}
+		} catch {
+			// Không chặn trang phòng nếu tải tài khoản nhận tiền lỗi.
 		}
 	}
 
@@ -349,7 +380,8 @@
 					roomType: newRoomType,
 					floor: submitFloor,
 					monthlyRent: Number(newMonthlyRent),
-					area: newArea ? Number(newArea) : null
+					area: newArea ? Number(newArea) : null,
+					paymentAccountId: newPaymentAccountId || null
 				})
 			});
 			const data = await res.json();
@@ -367,6 +399,7 @@
 			newArea = '';
 			newBlockId = '';
 			selectedUnitCode = '';
+			newPaymentAccountId = defaultPaymentAccountId();
 
 			// Refresh
 			fetchRooms(selectedPropertyId);
@@ -402,6 +435,27 @@
 			isDetailOpen = false;
 			selectedRoom = null;
 			fetchRooms(selectedPropertyId);
+		} catch (err: any) {
+			toast.error(err.message);
+		}
+	}
+
+	async function updateRoomPaymentAccount() {
+		if (!selectedRoom || !detailPaymentAccountId) return;
+		try {
+			const res = await fetch('/api/rooms', {
+				method: 'PUT',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					id: selectedRoom.id,
+					paymentAccountId: detailPaymentAccountId
+				})
+			});
+			const data = await res.json();
+			if (!res.ok) throw new Error(data.error || 'Không đổi được tài khoản nhận tiền');
+			selectedRoom = data;
+			fetchRooms(selectedPropertyId);
+			toast.success('Đã đổi tài khoản nhận tiền của phòng');
 		} catch (err: any) {
 			toast.error(err.message);
 		}
@@ -565,6 +619,17 @@
 
 	function getActiveBlocks() {
 		return getActiveProperty()?.blocks ?? [];
+	}
+
+	function defaultPaymentAccountId() {
+		return paymentAccounts.find((account) => account.isDefault)?.id ?? paymentAccounts[0]?.id ?? '';
+	}
+
+	function paymentAccountOptions() {
+		return paymentAccounts.map((account) => ({
+			value: account.id,
+			label: `${account.name}${account.isDefault ? ' · mặc định' : ''}`
+		}));
 	}
 
 	function normalizeUnitNumber(value: string) {
@@ -1468,6 +1533,20 @@
 							</div>
 						</div>
 
+						{#if paymentAccounts.length > 0}
+							<div class="space-y-1">
+								<label for="r-payment-account" class="block text-xs font-bold text-zinc-600"
+									>Tài khoản nhận tiền</label
+								>
+								<RoomioSelect
+									id="r-payment-account"
+									bind:value={newPaymentAccountId}
+									options={paymentAccountOptions()}
+									placeholder="Chọn tài khoản nhận tiền"
+								/>
+							</div>
+						{/if}
+
 						{#if activeRentalType() !== 'APARTMENT' && getActiveProperty() && getActiveProperty()!.blocks.length > 0}
 							<div class="space-y-1">
 								<label for="r-block" class="block text-xs font-bold text-zinc-600"
@@ -1640,6 +1719,32 @@
 											</div>
 										{/if}
 									</div>
+
+									{#if paymentAccounts.length > 0}
+										<div class="space-y-2">
+											<h4 class="text-sm font-black text-blue-600">Tài khoản nhận tiền</h4>
+											<div class="flex gap-2">
+												<div class="min-w-0 flex-1">
+													<RoomioSelect
+														id="room-detail-payment-account"
+														bind:value={detailPaymentAccountId}
+														options={paymentAccountOptions()}
+														compact
+													/>
+												</div>
+												<button
+													type="button"
+													onclick={(e) => tapBounce(e, () => void updateRoomPaymentAccount())}
+													class="modal-action shrink-0 cursor-pointer rounded-[6px] border-2 border-black bg-blue-300 px-3 py-2 text-xs font-black text-black shadow-secondary transition-all"
+												>
+													<span class="modal-action-label">Lưu</span>
+												</button>
+											</div>
+											<p class="text-[11px] font-bold text-zinc-500">
+												Hóa đơn mới của phòng này sẽ dùng tài khoản đang chọn.
+											</p>
+										</div>
+									{/if}
 
 									<!-- Tenant Details -->
 									<div

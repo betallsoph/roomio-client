@@ -10,6 +10,39 @@
 	import RoomioSelect from '$lib/RoomioSelect.svelte';
 
 	type SettingsTab = 'account' | 'staff' | 'subscription';
+	type PaymentProvider = 'vietqr' | 'payos';
+
+	interface PaymentAccount {
+		id: string;
+		name: string;
+		provider: PaymentProvider | string;
+		isDefault: boolean;
+		isActive: boolean;
+		bankName: string;
+		bankCode: string;
+		accountNumber: string;
+		accountName: string;
+		bankBranch: string | null;
+		momoNumber: string | null;
+		payosClientId: string | null;
+		payosConnected: boolean;
+		payosConnectedAt: string | null;
+	}
+
+	interface PaymentAccountForm {
+		name: string;
+		provider: PaymentProvider;
+		bankCode: string;
+		bankName: string;
+		accountNumber: string;
+		accountName: string;
+		bankBranch: string;
+		momoNumber: string;
+		clientId: string;
+		apiKey: string;
+		checksumKey: string;
+		isDefault: boolean;
+	}
 
 	let landlordId = $state<string | null>(null);
 	let isLoading = $state(true);
@@ -21,20 +54,10 @@
 	let email = $state('');
 	let phone = $state('');
 	let companyName = $state('');
-	let bankName = $state('');
-	let bankCode = $state('');
-	let accountNumber = $state('');
-	let accountName = $state('');
-	let bankBranch = $state('');
-	let momoNumber = $state('');
-
-	// PayOS riêng của chủ trọ — kết nối để tiền thuê về thẳng TK của mình + tự động đối soát
-	let payosConnected = $state(false);
-	let payosClientIdSaved = $state<string | null>(null);
-	let payosBusy = $state(false);
-	let pClientId = $state('');
-	let pApiKey = $state('');
-	let pChecksumKey = $state('');
+	let paymentAccounts = $state<PaymentAccount[]>([]);
+	let paymentAccountForm = $state<PaymentAccountForm>(emptyPaymentAccountForm());
+	let paymentAccountBusy = $state(false);
+	let paymentAccountActionId = $state<string | null>(null);
 
 	onMount(() => {
 		const requestedTab = page.url.searchParams.get('tab');
@@ -46,7 +69,7 @@
 		const session = JSON.parse(sessionStr);
 		landlordId = session.landlordProfileId;
 		fetchSettings(session.landlordProfileId);
-		fetchPayosStatus();
+		fetchPaymentAccounts();
 	});
 
 	async function fetchSettings(profileId: string) {
@@ -60,12 +83,6 @@
 				email = data.user.email;
 				phone = data.user.phone;
 				companyName = data.companyName || '';
-				bankName = data.bankName || '';
-				bankCode = data.bankCode || '';
-				accountNumber = data.accountNumber || '';
-				accountName = data.accountName || '';
-				bankBranch = data.bankBranch || '';
-				momoNumber = data.momoNumber || '';
 			}
 		} catch (e: any) {
 			toast.error('Lỗi khi tải cấu hình chủ trọ: ' + e.message);
@@ -78,8 +95,8 @@
 		e.preventDefault();
 		if (!landlordId || isSubmitting) return;
 
-		if (!companyName || !bankName || !bankCode || !accountNumber || !accountName) {
-			toast.error('Vui lòng điền đầy đủ thông tin ngân hàng nhận tiền chuyển khoản');
+		if (!companyName) {
+			toast.error('Vui lòng nhập tên thương hiệu quản lý trọ');
 			return;
 		}
 
@@ -90,13 +107,7 @@
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({
 					landlordId,
-					companyName,
-					bankName,
-					bankCode,
-					accountNumber,
-					accountName,
-					bankBranch,
-					momoNumber
+					companyName
 				})
 			});
 			const data = await res.json();
@@ -108,84 +119,6 @@
 			toast.error(err.message);
 		} finally {
 			isSubmitting = false;
-		}
-	}
-
-	async function fetchPayosStatus() {
-		try {
-			const res = await fetch('/api/payos-connect');
-			const data = await res.json();
-			if (res.ok) {
-				payosConnected = data.connected;
-				payosClientIdSaved = data.clientId;
-			}
-		} catch {
-			// Bỏ qua lỗi tải trạng thái PayOS
-		}
-	}
-
-	async function connectPayos() {
-		if (payosBusy) return;
-		if (!pClientId || !pApiKey || !pChecksumKey) {
-			toast.error('Cần đủ Client ID, API Key và Checksum Key');
-			return;
-		}
-		payosBusy = true;
-		try {
-			const res = await fetch('/api/payos-connect', {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({
-					action: 'connect',
-					clientId: pClientId,
-					apiKey: pApiKey,
-					checksumKey: pChecksumKey
-				})
-			});
-			const data = await res.json();
-			if (!res.ok) throw new Error(data.error || 'Lỗi kết nối PayOS');
-			payosConnected = true;
-			payosClientIdSaved = pClientId;
-			pApiKey = '';
-			pChecksumKey = '';
-			if (data.webhookRegistered) toast.success('Đã kết nối PayOS & đăng ký webhook tự động');
-			else
-				toast.success(
-					'Đã lưu khóa PayOS' + (data.warning ? ` — webhook chưa đăng ký (${data.warning})` : '')
-				);
-		} catch (err: any) {
-			toast.error(err.message);
-		} finally {
-			payosBusy = false;
-		}
-	}
-
-	async function disconnectPayos() {
-		if (
-			!(await confirmPopup({
-				title: 'Ngắt kết nối PayOS',
-				message: 'Ngắt PayOS? Hóa đơn sẽ quay về thu bằng VietQR + xác nhận thủ công.',
-				confirmLabel: 'Ngắt kết nối',
-				tone: 'danger'
-			}))
-		)
-			return;
-		payosBusy = true;
-		try {
-			const res = await fetch('/api/payos-connect', {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ action: 'disconnect' })
-			});
-			const data = await res.json();
-			if (!res.ok) throw new Error(data.error || 'Lỗi ngắt kết nối');
-			payosConnected = false;
-			payosClientIdSaved = null;
-			toast.success('Đã ngắt kết nối PayOS');
-		} catch (err: any) {
-			toast.error(err.message);
-		} finally {
-			payosBusy = false;
 		}
 	}
 
@@ -209,6 +142,140 @@
 		{ code: 'TPB', name: 'TPBank' },
 		{ code: 'VIB', name: 'VIB' }
 	];
+
+	function emptyPaymentAccountForm(): PaymentAccountForm {
+		return {
+			name: '',
+			provider: 'vietqr',
+			bankCode: 'VCB',
+			bankName: 'Vietcombank',
+			accountNumber: '',
+			accountName: '',
+			bankBranch: '',
+			momoNumber: '',
+			clientId: '',
+			apiKey: '',
+			checksumKey: '',
+			isDefault: false
+		};
+	}
+
+	function syncPaymentAccountBankName() {
+		const bank = popularBanks.find((item) => item.code === paymentAccountForm.bankCode);
+		if (bank) paymentAccountForm.bankName = bank.name;
+	}
+
+	function paymentProviderLabel(provider: string) {
+		return provider === 'payos' ? 'PayOS' : 'VietQR';
+	}
+
+	function paymentAccountSubtitle(account: PaymentAccount) {
+		return [account.bankName, account.bankCode, account.accountNumber].filter(Boolean).join(' · ');
+	}
+
+	async function fetchPaymentAccounts() {
+		try {
+			const res = await fetch('/api/payment-accounts');
+			const data = await res.json();
+			if (!res.ok) throw new Error(data.error || 'Không tải được tài khoản nhận tiền');
+			paymentAccounts = data.accounts ?? [];
+		} catch (err: any) {
+			toast.error(err.message);
+		}
+	}
+
+	async function createPaymentAccount(e: SubmitEvent) {
+		e.preventDefault();
+		if (paymentAccountBusy) return;
+
+		if (
+			!paymentAccountForm.name ||
+			!paymentAccountForm.bankName ||
+			!paymentAccountForm.bankCode ||
+			!paymentAccountForm.accountNumber ||
+			!paymentAccountForm.accountName
+		) {
+			toast.error('Cần đủ tên kênh, ngân hàng, số tài khoản và chủ tài khoản');
+			return;
+		}
+		if (
+			paymentAccountForm.provider === 'payos' &&
+			(!paymentAccountForm.clientId ||
+				!paymentAccountForm.apiKey ||
+				!paymentAccountForm.checksumKey)
+		) {
+			toast.error('Tài khoản PayOS cần đủ Client ID, API Key và Checksum Key');
+			return;
+		}
+
+		paymentAccountBusy = true;
+		try {
+			const res = await fetch('/api/payment-accounts', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify(paymentAccountForm)
+			});
+			const data = await res.json();
+			if (!res.ok) throw new Error(data.error || 'Lỗi thêm tài khoản nhận tiền');
+			paymentAccountForm = emptyPaymentAccountForm();
+			await fetchPaymentAccounts();
+			if (data.warning) {
+				toast.success('Đã lưu tài khoản, nhưng PayOS chưa đăng ký webhook tự động');
+			} else {
+				toast.success('Đã thêm tài khoản nhận tiền');
+			}
+		} catch (err: any) {
+			toast.error(err.message);
+		} finally {
+			paymentAccountBusy = false;
+		}
+	}
+
+	async function setDefaultAccount(id: string) {
+		if (paymentAccountActionId) return;
+		paymentAccountActionId = id;
+		try {
+			const res = await fetch('/api/payment-accounts', {
+				method: 'PUT',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ id, isDefault: true })
+			});
+			const data = await res.json();
+			if (!res.ok) throw new Error(data.error || 'Không đặt được mặc định');
+			await fetchPaymentAccounts();
+			toast.success('Đã đổi tài khoản mặc định');
+		} catch (err: any) {
+			toast.error(err.message);
+		} finally {
+			paymentAccountActionId = null;
+		}
+	}
+
+	async function deletePaymentAccount(id: string) {
+		if (
+			!(await confirmPopup({
+				title: 'Xóa tài khoản nhận tiền',
+				message: 'Tài khoản này sẽ ngừng hiển thị khi tạo phòng, khách thuê và hóa đơn mới.',
+				confirmLabel: 'Xóa',
+				tone: 'danger'
+			}))
+		)
+			return;
+		paymentAccountActionId = id;
+		try {
+			const res = await fetch(`/api/payment-accounts?id=${encodeURIComponent(id)}`, {
+				method: 'DELETE'
+			});
+			const data = await res.json();
+			if (!res.ok) throw new Error(data.error || 'Không xóa được tài khoản nhận tiền');
+			await fetchPaymentAccounts();
+			toast.success('Đã xóa tài khoản nhận tiền');
+		} catch (err: any) {
+			toast.error(err.message);
+		} finally {
+			paymentAccountActionId = null;
+		}
+	}
 </script>
 
 <div class="max-w-5xl space-y-8">
@@ -292,14 +359,11 @@
 					</div>
 				</section>
 
-				<!-- Section 2: Brand & fallback bank settings -->
 				<section class="space-y-4 text-black">
-					<h2 class="text-base font-black text-blue-600 select-none">
-						2. Thương hiệu & tài khoản nhận tiền dự phòng
-					</h2>
+					<h2 class="text-base font-black text-blue-600 select-none">2. Thương hiệu</h2>
 
-					<div class="grid gap-4 font-semibold sm:grid-cols-2">
-						<div class="space-y-1 sm:col-span-2">
+					<div class="grid gap-4 font-semibold">
+						<div class="space-y-1">
 							<label for="s-comp" class="text-zinc-650 block text-xs font-bold"
 								>Tên thương hiệu quản lý trọ</label
 							>
@@ -312,99 +376,9 @@
 								class="w-full rounded-lg border-2 border-black bg-white px-3 py-2.5 text-sm font-semibold text-black focus:ring-2 focus:ring-blue-300 focus:outline-none"
 							/>
 						</div>
-
-						<div class="space-y-1">
-							<label for="s-bcode" class="text-zinc-650 block text-xs font-bold">Mã ngân hàng</label
-							>
-							<RoomioSelect
-								id="s-bcode"
-								bind:value={bankCode}
-								required
-								onchange={() => {
-									const b = popularBanks.find((x) => x.code === bankCode);
-									if (b) bankName = b.name;
-								}}
-								options={[
-									{ value: '', label: 'Chọn ngân hàng' },
-									...popularBanks.map((bank) => ({
-										value: bank.code,
-										label: `${bank.name} (${bank.code})`
-									}))
-								]}
-							/>
-						</div>
-
-						<div class="space-y-1">
-							<label for="s-bname" class="text-zinc-650 block text-xs font-bold"
-								>Tên ngân hàng chi tiết</label
-							>
-							<input
-								id="s-bname"
-								type="text"
-								bind:value={bankName}
-								required
-								placeholder="Ví dụ: Ngân hàng TMCP Ngoại Thương Việt Nam"
-								class="w-full rounded-lg border-2 border-black bg-white px-3 py-2.5 text-sm font-semibold text-black focus:ring-2 focus:ring-blue-300 focus:outline-none"
-							/>
-						</div>
-
-						<div class="space-y-1">
-							<label for="s-acc" class="text-zinc-650 block text-xs font-bold"
-								>Số tài khoản nhận tiền</label
-							>
-							<input
-								id="s-acc"
-								type="text"
-								bind:value={accountNumber}
-								required
-								placeholder="Nhập chính xác số tài khoản ngân hàng"
-								class="w-full rounded-lg border-2 border-black bg-white px-3 py-2.5 text-sm font-semibold text-black focus:ring-2 focus:ring-blue-300 focus:outline-none"
-							/>
-						</div>
-
-						<div class="space-y-1">
-							<label for="s-accname" class="text-zinc-650 block text-xs font-bold"
-								>Tên chủ tài khoản (in hoa, không dấu)</label
-							>
-							<input
-								id="s-accname"
-								type="text"
-								bind:value={accountName}
-								required
-								placeholder="Ví dụ: NGUYEN VAN HAU"
-								class="w-full rounded-lg border-2 border-black bg-white px-3 py-2.5 text-sm font-semibold text-black focus:ring-2 focus:ring-blue-300 focus:outline-none"
-							/>
-						</div>
-
-						<div class="space-y-1 sm:col-span-2">
-							<label for="s-branch" class="text-zinc-650 block text-xs font-bold"
-								>Chi nhánh ngân hàng (tùy chọn)</label
-							>
-							<input
-								id="s-branch"
-								type="text"
-								bind:value={bankBranch}
-								placeholder="Ví dụ: Chi nhánh Nam Sài Gòn"
-								class="w-full rounded-lg border-2 border-black bg-white px-3 py-2.5 text-sm font-semibold text-black focus:ring-2 focus:ring-blue-300 focus:outline-none"
-							/>
-						</div>
-
-						<div class="space-y-1 sm:col-span-2">
-							<label for="s-momo" class="text-zinc-650 block text-xs font-bold"
-								>Số Momo nhận tiền (tùy chọn)</label
-							>
-							<input
-								id="s-momo"
-								type="text"
-								bind:value={momoNumber}
-								placeholder="Số điện thoại ví Momo, ví dụ: 0901234567"
-								class="w-full rounded-lg border-2 border-black bg-white px-3 py-2.5 text-sm font-semibold text-black focus:ring-2 focus:ring-blue-300 focus:outline-none"
-							/>
-						</div>
 					</div>
 				</section>
 
-				<!-- Action save -->
 				<div class="flex justify-end">
 					<button
 						type="submit"
@@ -419,85 +393,243 @@
 				</div>
 			</form>
 
-			<!-- Section 3: Kết nối PayOS riêng (endpoint riêng /api/payos-connect) -->
 			<section class="space-y-4 text-black">
-				<h2 class="text-base font-black text-blue-600 select-none">3. Kết nối PayOS</h2>
-				<p class="-mt-2 max-w-3xl text-xs font-bold text-zinc-500">
-					Kết nối tài khoản PayOS riêng để tiền thuê về thẳng tài khoản ngân hàng của bạn và tự động
-					đối soát qua webhook. Chưa kết nối thì hệ thống vẫn thu được bằng VietQR + xác nhận thủ
-					công.
-				</p>
+				<h2 class="text-base font-black text-blue-600 select-none">3. Tài khoản nhận tiền</h2>
 
-				{#if payosConnected}
-					<div
-						class="flex items-center justify-between gap-3 rounded-lg border-2 border-black bg-green-100 p-4 shadow-secondary"
-					>
-						<div>
-							<p class="text-sm font-black text-green-800">Đã kết nối PayOS</p>
-							{#if payosClientIdSaved}
-								<p class="mt-0.5 text-xs font-bold text-zinc-600">
-									Client ID: {payosClientIdSaved}
-								</p>
-							{/if}
-						</div>
-						<button
-							type="button"
-							onclick={disconnectPayos}
-							disabled={payosBusy}
-							class="cursor-pointer rounded-[6px] border-2 border-black bg-red-200 px-3 py-2 text-xs font-black text-red-800 shadow-secondary transition-all disabled:opacity-50"
-						>
-							Ngắt kết nối
-						</button>
+				{#if paymentAccounts.length > 0}
+					<div class="divide-y divide-black/10 border-y border-black/15">
+						{#each paymentAccounts as account}
+							<div
+								class="grid gap-3 py-4 sm:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)_auto] sm:items-center"
+							>
+								<div class="min-w-0">
+									<div class="flex flex-wrap items-center gap-2">
+										<p class="truncate text-sm font-black text-black">{account.name}</p>
+										<span class="text-xs font-black text-blue-600">
+											{paymentProviderLabel(account.provider)}
+										</span>
+										{#if account.isDefault}
+											<span class="text-xs font-black text-green-600">Mặc định</span>
+										{/if}
+									</div>
+									<p class="mt-1 truncate text-xs font-bold text-zinc-500">
+										{paymentAccountSubtitle(account)}
+									</p>
+								</div>
+								<div class="min-w-0 text-xs font-bold text-zinc-500">
+									<p class="truncate">{account.accountName}</p>
+									{#if account.provider === 'payos'}
+										<p
+											class="mt-1 font-black {account.payosConnected
+												? 'text-green-600'
+												: 'text-red-500'}"
+										>
+											{account.payosConnected ? 'PayOS đã kết nối' : 'PayOS chưa đủ khóa'}
+										</p>
+									{:else if account.momoNumber}
+										<p class="mt-1">Momo: {account.momoNumber}</p>
+									{/if}
+								</div>
+								<div class="flex flex-wrap justify-start gap-2 sm:justify-end">
+									{#if !account.isDefault}
+										<button
+											type="button"
+											onclick={() => setDefaultAccount(account.id)}
+											disabled={paymentAccountActionId === account.id}
+											class="cursor-pointer rounded-[6px] px-2.5 py-1.5 text-xs font-black text-blue-600 transition-colors hover:bg-blue-50 disabled:opacity-50"
+										>
+											Đặt mặc định
+										</button>
+									{/if}
+									<button
+										type="button"
+										onclick={() => deletePaymentAccount(account.id)}
+										disabled={paymentAccountActionId === account.id || paymentAccounts.length <= 1}
+										class="cursor-pointer rounded-[6px] px-2.5 py-1.5 text-xs font-black text-red-500 transition-colors hover:bg-red-50 disabled:opacity-40"
+									>
+										Xóa
+									</button>
+								</div>
+							</div>
+						{/each}
 					</div>
 				{:else}
-					<div class="grid gap-4 font-semibold sm:grid-cols-2">
-						<div class="space-y-1 sm:col-span-2">
-							<label for="p-cid" class="text-zinc-650 block text-xs font-bold"
-								>PayOS Client ID</label
-							>
-							<input
-								id="p-cid"
-								type="text"
-								bind:value={pClientId}
-								placeholder="x-client-id"
-								class="w-full rounded-lg border-2 border-black bg-white px-3 py-2.5 text-sm font-semibold text-black focus:ring-2 focus:ring-blue-300 focus:outline-none"
-							/>
-						</div>
-						<div class="space-y-1">
-							<label for="p-api" class="text-zinc-650 block text-xs font-bold">PayOS API Key</label>
-							<input
-								id="p-api"
-								type="password"
-								bind:value={pApiKey}
-								placeholder="x-api-key"
-								class="w-full rounded-lg border-2 border-black bg-white px-3 py-2.5 text-sm font-semibold text-black focus:ring-2 focus:ring-blue-300 focus:outline-none"
-							/>
-						</div>
-						<div class="space-y-1">
-							<label for="p-cs" class="text-zinc-650 block text-xs font-bold"
-								>PayOS Checksum Key</label
-							>
-							<input
-								id="p-cs"
-								type="password"
-								bind:value={pChecksumKey}
-								placeholder="checksum key"
-								class="w-full rounded-lg border-2 border-black bg-white px-3 py-2.5 text-sm font-semibold text-black focus:ring-2 focus:ring-blue-300 focus:outline-none"
-							/>
-						</div>
-						<div class="sm:col-span-2">
-							<button
-								type="button"
-								onclick={connectPayos}
-								disabled={payosBusy}
-								class="flex cursor-pointer items-center gap-1.5 rounded-[6px] border-2 border-black bg-blue-300 px-5 py-2.5 text-sm font-black text-black shadow-secondary transition-all hover:bg-blue-400 disabled:opacity-50"
-							>
-								Kết nối & kiểm tra
-								{#if payosBusy}<Loader2 class="h-4 w-4 animate-spin" />{/if}
-							</button>
-						</div>
-					</div>
+					<p class="py-8 text-center text-sm font-black text-zinc-400">
+						Chưa có tài khoản nhận tiền nào.
+					</p>
 				{/if}
+
+				<form onsubmit={createPaymentAccount} class="space-y-4 pt-2">
+					<div class="grid gap-4 font-semibold sm:grid-cols-2">
+						<div class="space-y-1">
+							<label for="pa-name" class="text-zinc-650 block text-xs font-bold">Tên kênh</label>
+							<input
+								id="pa-name"
+								type="text"
+								bind:value={paymentAccountForm.name}
+								required
+								placeholder="Ví dụ: Tài khoản chính, MB của chị Lan"
+								class="w-full rounded-lg border-2 border-black bg-white px-3 py-2.5 text-sm font-semibold text-black focus:ring-2 focus:ring-blue-300 focus:outline-none"
+							/>
+						</div>
+						<div class="space-y-1">
+							<label for="pa-provider" class="text-zinc-650 block text-xs font-bold">Cách thu</label
+							>
+							<RoomioSelect
+								id="pa-provider"
+								bind:value={paymentAccountForm.provider}
+								options={[
+									{ value: 'vietqr', label: 'VietQR / xác nhận thủ công' },
+									{ value: 'payos', label: 'PayOS / tự đối soát' }
+								]}
+							/>
+						</div>
+
+						<div class="space-y-1">
+							<label for="pa-bank-code" class="text-zinc-650 block text-xs font-bold"
+								>Ngân hàng</label
+							>
+							<RoomioSelect
+								id="pa-bank-code"
+								bind:value={paymentAccountForm.bankCode}
+								required
+								onchange={syncPaymentAccountBankName}
+								options={[
+									{ value: '', label: 'Chọn ngân hàng' },
+									...popularBanks.map((bank) => ({
+										value: bank.code,
+										label: `${bank.name} (${bank.code})`
+									}))
+								]}
+							/>
+						</div>
+						<div class="space-y-1">
+							<label for="pa-bank-name" class="text-zinc-650 block text-xs font-bold"
+								>Tên ngân hàng chi tiết</label
+							>
+							<input
+								id="pa-bank-name"
+								type="text"
+								bind:value={paymentAccountForm.bankName}
+								required
+								placeholder="Ví dụ: Vietcombank"
+								class="w-full rounded-lg border-2 border-black bg-white px-3 py-2.5 text-sm font-semibold text-black focus:ring-2 focus:ring-blue-300 focus:outline-none"
+							/>
+						</div>
+						<div class="space-y-1">
+							<label for="pa-number" class="text-zinc-650 block text-xs font-bold"
+								>Số tài khoản</label
+							>
+							<input
+								id="pa-number"
+								type="text"
+								bind:value={paymentAccountForm.accountNumber}
+								required
+								placeholder="Nhập chính xác số tài khoản"
+								class="w-full rounded-lg border-2 border-black bg-white px-3 py-2.5 text-sm font-semibold text-black focus:ring-2 focus:ring-blue-300 focus:outline-none"
+							/>
+						</div>
+						<div class="space-y-1">
+							<label for="pa-account-name" class="text-zinc-650 block text-xs font-bold"
+								>Chủ tài khoản</label
+							>
+							<input
+								id="pa-account-name"
+								type="text"
+								bind:value={paymentAccountForm.accountName}
+								required
+								placeholder="Ví dụ: NGUYEN VAN HAU"
+								class="w-full rounded-lg border-2 border-black bg-white px-3 py-2.5 text-sm font-semibold text-black focus:ring-2 focus:ring-blue-300 focus:outline-none"
+							/>
+						</div>
+						<div class="space-y-1">
+							<label for="pa-branch" class="text-zinc-650 block text-xs font-bold"
+								>Chi nhánh (tùy chọn)</label
+							>
+							<input
+								id="pa-branch"
+								type="text"
+								bind:value={paymentAccountForm.bankBranch}
+								placeholder="Ví dụ: Chi nhánh TP.HCM"
+								class="w-full rounded-lg border-2 border-black bg-white px-3 py-2.5 text-sm font-semibold text-black focus:ring-2 focus:ring-blue-300 focus:outline-none"
+							/>
+						</div>
+						<div class="space-y-1">
+							<label for="pa-momo" class="text-zinc-650 block text-xs font-bold"
+								>Momo (tùy chọn)</label
+							>
+							<input
+								id="pa-momo"
+								type="text"
+								bind:value={paymentAccountForm.momoNumber}
+								placeholder="0901234567"
+								class="w-full rounded-lg border-2 border-black bg-white px-3 py-2.5 text-sm font-semibold text-black focus:ring-2 focus:ring-blue-300 focus:outline-none"
+							/>
+						</div>
+
+						{#if paymentAccountForm.provider === 'payos'}
+							<div class="space-y-1 sm:col-span-2">
+								<label for="pa-client-id" class="text-zinc-650 block text-xs font-bold"
+									>PayOS Client ID</label
+								>
+								<input
+									id="pa-client-id"
+									type="text"
+									bind:value={paymentAccountForm.clientId}
+									required
+									placeholder="x-client-id"
+									class="w-full rounded-lg border-2 border-black bg-white px-3 py-2.5 text-sm font-semibold text-black focus:ring-2 focus:ring-blue-300 focus:outline-none"
+								/>
+							</div>
+							<div class="space-y-1">
+								<label for="pa-api-key" class="text-zinc-650 block text-xs font-bold"
+									>PayOS API Key</label
+								>
+								<input
+									id="pa-api-key"
+									type="password"
+									bind:value={paymentAccountForm.apiKey}
+									required
+									placeholder="x-api-key"
+									class="w-full rounded-lg border-2 border-black bg-white px-3 py-2.5 text-sm font-semibold text-black focus:ring-2 focus:ring-blue-300 focus:outline-none"
+								/>
+							</div>
+							<div class="space-y-1">
+								<label for="pa-checksum-key" class="text-zinc-650 block text-xs font-bold"
+									>PayOS Checksum Key</label
+								>
+								<input
+									id="pa-checksum-key"
+									type="password"
+									bind:value={paymentAccountForm.checksumKey}
+									required
+									placeholder="checksum key"
+									class="w-full rounded-lg border-2 border-black bg-white px-3 py-2.5 text-sm font-semibold text-black focus:ring-2 focus:ring-blue-300 focus:outline-none"
+								/>
+							</div>
+						{/if}
+
+						<label class="flex items-center gap-2 text-xs font-black text-zinc-600 sm:col-span-2">
+							<input
+								type="checkbox"
+								bind:checked={paymentAccountForm.isDefault}
+								class="h-4 w-4 accent-blue-600"
+							/>
+							Đặt làm tài khoản mặc định
+						</label>
+					</div>
+
+					<div class="flex justify-end">
+						<button
+							type="submit"
+							disabled={paymentAccountBusy}
+							class="modal-action flex cursor-pointer items-center gap-1.5 rounded-[6px] border-2 border-black bg-blue-300 px-5 py-2.5 text-sm font-black text-black shadow-secondary transition-all disabled:opacity-50"
+						>
+							<span class="modal-action-label">Thêm tài khoản nhận tiền</span>
+							{#if paymentAccountBusy}<Loader2 class="h-4 w-4 animate-spin" />{/if}
+						</button>
+					</div>
+				</form>
 			</section>
 		</div>
 	{/if}
