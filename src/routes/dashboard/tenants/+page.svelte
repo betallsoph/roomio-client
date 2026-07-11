@@ -1409,13 +1409,13 @@
 
 				<div class="flex-1 space-y-6 overflow-y-auto p-6">
 					<!-- Drawer Header Title -->
-					<h3 class="pr-10 text-lg leading-tight font-black text-black">
+					<h3 class="pr-10 text-lg leading-tight font-black text-blue-600">
 						{selectedTenant.user.name}
 					</h3>
 
 					<!-- Contact info details -->
 					<div class="space-y-3">
-						<h4 class="text-xs font-black text-zinc-500">Thông tin liên hệ</h4>
+						<h4 class="text-xs font-black text-black">Thông tin liên hệ</h4>
 						<div class="space-y-2.5 divide-y divide-black/15 text-sm font-semibold text-black">
 							<div class="flex items-center justify-between py-2">
 								<span class="text-xs font-bold text-zinc-500">Số điện thoại</span>
@@ -1434,7 +1434,7 @@
 
 					<!-- Lease Details -->
 					<div class="space-y-3">
-						<h4 class="text-xs font-black text-zinc-500">Hợp đồng thuê trọ</h4>
+						<h4 class="text-xs font-black text-black">Hợp đồng thuê trọ</h4>
 						<div class="space-y-2.5 divide-y divide-black/15 text-sm font-semibold text-black">
 							<div class="flex items-center justify-between py-2">
 								<span class="text-xs font-bold text-zinc-500">Phòng đang ở</span>
@@ -1464,7 +1464,7 @@
 					<!-- Hợp đồng (gộp từ trang Hợp đồng cũ) -->
 					<div class="space-y-3">
 						<div class="flex items-center justify-between">
-							<h4 class="text-xs font-black text-zinc-500">Hợp đồng</h4>
+							<h4 class="text-xs font-black text-black">Hợp đồng</h4>
 							{#if !showContractForm}
 								<button
 									onclick={openContractForm}
@@ -1695,7 +1695,7 @@
 
 					<!-- Notes -->
 					<div class="space-y-2">
-						<h4 class="text-xs font-black text-zinc-500">Ghi chú / Thỏa thuận riêng</h4>
+						<h4 class="text-xs font-black text-black">Ghi chú / Thỏa thuận riêng</h4>
 						<div
 							class="rounded-lg border-2 border-black bg-white p-3 text-xs leading-relaxed font-semibold text-black shadow-secondary"
 						>
@@ -1705,7 +1705,7 @@
 
 					<!-- Telegram Invite Link -->
 					<div class="space-y-2">
-						<h4 class="text-xs font-black text-zinc-500">Trạng thái tài khoản</h4>
+						<h4 class="text-xs font-black text-black">Trạng thái tài khoản</h4>
 						<div class="flex flex-col gap-2 text-xs font-semibold text-black">
 							{#if selectedTenant.telegramUserId}
 								<div class="flex items-center gap-1.5 font-black text-green-600">
