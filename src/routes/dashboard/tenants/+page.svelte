@@ -105,8 +105,11 @@
 
 	// Modals & drawers
 	let isAddDialogOpen = $state(false);
+	let isRoomDialogOpen = $state(false);
+	let isPropertyDialogOpen = $state(false);
 	let isDetailDrawerOpen = $state(false);
 	let isSubmitting = $state(false);
+	let isCreatingRoom = $state(false);
 
 	// Form states
 	let email = $state('');
@@ -137,6 +140,8 @@
 	let quickPropertyBlocksText = $state('');
 	let quickPropertyRentalType = $state('APARTMENT');
 	let isCreatingProperty = $state(false);
+	let returnToTenantAfterRoom = $state(false);
+	let returnToRoomAfterProperty = $state(false);
 	const RENTAL_TYPE_OPTIONS = [
 		{
 			value: 'APARTMENT',
@@ -313,6 +318,42 @@
 		quickBlockId = property?.blocks[0]?.id ?? '';
 	}
 
+	function openRoomDialogFromTenant() {
+		returnToTenantAfterRoom = true;
+		returnToRoomAfterProperty = false;
+		isAddDialogOpen = false;
+		isRoomDialogOpen = true;
+		roomAssignMode = 'new';
+		tenantPaymentAccountId = tenantPaymentAccountId || defaultPaymentAccountId();
+		if (!quickPropertyId && properties.length > 0) {
+			quickPropertyId = properties[0].id;
+			quickBlockId = properties[0].blocks[0]?.id ?? '';
+		}
+	}
+
+	function closeRoomDialog() {
+		isRoomDialogOpen = false;
+		if (returnToTenantAfterRoom) {
+			isAddDialogOpen = true;
+		}
+	}
+
+	function openPropertyDialogFromRoom() {
+		returnToRoomAfterProperty = true;
+		isRoomDialogOpen = false;
+		isPropertyDialogOpen = true;
+	}
+
+	function closePropertyDialog() {
+		isPropertyDialogOpen = false;
+		if (returnToRoomAfterProperty) {
+			returnToRoomAfterProperty = false;
+			isRoomDialogOpen = true;
+		} else if (returnToTenantAfterRoom) {
+			isAddDialogOpen = true;
+		}
+	}
+
 	function roomOptionLabel(room: Room) {
 		return `${room.property.shortName} - Phòng ${room.roomNumber}${roomLocationLabel(room)}`;
 	}
@@ -364,6 +405,11 @@
 		notes = '';
 		initialElectricity = '0';
 		initialWater = '0';
+		resetQuickRoomForm();
+		tenantPaymentAccountId = defaultPaymentAccountId();
+	}
+
+	function resetQuickRoomForm() {
 		quickRoomCode = '';
 		quickUnitNumber = '';
 		quickRoomNumber = '';
@@ -371,7 +417,6 @@
 		quickMonthlyRent = '';
 		quickArea = '';
 		quickRoomType = 'standard';
-		tenantPaymentAccountId = defaultPaymentAccountId();
 	}
 
 	function quickPropertyLabel(type = quickPropertyRentalType) {
@@ -454,11 +499,72 @@
 			quickBlockId = data.blocks?.[0]?.id ?? '';
 			roomAssignMode = 'new';
 			resetQuickPropertyForm();
+			isPropertyDialogOpen = false;
+			if (returnToRoomAfterProperty) {
+				returnToRoomAfterProperty = false;
+				isRoomDialogOpen = true;
+			} else if (returnToTenantAfterRoom) {
+				isAddDialogOpen = true;
+			}
 			toast.success('Đã tạo tòa nhà, giờ tạo phòng cho khách luôn được rồi');
 		} catch (err: any) {
 			toast.error(err.message);
 		} finally {
 			isCreatingProperty = false;
+		}
+	}
+
+	async function createRoomForTenantFlow(e: SubmitEvent) {
+		e.preventDefault();
+		if (!landlordId || isCreatingRoom) return;
+		if (!quickPropertyId || !quickRoomNumber || !quickMonthlyRent) {
+			toast.error('Vui lòng nhập đủ tòa nhà, mã phòng và giá thuê để tạo phòng');
+			return;
+		}
+		if (
+			quickPropertyIsApartment() &&
+			(!quickBlockId || !quickUnitNumber || !quickFloor || !buildQuickApartmentUnitDisplay())
+		) {
+			toast.error('Chung cư cần chọn block, nhập tầng và số căn');
+			return;
+		}
+
+		isCreatingRoom = true;
+		try {
+			const apartmentUnit = quickPropertyIsApartment() ? normalizeUnitNumber(quickUnitNumber) : null;
+			const res = await fetch('/api/rooms', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					propertyId: quickPropertyId,
+					blockId: quickBlockId || null,
+					roomNumber: quickRoomNumber,
+					roomCode: apartmentUnit || quickRoomCode || null,
+					unitNumber: quickPropertyIsApartment() ? normalizeUnitNumber(quickUnitNumber) : undefined,
+					roomType: quickRoomType,
+					floor: quickFloor ? Number(quickFloor) : null,
+					monthlyRent: Number(quickMonthlyRent),
+					area: quickArea ? Number(quickArea) : null,
+					paymentAccountId: tenantPaymentAccountPayload()
+				})
+			});
+			const createdRoom = await res.json();
+			if (!res.ok) throw new Error(createdRoom.error || 'Lỗi tạo phòng');
+
+			await fetchEmptyRooms(landlordId);
+			roomId = createdRoom.id;
+			roomAssignMode = 'existing';
+			tenantPaymentAccountId = createdRoom.paymentAccountId || defaultPaymentAccountId();
+			resetQuickRoomForm();
+			isRoomDialogOpen = false;
+			returnToTenantAfterRoom = false;
+			returnToRoomAfterProperty = false;
+			isAddDialogOpen = true;
+			toast.success('Đã tạo phòng, giờ đăng ký khách thuê tiếp được rồi');
+		} catch (err: any) {
+			toast.error(err.message);
+		} finally {
+			isCreatingRoom = false;
 		}
 	}
 
@@ -475,51 +581,12 @@
 			return;
 		}
 		if (roomAssignMode === 'new') {
-			if (!quickPropertyId || !quickRoomNumber || !quickMonthlyRent) {
-				toast.error('Vui lòng nhập đủ tòa nhà, mã phòng và giá thuê để tạo phòng');
-				return;
-			}
-			if (
-				quickPropertyIsApartment() &&
-				(!quickBlockId || !quickUnitNumber || !quickFloor || !buildQuickApartmentUnitDisplay())
-			) {
-				toast.error('Chung cư cần chọn block, nhập tầng và số căn');
-				return;
-			}
+			toast.error('Tạo phòng mới trước, xong hệ thống sẽ quay lại đăng ký khách thuê');
+			return;
 		}
 
 		isSubmitting = true;
-		let createdRoomIdForRollback: string | null = null;
 		try {
-			let targetRoomId = roomId;
-			if (roomAssignMode === 'new') {
-				const apartmentUnit = quickPropertyIsApartment()
-					? normalizeUnitNumber(quickUnitNumber)
-					: null;
-				const createRoomRes = await fetch('/api/rooms', {
-					method: 'POST',
-					headers: { 'Content-Type': 'application/json' },
-					body: JSON.stringify({
-						propertyId: quickPropertyId,
-						blockId: quickBlockId || null,
-						roomNumber: quickRoomNumber,
-						roomCode: apartmentUnit || quickRoomCode || null,
-						unitNumber: quickPropertyIsApartment()
-							? normalizeUnitNumber(quickUnitNumber)
-							: undefined,
-						roomType: quickRoomType,
-						floor: quickFloor ? Number(quickFloor) : null,
-						monthlyRent: Number(quickMonthlyRent),
-						area: quickArea ? Number(quickArea) : null,
-						paymentAccountId: tenantPaymentAccountPayload()
-					})
-				});
-				const createdRoom = await createRoomRes.json();
-				if (!createRoomRes.ok) throw new Error(createdRoom.error || 'Lỗi tạo phòng');
-				targetRoomId = createdRoom.id;
-				createdRoomIdForRollback = createdRoom.id;
-			}
-
 			const res = await fetch('/api/tenants', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
@@ -528,7 +595,7 @@
 					phone,
 					password,
 					name,
-					roomId: targetRoomId,
+					roomId,
 					idNumber,
 					moveInDate,
 					deposit: Number(deposit),
@@ -541,7 +608,6 @@
 			const data = await res.json();
 
 			if (!res.ok) throw new Error(data.error || 'Lỗi thêm khách thuê');
-			createdRoomIdForRollback = null;
 
 			toast.success(`Đã đăng ký và bàn giao phòng cho khách ${name}`);
 			isAddDialogOpen = false;
@@ -552,11 +618,6 @@
 			fetchTenants(landlordId);
 			fetchEmptyRooms(landlordId);
 		} catch (err: any) {
-			if (createdRoomIdForRollback) {
-				await fetch(`/api/rooms?id=${createdRoomIdForRollback}`, { method: 'DELETE' }).catch(
-					() => {}
-				);
-			}
 			toast.error(err.message);
 		} finally {
 			isSubmitting = false;
@@ -1031,10 +1092,7 @@
 							</button>
 							<button
 								type="button"
-								onclick={() => {
-									roomAssignMode = 'new';
-									tenantPaymentAccountId = defaultPaymentAccountId();
-								}}
+								onclick={openRoomDialogFromTenant}
 								class="rounded-[6px] border-2 border-black px-3 py-2 text-xs font-black transition-colors {roomAssignMode ===
 								'new'
 									? 'bg-blue-300 text-black'
@@ -1061,84 +1119,19 @@
 										compact
 									/>
 								</div>
-							{:else if properties.length > 0}
-								<div class="space-y-1">
-									<label for="t-property" class="block text-[10px] font-bold text-zinc-600"
-										>Tòa nhà</label
-									>
-									<RoomioSelect
-										id="t-property"
-										bind:value={quickPropertyId}
-										onchange={() => selectQuickProperty(quickPropertyId)}
-										required
-										options={properties.map((property) => ({
-											value: property.id,
-											label: `${property.shortName} - ${property.name}`
-										}))}
-										compact
-									/>
-								</div>
 							{:else}
-								<div class="col-span-2 space-y-3 rounded-lg border-2 border-black bg-blue-50 p-3">
-									<div>
-										<p class="text-xs font-black text-black">Chưa có tòa nhà</p>
-										<p class="mt-0.5 text-[10px] font-bold text-zinc-600">
-											Tạo nhanh tòa nhà ở đây rồi tiếp tục tạo phòng cho khách.
-										</p>
-									</div>
-									{#if enabledRentalTypes.length > 1}
-										<div class="grid grid-cols-2 gap-2">
-											{#each RENTAL_TYPE_OPTIONS.filter( (option) => enabledRentalTypes.includes(option.value) ) as option}
-												<button
-													type="button"
-													onclick={() => (quickPropertyRentalType = option.value)}
-													class="rounded-[6px] border-2 border-black px-2 py-1.5 text-[10px] font-black transition-colors {quickPropertyRentalType ===
-													option.value
-														? 'bg-blue-300 text-black'
-														: 'bg-white text-zinc-500 hover:bg-zinc-100'}"
-												>
-													{#each option.lines as line}<span class="block">{line}</span>{/each}
-												</button>
-											{/each}
-										</div>
-									{/if}
-									<div class="grid grid-cols-2 gap-2">
-										<input
-											type="text"
-											bind:value={quickPropertyName}
-											placeholder={quickPropertyNamePlaceholder()}
-											class="rounded-lg border-2 border-black bg-white px-2.5 py-1.5 text-xs font-semibold text-black focus:ring-2 focus:ring-blue-300 focus:outline-none"
-										/>
-										<input
-											type="text"
-											bind:value={quickPropertyShortName}
-											placeholder="Tên viết tắt"
-											class="rounded-lg border-2 border-black bg-white px-2.5 py-1.5 text-xs font-semibold text-black focus:ring-2 focus:ring-blue-300 focus:outline-none"
-										/>
-										<input
-											type="text"
-											bind:value={quickPropertyAddress}
-											placeholder="Địa chỉ"
-											class="col-span-2 rounded-lg border-2 border-black bg-white px-2.5 py-1.5 text-xs font-semibold text-black focus:ring-2 focus:ring-blue-300 focus:outline-none"
-										/>
-										<input
-											type="text"
-											bind:value={quickPropertyBlocksText}
-											placeholder={`${quickBlockLabel()} - ${quickBlockPlaceholder()}`}
-											class="col-span-2 rounded-lg border-2 border-black bg-white px-2.5 py-1.5 text-xs font-semibold text-black focus:ring-2 focus:ring-blue-300 focus:outline-none"
-										/>
-									</div>
+								<div class="space-y-1">
+									<span class="block text-[10px] font-bold text-zinc-600">Phòng nhận bàn giao</span>
 									<button
 										type="button"
-										disabled={isCreatingProperty}
-										onclick={createQuickPropertyForTenant}
-										class="modal-action flex w-full items-center justify-center gap-1.5 rounded-[6px] border-2 border-black bg-blue-300 px-3 py-2 text-xs font-black text-black shadow-secondary transition-colors disabled:opacity-50"
+										onclick={openRoomDialogFromTenant}
+										class="modal-action flex w-full items-center justify-center rounded-lg border-2 border-black bg-blue-300 px-3 py-2 text-xs font-black text-black shadow-secondary transition-all"
 									>
-										<span class="modal-action-label">Tạo {quickPropertyLabel()}</span>
-										{#if isCreatingProperty}
-											<Loader2 class="h-4 w-4 animate-spin" />
-										{/if}
+										<span class="modal-action-label">Tạo phòng mới</span>
 									</button>
+									<p class="text-[10px] font-bold text-zinc-500">
+										Tạo xong phòng, hệ thống sẽ quay lại form khách thuê và tự chọn phòng mới.
+									</p>
 								</div>
 							{/if}
 							<div class="space-y-1">
@@ -1170,117 +1163,8 @@
 							</div>
 						{/if}
 						{#if roomAssignMode === 'new'}
-							<div class="grid grid-cols-2 gap-3">
-								{#if quickPropertyIsApartment()}
-									<div class="space-y-1">
-										<label for="t-block" class="block text-[10px] font-bold text-zinc-600"
-											>Block</label
-										>
-										<RoomioSelect
-											id="t-block"
-											bind:value={quickBlockId}
-											required
-											options={[
-												{ value: '', label: 'Chọn block' },
-												...(selectedQuickProperty()?.blocks ?? []).map((block) => ({
-													value: block.id,
-													label: block.name
-												}))
-											]}
-											compact
-										/>
-									</div>
-									<div class="space-y-1">
-										<label for="t-unit-number" class="block text-[10px] font-bold text-zinc-600"
-											>Số căn</label
-										>
-										<input
-											id="t-unit-number"
-											type="text"
-											inputmode="text"
-											bind:value={quickUnitNumber}
-											required
-											placeholder="04"
-											class="w-full rounded-lg border-2 border-black bg-white px-2.5 py-1.5 text-xs font-semibold text-black focus:ring-2 focus:ring-blue-300 focus:outline-none"
-										/>
-									</div>
-								{/if}
-								<div class="space-y-1">
-									<label for="t-room-name" class="block text-[10px] font-bold text-zinc-600"
-										>{quickPropertyIsApartment() ? 'Mã phòng trong căn' : 'Số phòng'}</label
-									>
-									<input
-										id="t-room-name"
-										type="text"
-										bind:value={quickRoomNumber}
-										required
-										placeholder={quickPropertyIsApartment() ? 'Master, Phòng 2...' : '101'}
-										class="w-full rounded-lg border-2 border-black bg-white px-2.5 py-1.5 text-xs font-semibold text-black focus:ring-2 focus:ring-blue-300 focus:outline-none"
-									/>
-								</div>
-								{#if quickPropertyIsApartment()}
-									<div
-										class="col-span-2 rounded-lg border-2 border-black bg-blue-50 px-3 py-2 text-xs font-bold text-black"
-									>
-										Vị trí căn:
-										<span class="font-black">
-											{buildQuickApartmentUnitDisplay() || 'Chọn block, tầng và số căn'}
-										</span>
-									</div>
-								{/if}
-								<div class="space-y-1">
-									<label for="t-room-floor" class="block text-[10px] font-bold text-zinc-600"
-										>Tầng</label
-									>
-									<input
-										id="t-room-floor"
-										type="number"
-										bind:value={quickFloor}
-										required={quickPropertyIsApartment()}
-										placeholder="16"
-										class="w-full rounded-lg border-2 border-black bg-white px-2.5 py-1.5 text-xs font-semibold text-black focus:ring-2 focus:ring-blue-300 focus:outline-none"
-									/>
-								</div>
-								<div class="space-y-1">
-									<label for="t-room-rent" class="block text-[10px] font-bold text-zinc-600"
-										>Giá thuê tháng</label
-									>
-									<input
-										id="t-room-rent"
-										type="number"
-										bind:value={quickMonthlyRent}
-										required
-										placeholder="8000000"
-										class="w-full rounded-lg border-2 border-black bg-white px-2.5 py-1.5 text-xs font-semibold text-black focus:ring-2 focus:ring-blue-300 focus:outline-none"
-									/>
-								</div>
-								<div class="space-y-1">
-									<label for="t-room-type" class="block text-[10px] font-bold text-zinc-600"
-										>Loại phòng</label
-									>
-									<RoomioSelect
-										id="t-room-type"
-										bind:value={quickRoomType}
-										options={[
-											{ value: 'standard', label: 'Phòng thường' },
-											{ value: 'master', label: 'Phòng master' },
-											{ value: 'balcony', label: 'Phòng ban công' }
-										]}
-										compact
-									/>
-								</div>
-								<div class="space-y-1">
-									<label for="t-room-area" class="block text-[10px] font-bold text-zinc-600"
-										>Diện tích</label
-									>
-									<input
-										id="t-room-area"
-										type="number"
-										bind:value={quickArea}
-										placeholder="50"
-										class="w-full rounded-lg border-2 border-black bg-white px-2.5 py-1.5 text-xs font-semibold text-black focus:ring-2 focus:ring-blue-300 focus:outline-none"
-									/>
-								</div>
+							<div class="rounded-lg bg-blue-50 px-3 py-2 text-xs font-bold text-zinc-600">
+								Đang chờ tạo phòng mới. Bấm “Tạo phòng mới” để mở modal phòng riêng.
 							</div>
 						{/if}
 
@@ -1377,6 +1261,421 @@
 						</button>
 					</div>
 				</form>
+			</div>
+		</div>
+	{/if}
+
+	{#if isRoomDialogOpen}
+		<div
+			class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4 backdrop-blur-sm"
+			onclick={closeRoomDialog}
+			onkeydown={(e) => e.key === 'Escape' && closeRoomDialog()}
+			role="button"
+			tabindex="0"
+		>
+			<div
+				class="relative flex max-h-[90vh] w-full max-w-lg animate-[scale-up_0.2s_ease-out] flex-col overflow-hidden rounded-lg border-2 border-black bg-white shadow-primary"
+				onclick={(e) => e.stopPropagation()}
+				onkeydown={(e) => e.stopPropagation()}
+				role="dialog"
+				tabindex="-1"
+			>
+				<div class="flex shrink-0 items-center px-6 pt-5 select-none">
+					<span class="text-base font-black text-black">Tạo phòng mới</span>
+					<button
+						onclick={closeRoomDialog}
+						class="ml-auto cursor-pointer rounded-[6px] p-1 text-black hover:bg-zinc-100"
+						aria-label="Đóng"
+					>
+						<X class="h-4.5 w-4.5" />
+					</button>
+				</div>
+
+				{#if properties.length === 0}
+					<div class="space-y-4 p-6">
+						<div class="rounded-lg bg-blue-50 p-4">
+							<p class="text-sm font-black text-black">Chưa có tòa nhà nào để thêm phòng.</p>
+							<p class="mt-1 text-xs font-bold text-zinc-600">
+								Tạo tòa nhà trước, xong hệ thống sẽ quay lại màn tạo phòng này.
+							</p>
+						</div>
+
+						<div class="flex justify-end gap-3 border-t-2 border-black pt-3">
+							<button
+								type="button"
+								onclick={closeRoomDialog}
+								class="hover:bg-zinc-150 cursor-pointer rounded-[6px] border-2 border-black bg-white px-4 py-2 text-xs font-bold text-black transition-all"
+							>
+								Hủy
+							</button>
+							<button
+								type="button"
+								onclick={openPropertyDialogFromRoom}
+								class="modal-action flex cursor-pointer items-center justify-center rounded-[6px] border-2 border-black bg-blue-300 px-4 py-2 text-xs font-black text-black shadow-secondary transition-all"
+							>
+								<span class="modal-action-label">Tạo tòa nhà</span>
+							</button>
+						</div>
+					</div>
+				{:else}
+					<form onsubmit={createRoomForTenantFlow} class="max-h-[76vh] space-y-4 overflow-y-auto p-6">
+						<div class="space-y-1">
+							<label for="quick-room-property" class="block text-xs font-bold text-zinc-600"
+								>Tòa nhà</label
+							>
+							<RoomioSelect
+								id="quick-room-property"
+								bind:value={quickPropertyId}
+								onchange={selectQuickProperty}
+								required
+								options={properties.map((property) => ({
+									value: property.id,
+									label: `${property.name} · ${property.shortName}`
+								}))}
+							/>
+						</div>
+
+						{#if quickPropertyIsApartment()}
+							<div class="grid grid-cols-2 gap-4">
+								<div class="space-y-1">
+									<label for="quick-room-block" class="block text-xs font-bold text-zinc-600"
+										>Block</label
+									>
+									<RoomioSelect
+										id="quick-room-block"
+										bind:value={quickBlockId}
+										required
+										options={[
+											{ value: '', label: 'Chọn block' },
+											...(selectedQuickProperty()?.blocks ?? []).map((block) => ({
+												value: block.id,
+												label: block.name
+											}))
+										]}
+									/>
+								</div>
+								<div class="space-y-1">
+									<label for="quick-room-unit" class="block text-xs font-bold text-zinc-600"
+										>Số căn</label
+									>
+									<input
+										id="quick-room-unit"
+										type="text"
+										bind:value={quickUnitNumber}
+										required
+										placeholder="Ví dụ: 04"
+										class="w-full rounded-lg border-2 border-black bg-white px-3 py-2 text-sm font-bold focus:ring-2 focus:ring-blue-300 focus:outline-none"
+									/>
+								</div>
+							</div>
+
+							<div class="grid grid-cols-2 gap-4">
+								<div class="space-y-1">
+									<label for="quick-room-name" class="block text-xs font-bold text-zinc-600"
+										>Mã phòng trong căn</label
+									>
+									<input
+										id="quick-room-name"
+										type="text"
+										bind:value={quickRoomNumber}
+										required
+										placeholder="Master, Phòng 2..."
+										class="w-full rounded-lg border-2 border-black bg-white px-3 py-2 text-sm font-bold focus:ring-2 focus:ring-blue-300 focus:outline-none"
+									/>
+								</div>
+								<div class="space-y-1">
+									<label for="quick-room-floor" class="block text-xs font-bold text-zinc-600"
+										>Tầng</label
+									>
+									<input
+										id="quick-room-floor"
+										type="number"
+										bind:value={quickFloor}
+										required
+										placeholder="16"
+										class="w-full rounded-lg border-2 border-black bg-white px-3 py-2 text-sm font-bold focus:ring-2 focus:ring-blue-300 focus:outline-none"
+									/>
+								</div>
+							</div>
+
+							<div class="rounded-lg bg-blue-50 px-3 py-2 text-xs font-bold text-black">
+								Vị trí căn:
+								<span class="font-black">
+									{buildQuickApartmentUnitDisplay() || 'Chọn block, tầng và số căn'}
+								</span>
+							</div>
+						{:else}
+							<div class="grid grid-cols-2 gap-4">
+								<div class="space-y-1">
+									<label for="quick-room-name" class="block text-xs font-bold text-zinc-600"
+										>Số phòng</label
+									>
+									<input
+										id="quick-room-name"
+										type="text"
+										bind:value={quickRoomNumber}
+										required
+										placeholder="Ví dụ: 101, A2"
+										class="w-full rounded-lg border-2 border-black bg-white px-3 py-2 text-sm font-bold focus:ring-2 focus:ring-blue-300 focus:outline-none"
+									/>
+								</div>
+								<div class="space-y-1">
+									<label for="quick-room-code" class="block text-xs font-bold text-zinc-600"
+										>Mã phòng (tùy chọn)</label
+									>
+									<input
+										id="quick-room-code"
+										type="text"
+										bind:value={quickRoomCode}
+										placeholder="Ví dụ: CH-101"
+										class="w-full rounded-lg border-2 border-black bg-white px-3 py-2 text-sm font-bold focus:ring-2 focus:ring-blue-300 focus:outline-none"
+									/>
+								</div>
+							</div>
+
+							<div class="grid grid-cols-2 gap-4">
+								<div class="space-y-1">
+									<label for="quick-room-floor" class="block text-xs font-bold text-zinc-600"
+										>Tầng</label
+									>
+									<input
+										id="quick-room-floor"
+										type="number"
+										bind:value={quickFloor}
+										placeholder="1, 2, 3..."
+										class="w-full rounded-lg border-2 border-black bg-white px-3 py-2 text-sm font-bold focus:ring-2 focus:ring-blue-300 focus:outline-none"
+									/>
+								</div>
+								{#if selectedQuickProperty()?.blocks.length}
+									<div class="space-y-1">
+										<label for="quick-room-block" class="block text-xs font-bold text-zinc-600"
+											>{quickBlockLabel(selectedQuickProperty()?.rentalType)}</label
+										>
+										<RoomioSelect
+											id="quick-room-block"
+											bind:value={quickBlockId}
+											options={[
+												{
+													value: '',
+													label: `Không có ${quickBlockLabel(
+														selectedQuickProperty()?.rentalType
+													).toLowerCase()}`
+												},
+												...(selectedQuickProperty()?.blocks ?? []).map((block) => ({
+													value: block.id,
+													label: block.name
+												}))
+											]}
+										/>
+									</div>
+								{/if}
+							</div>
+						{/if}
+
+						<div class="grid grid-cols-2 gap-4">
+							<div class="space-y-1">
+								<label for="quick-room-type" class="block text-xs font-bold text-zinc-600"
+									>Loại phòng</label
+								>
+								<RoomioSelect
+									id="quick-room-type"
+									bind:value={quickRoomType}
+									options={[
+										{ value: 'standard', label: 'Phòng thường' },
+										{ value: 'master', label: 'Phòng master' },
+										{ value: 'balcony', label: 'Phòng ban công' }
+									]}
+								/>
+							</div>
+							<div class="space-y-1">
+								<label for="quick-room-area" class="block text-xs font-bold text-zinc-600"
+									>Diện tích (m²)</label
+								>
+								<input
+									id="quick-room-area"
+									type="number"
+									bind:value={quickArea}
+									placeholder="Ví dụ: 25"
+									class="w-full rounded-lg border-2 border-black bg-white px-3 py-2 text-sm font-bold focus:ring-2 focus:ring-blue-300 focus:outline-none"
+								/>
+							</div>
+						</div>
+
+						<div class="grid grid-cols-2 gap-4">
+							<div class="space-y-1">
+								<label for="quick-room-rent" class="block text-xs font-bold text-zinc-600"
+									>Giá thuê tháng (đ)</label
+								>
+								<input
+									id="quick-room-rent"
+									type="number"
+									bind:value={quickMonthlyRent}
+									required
+									placeholder="Ví dụ: 4500000"
+									class="w-full rounded-lg border-2 border-black bg-white px-3 py-2 text-sm font-bold focus:ring-2 focus:ring-blue-300 focus:outline-none"
+								/>
+							</div>
+							{#if paymentAccounts.length > 0}
+								<div class="space-y-1">
+									<label for="quick-room-payment" class="block text-xs font-bold text-zinc-600"
+										>Tài khoản nhận tiền</label
+									>
+									<RoomioSelect
+										id="quick-room-payment"
+										bind:value={tenantPaymentAccountId}
+										options={paymentAccountOptions()}
+										placeholder="Chọn tài khoản nhận tiền"
+									/>
+								</div>
+							{/if}
+						</div>
+
+						<div class="flex justify-end gap-3 border-t-2 border-black pt-3">
+							<button
+								type="button"
+								onclick={closeRoomDialog}
+								class="hover:bg-zinc-150 cursor-pointer rounded-[6px] border-2 border-black bg-white px-4 py-2 text-xs font-bold text-black transition-all"
+							>
+								Hủy
+							</button>
+							<button
+								type="submit"
+								disabled={isCreatingRoom}
+								class="modal-action flex cursor-pointer items-center justify-center gap-1.5 rounded-[6px] border-2 border-black bg-blue-300 px-4 py-2 text-xs font-black text-black shadow-secondary transition-all disabled:opacity-50"
+							>
+								<span class="modal-action-label">Tạo phòng</span>
+								{#if isCreatingRoom}
+									<Loader2 class="h-4 w-4 animate-spin" />
+								{/if}
+							</button>
+						</div>
+					</form>
+				{/if}
+			</div>
+		</div>
+	{/if}
+
+	{#if isPropertyDialogOpen}
+		<div
+			class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4 backdrop-blur-sm"
+			onclick={closePropertyDialog}
+			onkeydown={(e) => e.key === 'Escape' && closePropertyDialog()}
+			role="button"
+			tabindex="0"
+		>
+			<div
+				class="relative flex max-h-[90vh] w-full max-w-lg animate-[scale-up_0.2s_ease-out] flex-col overflow-hidden rounded-lg border-2 border-black bg-white shadow-primary"
+				onclick={(e) => e.stopPropagation()}
+				onkeydown={(e) => e.stopPropagation()}
+				role="dialog"
+				tabindex="-1"
+			>
+				<div class="flex shrink-0 items-center px-6 pt-5 select-none">
+					<span class="text-base font-black text-black">Tạo tòa nhà</span>
+					<button
+						onclick={closePropertyDialog}
+						class="ml-auto cursor-pointer rounded-[6px] p-1 text-black hover:bg-zinc-100"
+						aria-label="Đóng"
+					>
+						<X class="h-4.5 w-4.5" />
+					</button>
+				</div>
+
+				<div class="max-h-[76vh] space-y-4 overflow-y-auto p-6">
+					{#if enabledRentalTypes.length > 1}
+						<div class="space-y-2">
+							<p class="text-xs font-bold text-zinc-600">Loại hình</p>
+							<div class="grid grid-cols-2 gap-2">
+								{#each RENTAL_TYPE_OPTIONS.filter((option) => enabledRentalTypes.includes(option.value)) as option}
+									<button
+										type="button"
+										onclick={() => (quickPropertyRentalType = option.value)}
+										class="rounded-[6px] border-2 border-black px-3 py-2 text-xs font-black transition-colors {quickPropertyRentalType ===
+										option.value
+											? 'bg-blue-300 text-black'
+											: 'bg-white text-zinc-500 hover:bg-zinc-100'}"
+									>
+										{#each option.lines as line}<span class="block">{line}</span>{/each}
+									</button>
+								{/each}
+							</div>
+						</div>
+					{/if}
+
+					<div class="grid grid-cols-2 gap-4">
+						<div class="space-y-1">
+							<label for="tenant-quick-p-name" class="block text-xs font-bold text-zinc-600"
+								>Tên {quickPropertyLabel()}</label
+							>
+							<input
+								id="tenant-quick-p-name"
+								type="text"
+								bind:value={quickPropertyName}
+								placeholder={quickPropertyNamePlaceholder()}
+								class="w-full rounded-lg border-2 border-black bg-white px-3 py-2 text-sm font-bold focus:ring-2 focus:ring-blue-300 focus:outline-none"
+							/>
+						</div>
+						<div class="space-y-1">
+							<label for="tenant-quick-p-short" class="block text-xs font-bold text-zinc-600"
+								>Tên viết tắt</label
+							>
+							<input
+								id="tenant-quick-p-short"
+								type="text"
+								bind:value={quickPropertyShortName}
+								placeholder="Ví dụ: HAGL3"
+								class="w-full rounded-lg border-2 border-black bg-white px-3 py-2 text-sm font-bold focus:ring-2 focus:ring-blue-300 focus:outline-none"
+							/>
+						</div>
+					</div>
+
+					<div class="space-y-1">
+						<label for="tenant-quick-p-address" class="block text-xs font-bold text-zinc-600"
+							>Địa chỉ</label
+						>
+						<input
+							id="tenant-quick-p-address"
+							type="text"
+							bind:value={quickPropertyAddress}
+							placeholder="Nhập địa chỉ chi tiết"
+							class="w-full rounded-lg border-2 border-black bg-white px-3 py-2 text-sm font-bold focus:ring-2 focus:ring-blue-300 focus:outline-none"
+						/>
+					</div>
+
+					<div class="space-y-1">
+						<label for="tenant-quick-p-blocks" class="block text-xs font-bold text-zinc-600"
+							>{quickBlockLabel()}{quickPropertyRentalType === 'APARTMENT' ? '' : ' (tùy chọn)'}</label
+						>
+						<input
+							id="tenant-quick-p-blocks"
+							type="text"
+							bind:value={quickPropertyBlocksText}
+							placeholder={quickBlockPlaceholder()}
+							class="w-full rounded-lg border-2 border-black bg-white px-3 py-2 text-sm font-bold focus:ring-2 focus:ring-blue-300 focus:outline-none"
+						/>
+					</div>
+
+					<div class="flex justify-end gap-3 border-t-2 border-black pt-3">
+						<button
+							type="button"
+							onclick={closePropertyDialog}
+							class="hover:bg-zinc-150 cursor-pointer rounded-[6px] border-2 border-black bg-white px-4 py-2 text-xs font-bold text-black transition-all"
+						>
+							Hủy
+						</button>
+						<button
+							type="button"
+							disabled={isCreatingProperty}
+							onclick={createQuickPropertyForTenant}
+							class="modal-action flex cursor-pointer items-center justify-center gap-1.5 rounded-[6px] border-2 border-black bg-blue-300 px-4 py-2 text-xs font-black text-black shadow-secondary transition-all disabled:opacity-50"
+						>
+							<span class="modal-action-label">Tạo tòa nhà</span>
+							{#if isCreatingProperty}
+								<Loader2 class="h-4 w-4 animate-spin" />
+							{/if}
+						</button>
+					</div>
+				</div>
 			</div>
 		</div>
 	{/if}

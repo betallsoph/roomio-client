@@ -130,6 +130,8 @@
 
 	// Add Room Dialog states
 	let isAddDialogOpen = $state(false);
+	let isPropertyDialogOpen = $state(false);
+	let returnToRoomAfterProperty = $state(false);
 	let newRoomNumber = $state('');
 	let newRoomCode = $state('');
 	let newUnitNumber = $state('');
@@ -243,6 +245,20 @@
 		newBlockId = getActiveProperty()?.blocks[0]?.id ?? '';
 		newPaymentAccountId = defaultPaymentAccountId();
 		isAddDialogOpen = true;
+	}
+
+	function openPropertyDialogFromRoom() {
+		returnToRoomAfterProperty = true;
+		isAddDialogOpen = false;
+		isPropertyDialogOpen = true;
+	}
+
+	function closePropertyDialog() {
+		isPropertyDialogOpen = false;
+		if (returnToRoomAfterProperty) {
+			returnToRoomAfterProperty = false;
+			isAddDialogOpen = true;
+		}
 	}
 
 	function openRoomDetail(room: Room) {
@@ -761,6 +777,11 @@
 			selectedBlockId = 'all';
 			newBlockId = data.blocks?.[0]?.id ?? '';
 			resetQuickPropertyForm();
+			isPropertyDialogOpen = false;
+			if (returnToRoomAfterProperty) {
+				returnToRoomAfterProperty = false;
+				isAddDialogOpen = true;
+			}
 			toast.success('Đã tạo tòa nhà, giờ thêm phòng luôn được rồi');
 		} catch (err: any) {
 			toast.error(err.message);
@@ -1051,7 +1072,7 @@
 			<div class="max-w-sm">
 				<h3 class="text-base font-black text-zinc-400">Chưa có tòa nhà</h3>
 				<p class="mt-2 text-sm font-semibold text-zinc-400">
-					Bấm thêm phòng để tạo nhanh tòa nhà trước, rồi thêm phòng ngay trong cùng cửa sổ.
+					Bấm thêm phòng để tạo tòa nhà trước, xong hệ thống sẽ quay lại màn thêm phòng.
 				</p>
 			</div>
 		</div>
@@ -1244,86 +1265,11 @@
 
 				{#if properties.length === 0}
 					<div class="space-y-4 p-6">
-						<div class="rounded-lg border-2 border-black bg-blue-50 p-3">
-							<p class="text-sm font-black text-black">Tạo tòa nhà trước trong cùng flow</p>
+						<div class="rounded-lg bg-blue-50 p-4">
+							<p class="text-sm font-black text-black">Chưa có tòa nhà nào để thêm phòng.</p>
 							<p class="mt-1 text-xs font-bold text-zinc-600">
-								Tạo xong, form thêm phòng sẽ hiện ngay ở bước kế tiếp.
+								Tạo tòa nhà ở modal riêng, xong hệ thống sẽ quay lại màn thêm phòng này.
 							</p>
-						</div>
-
-						{#if enabledRentalTypes.length > 1}
-							<div class="space-y-2">
-								<p class="text-xs font-bold text-zinc-600">Loại hình</p>
-								<div class="grid grid-cols-2 gap-2">
-									{#each RENTAL_TYPE_OPTIONS.filter( (option) => enabledRentalTypes.includes(option.value) ) as option}
-										<button
-											type="button"
-											onclick={() => (quickPropertyRentalType = option.value)}
-											class="rounded-[6px] border-2 border-black px-3 py-2 text-xs font-black transition-colors {quickPropertyRentalType ===
-											option.value
-												? 'bg-blue-300 text-black'
-												: 'bg-white text-zinc-500 hover:bg-zinc-100'}"
-										>
-											{#each option.lines as line}<span class="block">{line}</span>{/each}
-										</button>
-									{/each}
-								</div>
-							</div>
-						{/if}
-
-						<div class="grid grid-cols-2 gap-4">
-							<div class="space-y-1">
-								<label for="quick-p-name" class="block text-xs font-bold text-zinc-600"
-									>Tên {quickPropertyLabel()}</label
-								>
-								<input
-									id="quick-p-name"
-									type="text"
-									bind:value={quickPropertyName}
-									placeholder={quickPropertyNamePlaceholder()}
-									class="w-full rounded-lg border-2 border-black bg-white px-3 py-2 text-sm font-bold focus:outline-none"
-								/>
-							</div>
-							<div class="space-y-1">
-								<label for="quick-p-short" class="block text-xs font-bold text-zinc-600"
-									>Tên viết tắt</label
-								>
-								<input
-									id="quick-p-short"
-									type="text"
-									bind:value={quickPropertyShortName}
-									placeholder="Ví dụ: HAGL3"
-									class="w-full rounded-lg border-2 border-black bg-white px-3 py-2 text-sm font-bold focus:outline-none"
-								/>
-							</div>
-						</div>
-
-						<div class="space-y-1">
-							<label for="quick-p-address" class="block text-xs font-bold text-zinc-600"
-								>Địa chỉ</label
-							>
-							<input
-								id="quick-p-address"
-								type="text"
-								bind:value={quickPropertyAddress}
-								placeholder="Nhập địa chỉ chi tiết"
-								class="w-full rounded-lg border-2 border-black bg-white px-3 py-2 text-sm font-bold focus:outline-none"
-							/>
-						</div>
-
-						<div class="space-y-1">
-							<label for="quick-p-blocks" class="block text-xs font-bold text-zinc-600"
-								>{quickBlockLabel()}{quickPropertyRentalType === 'APARTMENT'
-									? ''
-									: ' (tùy chọn)'}</label
-							>
-							<input
-								id="quick-p-blocks"
-								type="text"
-								bind:value={quickPropertyBlocksText}
-								placeholder={quickBlockPlaceholder()}
-								class="w-full rounded-lg border-2 border-black bg-white px-3 py-2 text-sm font-bold focus:outline-none"
-							/>
 						</div>
 
 						<div class="flex justify-end gap-3 border-t-2 border-black pt-3">
@@ -1336,14 +1282,10 @@
 							</button>
 							<button
 								type="button"
-								disabled={isCreatingProperty}
-								onclick={(e) => tapBounce(e, createQuickPropertyForRoom)}
-								class="modal-action flex cursor-pointer items-center gap-1.5 rounded-[6px] border-2 border-black bg-blue-300 px-4 py-2 text-xs font-bold text-black shadow-secondary transition-all disabled:opacity-50"
+								onclick={(e) => tapBounce(e, openPropertyDialogFromRoom)}
+								class="modal-action flex cursor-pointer items-center gap-1.5 rounded-[6px] border-2 border-black bg-blue-300 px-4 py-2 text-xs font-bold text-black shadow-secondary transition-all"
 							>
 								<span class="modal-action-label">Tạo tòa nhà</span>
-								{#if isCreatingProperty}
-									<Loader2 class="h-4 w-4 animate-spin" />
-								{/if}
 							</button>
 						</div>
 					</div>
@@ -1587,6 +1529,133 @@
 						</div>
 					</form>
 				{/if}
+			</div>
+		</div>
+	{/if}
+
+	{#if isPropertyDialogOpen}
+		<div
+			class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4 backdrop-blur-sm"
+			onclick={closePropertyDialog}
+			onkeydown={(e) => e.key === 'Escape' && closePropertyDialog()}
+			role="button"
+			tabindex="0"
+		>
+			<div
+				class="relative flex w-full max-w-lg animate-[scale-up_0.2s_ease-out] flex-col overflow-hidden rounded-lg border-2 border-black bg-white shadow-primary"
+				onclick={(e) => e.stopPropagation()}
+				onkeydown={(e) => e.stopPropagation()}
+				role="dialog"
+				tabindex="-1"
+			>
+				<div class="flex shrink-0 items-center px-6 pt-5 select-none">
+					<span class="text-base font-black text-black">Tạo tòa nhà</span>
+					<button
+						onclick={closePropertyDialog}
+						class="ml-auto rounded-[6px] p-1 text-black hover:bg-zinc-100"
+						aria-label="Đóng"
+					>
+						<X class="h-4 w-4" />
+					</button>
+				</div>
+
+				<div class="space-y-4 p-6">
+					{#if enabledRentalTypes.length > 1}
+						<div class="space-y-2">
+							<p class="text-xs font-bold text-zinc-600">Loại hình</p>
+							<div class="grid grid-cols-2 gap-2">
+								{#each RENTAL_TYPE_OPTIONS.filter( (option) => enabledRentalTypes.includes(option.value) ) as option}
+									<button
+										type="button"
+										onclick={() => (quickPropertyRentalType = option.value)}
+										class="rounded-[6px] border-2 border-black px-3 py-2 text-xs font-black transition-colors {quickPropertyRentalType ===
+										option.value
+											? 'bg-blue-300 text-black'
+											: 'bg-white text-zinc-500 hover:bg-zinc-100'}"
+									>
+										{#each option.lines as line}<span class="block">{line}</span>{/each}
+									</button>
+								{/each}
+							</div>
+						</div>
+					{/if}
+
+					<div class="grid grid-cols-2 gap-4">
+						<div class="space-y-1">
+							<label for="quick-p-name" class="block text-xs font-bold text-zinc-600"
+								>Tên {quickPropertyLabel()}</label
+							>
+							<input
+								id="quick-p-name"
+								type="text"
+								bind:value={quickPropertyName}
+								placeholder={quickPropertyNamePlaceholder()}
+								class="w-full rounded-lg border-2 border-black bg-white px-3 py-2 text-sm font-bold focus:outline-none"
+							/>
+						</div>
+						<div class="space-y-1">
+							<label for="quick-p-short" class="block text-xs font-bold text-zinc-600"
+								>Tên viết tắt</label
+							>
+							<input
+								id="quick-p-short"
+								type="text"
+								bind:value={quickPropertyShortName}
+								placeholder="Ví dụ: HAGL3"
+								class="w-full rounded-lg border-2 border-black bg-white px-3 py-2 text-sm font-bold focus:outline-none"
+							/>
+						</div>
+					</div>
+
+					<div class="space-y-1">
+						<label for="quick-p-address" class="block text-xs font-bold text-zinc-600"
+							>Địa chỉ</label
+						>
+						<input
+							id="quick-p-address"
+							type="text"
+							bind:value={quickPropertyAddress}
+							placeholder="Nhập địa chỉ chi tiết"
+							class="w-full rounded-lg border-2 border-black bg-white px-3 py-2 text-sm font-bold focus:outline-none"
+						/>
+					</div>
+
+					<div class="space-y-1">
+						<label for="quick-p-blocks" class="block text-xs font-bold text-zinc-600"
+							>{quickBlockLabel()}{quickPropertyRentalType === 'APARTMENT'
+								? ''
+								: ' (tùy chọn)'}</label
+						>
+						<input
+							id="quick-p-blocks"
+							type="text"
+							bind:value={quickPropertyBlocksText}
+							placeholder={quickBlockPlaceholder()}
+							class="w-full rounded-lg border-2 border-black bg-white px-3 py-2 text-sm font-bold focus:outline-none"
+						/>
+					</div>
+
+					<div class="flex justify-end gap-3 border-t-2 border-black pt-3">
+						<button
+							type="button"
+							onclick={closePropertyDialog}
+							class="hover:bg-zinc-150 cursor-pointer rounded-[6px] border-2 border-black bg-white px-4 py-2 text-xs font-bold text-black transition-all"
+						>
+							Hủy
+						</button>
+						<button
+							type="button"
+							disabled={isCreatingProperty}
+							onclick={(e) => tapBounce(e, createQuickPropertyForRoom)}
+							class="modal-action flex cursor-pointer items-center gap-1.5 rounded-[6px] border-2 border-black bg-blue-300 px-4 py-2 text-xs font-bold text-black shadow-secondary transition-all disabled:opacity-50"
+						>
+							<span class="modal-action-label">Tạo tòa nhà</span>
+							{#if isCreatingProperty}
+								<Loader2 class="h-4 w-4 animate-spin" />
+							{/if}
+						</button>
+					</div>
+				</div>
 			</div>
 		</div>
 	{/if}
