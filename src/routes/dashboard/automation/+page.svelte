@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { toast } from 'svelte-sonner';
-	import { CalendarClock, Loader2, Play, ReceiptText, Send, Zap } from '@lucide/svelte';
+	import { CalendarClock, Loader2, Play, ReceiptText, Send, Sparkles, Zap } from '@lucide/svelte';
 
 	interface AutomationJob {
 		id: string;
@@ -54,6 +54,13 @@
 			title: 'Nhắc hợp đồng',
 			description: 'Tạo nhắc cho hợp đồng hết hạn trong 30 ngày.',
 			icon: Send
+		},
+		{
+			id: 'auto_draft',
+			title: 'Soạn hóa đơn nháp',
+			description:
+				'Tự soạn hóa đơn nháp cho phòng đã đủ chỉ số đã duyệt. Nháp chưa gửi khách, vào "Nháp chờ duyệt" để duyệt.',
+			icon: Sparkles
 		}
 	];
 
@@ -61,14 +68,16 @@
 		overdue_sweep: 'Quét hóa đơn quá hạn',
 		invoice_reminder: 'Nhắc thanh toán',
 		meter_reminder: 'Nhắc điện nước',
-		contract_reminder: 'Nhắc hợp đồng'
+		contract_reminder: 'Nhắc hợp đồng',
+		auto_draft: 'Soạn hóa đơn nháp'
 	};
 
 	const RESULT_LABELS: Record<string, string> = {
 		overdueInvoices: 'hóa đơn được chuyển sang trễ hạn',
 		queuedInvoiceReminders: 'thông báo nhắc thanh toán',
 		queuedMeterReminders: 'thông báo nhắc điện nước',
-		queuedContractReminders: 'thông báo nhắc hợp đồng'
+		queuedContractReminders: 'thông báo nhắc hợp đồng',
+		draftInvoices: 'hóa đơn nháp đã soạn'
 	};
 
 	onMount(loadAutomation);

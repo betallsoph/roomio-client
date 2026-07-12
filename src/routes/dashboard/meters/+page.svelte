@@ -78,6 +78,30 @@
 		return 'đơn vị';
 	}
 
+	// Trung bình tiêu thụ 3 kỳ đã duyệt gần nhất (cùng phòng + dịch vụ), tính từ dữ liệu đã tải
+	function avgUsageFor(reading: ReadingRow): number | null {
+		const past = readings
+			.filter(
+				(r) =>
+					r.roomId === reading.roomId &&
+					r.serviceId === reading.serviceId &&
+					r.status === 'approved' &&
+					r.month < reading.month
+			)
+			.sort((a, b) => (a.month < b.month ? 1 : -1))
+			.slice(0, 3)
+			.map((r) => r.currValue - r.prevValue)
+			.filter((u) => u > 0);
+		if (past.length === 0) return null;
+		return past.reduce((a, b) => a + b, 0) / past.length;
+	}
+
+	// % lệch của mức tiêu thụ kỳ này so với trung bình (dương = cao hơn)
+	function deviationPct(usage: number, avg: number | null): number | null {
+		if (avg === null || avg <= 0 || !Number.isFinite(usage)) return null;
+		return Math.round(((usage - avg) / avg) * 100);
+	}
+
 	function openReview(reading: ReadingRow) {
 		selectedReading = reading;
 		reviewValue = String(reading.currValue);
@@ -186,6 +210,8 @@
 				{@const sentValue = submittedValue(reading)}
 				{@const usage = reading.currValue - reading.prevValue}
 				{@const corrected = reading.status === 'approved' && reading.currValue !== sentValue}
+				{@const avg = avgUsageFor(reading)}
+				{@const dev = deviationPct(usage, avg)}
 				<div
 					class="flex flex-col gap-4 rounded-lg border-2 border-black bg-white p-4 lg:flex-row lg:items-center"
 				>
@@ -254,6 +280,13 @@
 								Chủ nhà đã điều chỉnh và chốt: {reading.currValue}
 							</p>
 						{/if}
+						{#if avg !== null}
+							<p class="text-xs font-bold {reading.isAnomalous ? 'text-red-600' : 'text-zinc-500'}">
+								TB 3 tháng: {Math.round(avg)}
+								{unitFor(reading)}{#if dev !== null}
+									· kỳ này {dev >= 0 ? '+' : ''}{dev}%{/if}
+							</p>
+						{/if}
 					</div>
 
 					<button
@@ -274,6 +307,8 @@
 	{@const sentValue = submittedValue(reading)}
 	{@const currentReviewValue = Number(reviewValue)}
 	{@const reviewUsage = currentReviewValue - reading.prevValue}
+	{@const avg = avgUsageFor(reading)}
+	{@const dev = deviationPct(reviewUsage, avg)}
 	<div
 		class="fixed inset-0 z-[80] flex items-center justify-center bg-black/60 p-3 backdrop-blur-sm sm:p-6"
 		onclick={closeReview}
@@ -333,7 +368,18 @@
 
 				<div class="flex flex-col justify-between gap-5 overflow-y-auto p-5">
 					<div class="space-y-5">
-						{#if reading.isAnomalous}
+						{#if dev !== null && Math.abs(dev) > 50}
+							<div
+								class="flex gap-2 rounded-lg border-2 border-black bg-red-100 p-3 text-xs font-bold"
+							>
+								<TriangleAlert class="h-4 w-4 shrink-0" />
+								Kỳ này {reviewUsage}
+								{unitFor(reading)}, lệch {dev >= 0 ? '+' : ''}{dev}% so với trung bình 3 tháng ({Math.round(
+									avg ?? 0
+								)}
+								{unitFor(reading)}). Nhìn kỹ ảnh trước khi duyệt.
+							</div>
+						{:else if reading.isAnomalous}
 							<div
 								class="flex gap-2 rounded-lg border-2 border-black bg-red-100 p-3 text-xs font-bold"
 							>
@@ -380,6 +426,15 @@
 								{Number.isFinite(reviewUsage) ? reviewUsage : '--'}
 								{unitFor(reading)}
 							</p>
+							{#if avg !== null}
+								<p class="mt-1 text-xs font-bold text-zinc-600">
+									Trung bình 3 tháng gần nhất: {Math.round(avg)}
+									{unitFor(reading)}{#if dev !== null}
+										<span class={Math.abs(dev) > 50 ? 'text-red-600' : 'text-zinc-500'}
+											>({dev >= 0 ? '+' : ''}{dev}%)</span
+										>{/if}
+								</p>
+							{/if}
 						</div>
 					</div>
 

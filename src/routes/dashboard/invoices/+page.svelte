@@ -25,6 +25,7 @@
 	let isDeleting = $state(false);
 	let isCreatingPaymentLink = $state(false);
 	let selectedInvoiceIds = $state<string[]>([]);
+	let draftCount = $state(0);
 
 	onMount(() => {
 		const sessionStr = localStorage.getItem('roomio_user');
@@ -32,7 +33,18 @@
 		const session = JSON.parse(sessionStr);
 		landlordId = session.landlordProfileId;
 		fetchInvoices(session.landlordProfileId);
+		fetchDraftCount(session.landlordProfileId);
 	});
+
+	async function fetchDraftCount(profileId: string) {
+		try {
+			const res = await fetch(`/api/invoices?landlordId=${profileId}&status=draft`);
+			const data = await res.json();
+			if (res.ok && Array.isArray(data)) draftCount = data.length;
+		} catch {
+			draftCount = 0;
+		}
+	}
 
 	async function fetchInvoices(profileId: string) {
 		isLoading = true;
@@ -217,12 +229,24 @@
 </script>
 
 <div class="space-y-6">
-	<div class="flex justify-start">
+	<div class="flex flex-wrap justify-start gap-2">
 		<a
 			href="/dashboard/invoices/bulk"
 			class="toolbar-action flex w-full cursor-pointer items-center justify-center rounded-[6px] border-2 border-black bg-blue-300 px-4 py-2.5 text-sm font-black text-black shadow-secondary transition-[transform,box-shadow] sm:w-auto"
 		>
 			<span class="toolbar-action-label">Tạo hóa đơn loạt</span>
+		</a>
+		<a
+			href="/dashboard/invoices/drafts"
+			class="flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-[6px] border-2 border-black px-4 py-2.5 text-sm font-black text-black shadow-secondary transition-[transform,box-shadow] sm:w-auto {draftCount >
+			0
+				? 'bg-green-200'
+				: 'bg-white'}"
+		>
+			Nháp chờ duyệt
+			{#if draftCount > 0}
+				<span class="rounded-full border-2 border-black bg-white px-1.5 text-xs">{draftCount}</span>
+			{/if}
 		</a>
 	</div>
 
