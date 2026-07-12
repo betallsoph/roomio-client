@@ -2,55 +2,19 @@
 	import { onMount } from 'svelte';
 	import { toast } from 'svelte-sonner';
 	import { confirmPopup } from '$lib/confirm-popup';
-	import {
-		X,
-		Check,
-		Trash2,
-		Loader2,
-		AlertTriangle,
-		Eye,
-		Calendar,
-		FileText
-	} from '@lucide/svelte';
+	import { Loader2, Eye, FileText } from '@lucide/svelte';
 	import RoomioSelect from '$lib/RoomioSelect.svelte';
-
-	interface InvoiceItem {
-		id: string;
-		name: string;
-		amount: number;
-		details: string | null;
-	}
-
-	interface Invoice {
-		id: string;
-		roomId: string;
-		roomNumber: string;
-		tenantName: string;
-		tenantPhone: string;
-		month: string;
-		rentAmount: number;
-		totalAmount: number;
-		dueDate: string;
-		paidDate: string | null;
-		status: string; // 'paid' | 'pending' | 'overdue' | 'partial'
-		paidAmount: number;
-		paymentProofImage: string | null;
-		createdAt: string;
-		notes: string | null;
-		items: InvoiceItem[];
-		room: {
-			property: {
-				name: string;
-				shortName: string;
-			};
-		};
-	}
+	import InvoiceDetailModal from '$lib/InvoiceDetailModal.svelte';
+	import type { Invoice, PaymentLinkInfo } from '$lib/invoice-detail';
+	import { formatInvoiceCurrency } from '$lib/invoice-detail';
 
 	let landlordId = $state<string | null>(null);
 	let isLoading = $state(true);
 	let invoices = $state<Invoice[]>([]);
 	let selectedInvoice = $state<Invoice | null>(null);
 	let isDetailOpen = $state(false);
+	let paymentInfo = $state<PaymentLinkInfo | null>(null);
+	let paymentError = $state('');
 
 	// Filters
 	let statusFilter = $state('');
@@ -59,6 +23,7 @@
 
 	let isConfirming = $state(false);
 	let isDeleting = $state(false);
+	let isCreatingPaymentLink = $state(false);
 	let selectedInvoiceIds = $state<string[]>([]);
 
 	onMount(() => {
@@ -105,6 +70,61 @@
 			toast.error(err.message);
 		} finally {
 			isConfirming = false;
+		}
+	}
+
+	function resetPaymentState() {
+		paymentInfo = null;
+		paymentError = '';
+		isCreatingPaymentLink = false;
+	}
+
+	function openInvoiceDetail(invoice: Invoice) {
+		window.setTimeout(() => {
+			selectedInvoice = invoice;
+			isDetailOpen = true;
+			resetPaymentState();
+		}, 200);
+	}
+
+	function closeInvoiceDetail() {
+		isDetailOpen = false;
+		selectedInvoice = null;
+		resetPaymentState();
+	}
+
+	async function createPaymentLink(invoiceId: string) {
+		if (isCreatingPaymentLink) return;
+		isCreatingPaymentLink = true;
+		paymentInfo = null;
+		paymentError = '';
+
+		try {
+			const res = await fetch(`/api/invoices/${invoiceId}/payment-link`, {
+				method: 'POST'
+			});
+			const data = await res.json();
+			if (!res.ok) throw new Error(data.error || 'Không lấy được thông tin thanh toán');
+
+			paymentInfo = data;
+			if (data.provider === 'payos') {
+				const patch = {
+					payosCheckoutUrl: data.checkoutUrl ?? null,
+					payosQrCode: data.qrCode ?? null,
+					payosStatus: data.status ?? null
+				};
+				if (selectedInvoice?.id === invoiceId) {
+					selectedInvoice = { ...selectedInvoice, ...patch };
+				}
+				invoices = invoices.map((invoice) =>
+					invoice.id === invoiceId ? { ...invoice, ...patch } : invoice
+				);
+			}
+		} catch (err: any) {
+			paymentError = err.message;
+			toast.error(err.message);
+		} finally {
+			isCreatingPaymentLink = false;
 		}
 	}
 
@@ -179,7 +199,7 @@
 	}
 
 	function formatCurrency(amount: number) {
-		return new Intl.NumberFormat('vi-VN').format(amount) + 'đ';
+		return formatInvoiceCurrency(amount);
 	}
 
 	// Filtered invoices computed state
@@ -315,11 +335,7 @@
 								{invoice.status === 'paid' ? 'Đã đóng' : 'Chưa đóng'}
 							</span>
 							<button
-								onclick={() =>
-									window.setTimeout(() => {
-										selectedInvoice = invoice;
-										isDetailOpen = true;
-									}, 200)}
+								onclick={() => openInvoiceDetail(invoice)}
 								class="cursor-pointer rounded-lg border-2 border-black bg-white p-1.5 text-black shadow-secondary transition-all"
 							>
 								<Eye class="h-4 w-4" />
@@ -392,11 +408,7 @@
 								</td>
 								<td class="px-4 py-4 text-right">
 									<button
-										onclick={() =>
-											window.setTimeout(() => {
-												selectedInvoice = invoice;
-												isDetailOpen = true;
-											}, 200)}
+										onclick={() => openInvoiceDetail(invoice)}
 										class="hover:bg-zinc-150 cursor-pointer rounded-lg border-2 border-black bg-white p-1.5 text-black shadow-secondary transition-colors"
 									>
 										<Eye class="h-4 w-4" />
@@ -410,177 +422,19 @@
 		</div>
 	{/if}
 
-	<!-- Detail Dialog Modal -->
-	{#if isDetailOpen && selectedInvoice}
-		<!-- Overlay -->
-		<div
-			class="fixed inset-0 z-50 flex animate-[fade-in_0.2s_ease-out] items-center justify-center bg-slate-900/50 p-4 backdrop-blur-sm"
-			onclick={() => (isDetailOpen = false)}
-			onkeydown={(e) => e.key === 'Escape' && (isDetailOpen = false)}
-			role="button"
-			tabindex="0"
-		>
-			<!-- Dialog Content -->
-			<div
-				class="relative flex max-h-[90vh] w-full max-w-2xl animate-[scale-up_0.2s_ease-out] flex-col overflow-hidden rounded-lg border-2 border-black bg-white shadow-primary"
-				onclick={(e) => e.stopPropagation()}
-				onkeydown={(e) => e.stopPropagation()}
-				role="dialog"
-				tabindex="-1"
-			>
-				<div class="flex shrink-0 items-center px-6 pt-5 select-none">
-					<span class="text-base font-black text-black">Chi tiết hóa đơn</span>
-					<button
-						onclick={() => (isDetailOpen = false)}
-						class="ml-auto rounded-[6px] p-1 text-black hover:bg-zinc-100"
-					>
-						<X class="h-4 w-4" />
-					</button>
-				</div>
-
-				<div class="space-y-4 overflow-y-auto p-6">
-					<!-- Meta info columns -->
-					<div
-						class="grid grid-cols-2 gap-4 rounded-lg border-2 border-black bg-white p-4 text-sm font-semibold text-black shadow-secondary"
-					>
-						<div>
-							<p class="text-xs font-black text-zinc-500">Tòa nhà / Số phòng</p>
-							<p class="mt-1 font-bold text-black">
-								{selectedInvoice.room.property.name} - Phòng {selectedInvoice.roomNumber}
-							</p>
-						</div>
-						<div>
-							<p class="text-xs font-black text-zinc-500">Khách thuê phòng</p>
-							<p class="mt-1 font-bold text-black">
-								{selectedInvoice.tenantName} ({selectedInvoice.tenantPhone})
-							</p>
-						</div>
-						<div>
-							<p class="text-xs font-black text-zinc-500">Tháng hóa đơn</p>
-							<p class="mt-1 flex items-center gap-1 font-bold text-black">
-								<Calendar class="h-4 w-4 text-zinc-500" />
-								Tháng {selectedInvoice.month}
-							</p>
-						</div>
-						<div>
-							<p class="text-xs font-black text-zinc-500">Hạn đóng tiền</p>
-							<p class="text-red-650 mt-1 font-black">
-								{new Date(selectedInvoice.dueDate).toLocaleDateString('vi-VN')}
-							</p>
-						</div>
-					</div>
-
-					<!-- Bill Line Items -->
-					<div class="space-y-2">
-						<h3 class="text-xs font-black text-zinc-500">Các mục thanh toán</h3>
-						<div
-							class="divide-y divide-black/15 overflow-hidden rounded-lg border-2 border-black bg-white shadow-secondary"
-						>
-							{#each selectedInvoice.items as item}
-								<div class="flex items-center justify-between p-3 text-sm font-semibold">
-									<div>
-										<p class="font-bold text-black">{item.name}</p>
-										{#if item.details}
-											<p class="mt-0.5 text-xs font-bold text-zinc-500 italic">{item.details}</p>
-										{/if}
-									</div>
-									<span class="font-bold text-zinc-800">{formatCurrency(item.amount)}</span>
-								</div>
-							{/each}
-							<!-- Total Row -->
-							<div
-								class="flex items-center justify-between border-t-2 border-black bg-zinc-50 p-4 text-sm"
-							>
-								<span class="text-base font-black text-black">Tổng số tiền cần đóng</span>
-								<span class="text-blue-650 text-lg font-black"
-									>{formatCurrency(selectedInvoice.totalAmount)}</span
-								>
-							</div>
-						</div>
-					</div>
-
-					<!-- Tenant Submitted Proof -->
-					{#if selectedInvoice.paymentProofImage}
-						<div class="space-y-2">
-							<h3 class="flex items-center gap-1 text-xs font-black text-zinc-500">
-								Ảnh chụp bill thanh toán của khách <AlertTriangle class="h-4 w-4 text-amber-500" />
-							</h3>
-							<div
-								class="flex flex-col items-center rounded-lg border-2 border-black bg-amber-50/30 p-3 shadow-secondary"
-							>
-								<img
-									src={selectedInvoice.paymentProofImage}
-									alt="Bill thanh toan"
-									class="max-h-60 rounded-lg border-2 border-black bg-white object-contain shadow-secondary"
-								/>
-								<p class="mt-2 text-center text-xs font-bold text-amber-900">
-									Khách đã tải bill này lên. Vui lòng đối soát STK trước khi xác nhận.
-								</p>
-							</div>
-						</div>
-					{/if}
-
-					<!-- Actions -->
-					<div class="flex gap-3 border-t-2 border-black pt-4">
-						<button
-							onclick={() => deleteInvoice(selectedInvoice!.id)}
-							disabled={isDeleting}
-							class="hover:bg-red-350 flex cursor-pointer items-center justify-center rounded-[6px] border-2 border-black bg-red-200 p-2.5 text-red-800 shadow-secondary transition-all"
-							title="Xóa hóa đơn"
-						>
-							{#if isDeleting}
-								<Loader2 class="h-5 w-5 animate-spin" />
-							{:else}
-								<Trash2 class="h-5 w-5" />
-							{/if}
-						</button>
-
-						{#if selectedInvoice.status !== 'paid'}
-							<button
-								onclick={() => confirmPayment(selectedInvoice!.id)}
-								disabled={isConfirming}
-								class="modal-action flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-[6px] border-2 border-black bg-blue-300 py-2.5 text-center text-xs font-black text-black shadow-secondary transition-all"
-							>
-								<span class="modal-action-label">Xác nhận đã nhận tiền (Đóng hóa đơn)</span>
-								{#if isConfirming}
-									<Loader2 class="h-4 w-4 animate-spin" />
-								{:else}
-									<Check class="h-4.5 w-4.5" />
-								{/if}
-							</button>
-						{:else}
-							<div
-								class="flex flex-1 items-center justify-center gap-1.5 rounded-[6px] border-2 border-black bg-green-200 py-2.5 text-center text-xs font-black text-green-800 select-none"
-							>
-								Hóa đơn đã đóng vào ngày {new Date(selectedInvoice.paidDate!).toLocaleDateString(
-									'vi-VN'
-								)}
-							</div>
-						{/if}
-					</div>
-				</div>
-			</div>
-		</div>
+	{#if selectedInvoice}
+		<InvoiceDetailModal
+			invoice={selectedInvoice}
+			isOpen={isDetailOpen}
+			{isConfirming}
+			{isDeleting}
+			{isCreatingPaymentLink}
+			{paymentInfo}
+			{paymentError}
+			onClose={closeInvoiceDetail}
+			onCreatePaymentLink={() => createPaymentLink(selectedInvoice!.id)}
+			onConfirmPayment={() => confirmPayment(selectedInvoice!.id)}
+			onDelete={() => deleteInvoice(selectedInvoice!.id)}
+		/>
 	{/if}
 </div>
-
-<style>
-	@keyframes fade-in {
-		from {
-			opacity: 0;
-		}
-		to {
-			opacity: 1;
-		}
-	}
-	@keyframes scale-up {
-		from {
-			transform: scale(0.95);
-			opacity: 0;
-		}
-		to {
-			transform: scale(1);
-			opacity: 1;
-		}
-	}
-</style>
