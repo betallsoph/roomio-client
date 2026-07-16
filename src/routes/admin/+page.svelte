@@ -4,6 +4,15 @@
 	import { toast } from 'svelte-sonner';
 	import { confirmPopup } from '$lib/confirm-popup';
 	import {
+		RENTAL_TYPE_OPTIONS,
+		isColivingPricingType,
+		operatingModelLabel,
+		parseRentalTypes,
+		pricingGroupLabel,
+		rentalTypeLabel,
+		rentalTypeShortLabel
+	} from '$lib/rental-types';
+	import {
 		Check,
 		ChevronLeft,
 		ChevronRight,
@@ -83,6 +92,7 @@
 			id: string;
 			name: string;
 			rentalType: string;
+			operatingModel?: string;
 			_count: {
 				rooms: number;
 			};
@@ -235,25 +245,6 @@
 		}
 	}
 
-	const RENTAL_TYPE_OPTIONS = [
-		{
-			value: 'APARTMENT',
-			label: 'Share phòng chung cư / Co-living / Share phòng',
-			lines: ['Share phòng chung cư', 'Co-living', 'Share phòng']
-		},
-		{
-			value: 'MOTEL',
-			label: 'Phòng trọ truyền thống / Căn hộ dịch vụ',
-			lines: ['Phòng trọ truyền thống', 'Căn hộ dịch vụ']
-		},
-		{ value: 'DORM', label: 'KTX / Sleepbox', lines: ['KTX', 'Sleepbox'] },
-		{
-			value: 'WHOLE_UNIT',
-			label: 'Căn hộ chung cư nguyên căn / Nhà nguyên căn',
-			lines: ['Căn hộ chung cư nguyên căn', 'Nhà nguyên căn']
-		}
-	];
-
 	const SUBSCRIPTION_TIER_OPTIONS = [
 		{ value: 'FREE', label: 'Free', range: 'Tối đa 3 phòng' },
 		{ value: 'ROOMS_4_10', label: '4–10 phòng', range: 'Tối đa 10 phòng' },
@@ -285,10 +276,6 @@
 		ROOMS_101_150: 1_799_000,
 		ROOMS_151_PLUS: null
 	};
-
-	function isColivingPricingType(type: string) {
-		return type === 'APARTMENT' || type === 'COLIVING';
-	}
 
 	function selectedTierPrice(tier: string, rentalTypes: string[], period: 'MONTHLY' | 'YEARLY') {
 		if (tier === 'ROOMS_151_PLUS') return null;
@@ -621,9 +608,17 @@
 
 	function pricingStrategyLabel(quote: SubscriptionQuote) {
 		if (quote.roomCount === 0) return 'Chưa có phòng';
-		if (quote.standardRoomCount === 0) return 'Bảng share phòng / Co-living';
-		if (quote.colivingRoomCount === 0) return 'Bảng trọ / CHDV / Sleepbox / nguyên căn';
+		if (quote.standardRoomCount === 0) return `Bảng ${pricingGroupLabel('COLIVING', true)}`;
+		if (quote.colivingRoomCount === 0) return `Bảng ${pricingGroupLabel('STANDARD', true)}`;
 		return quote.strategy === 'SPLIT' ? 'Tách hai bảng có lợi hơn' : 'Gộp chung có lợi hơn';
+	}
+
+	function formatRoomLimit(limit: number | null | undefined) {
+		return limit === null || limit === undefined ? 'Chưa đặt' : String(limit);
+	}
+
+	function isOverRoomLimit(actual: number, limit: number | null | undefined) {
+		return limit !== null && limit !== undefined && actual > limit;
 	}
 
 	function formatMonthlyPrice(price: number | null) {
@@ -659,19 +654,6 @@
 		return 'bg-green-100 text-green-800';
 	}
 
-	function parseRentalTypes(value: string | null | undefined) {
-		const parsed = (value || 'APARTMENT')
-			.split(',')
-			.map((type) => {
-				const normalized = type.trim();
-				if (normalized === 'COLIVING') return 'APARTMENT';
-				if (normalized === 'SERVICED_APARTMENT') return 'MOTEL';
-				return normalized;
-			})
-			.filter(Boolean);
-		return parsed.length > 0 ? [...new Set(parsed)] : ['APARTMENT'];
-	}
-
 	function rentalTypesLabel(value: string | null | undefined) {
 		const enabled = parseRentalTypes(value);
 		return RENTAL_TYPE_OPTIONS.filter((option) => enabled.includes(option.value))
@@ -686,7 +668,7 @@
 			return Object.entries(additions)
 				.filter(([, count]) => Number(count) > 0)
 				.map(([type, count]) => {
-					const label = RENTAL_TYPE_OPTIONS.find((option) => option.value === type)?.label ?? type;
+					const label = rentalTypeLabel(type);
 					return { type, label, count: Number(count) };
 				});
 		} catch {
@@ -979,9 +961,41 @@
 										</div>
 										<p class="mt-2 text-xs font-bold text-zinc-600">
 											{pricingStrategyLabel(selectedLandlord.subscriptionQuote)} ·
-											{selectedLandlord.subscriptionQuote.standardRoomCount} trọ/CHDV/KTX/Sleepbox/nguyên căn
-											+ {selectedLandlord.subscriptionQuote.colivingRoomCount} share phòng/co-living
+											{selectedLandlord.subscriptionQuote.standardRoomCount}
+											{pricingGroupLabel('STANDARD', true)} + {selectedLandlord
+												.subscriptionQuote.colivingRoomCount}
+											{pricingGroupLabel('COLIVING', true)}
 										</p>
+										<div class="mt-2 grid grid-cols-1 gap-1.5 sm:grid-cols-2">
+											<p
+												class="text-xs font-bold {isOverRoomLimit(
+													selectedLandlord.subscriptionQuote.standardRoomCount,
+													selectedLandlord.subscribedStandardRoomLimit
+												)
+													? 'text-red-700'
+													: 'text-zinc-600'}"
+												title={pricingGroupLabel('STANDARD')}
+											>
+												{pricingGroupLabel('STANDARD', true)}: Thực dùng {selectedLandlord
+													.subscriptionQuote.standardRoomCount} / Hạn mức {formatRoomLimit(
+													selectedLandlord.subscribedStandardRoomLimit
+												)}
+											</p>
+											<p
+												class="text-xs font-bold {isOverRoomLimit(
+													selectedLandlord.subscriptionQuote.colivingRoomCount,
+													selectedLandlord.subscribedColivingRoomLimit
+												)
+													? 'text-red-700'
+													: 'text-zinc-600'}"
+												title={pricingGroupLabel('COLIVING')}
+											>
+												{pricingGroupLabel('COLIVING', true)}: Thực dùng {selectedLandlord
+													.subscriptionQuote.colivingRoomCount} / Hạn mức {formatRoomLimit(
+													selectedLandlord.subscribedColivingRoomLimit
+												)}
+											</p>
+										</div>
 										{#if selectedLandlord.subscriptionQuote.splitEligible}
 											<p class="mt-1 text-[10px] font-bold text-zinc-500">
 												Giá gộp {formatMonthlyPrice(
@@ -1022,7 +1036,8 @@
 															{request.quotedPeriodPrice === null
 																? 'Liên hệ'
 																: formatCurrency(request.quotedPeriodPrice)} · Dự kiến: {request.standardRoomCount}
-															trọ/CHDV/KTX/Sleepbox/nguyên căn + {request.colivingRoomCount} share phòng/co-living
+															{pricingGroupLabel('STANDARD', true)} + {request.colivingRoomCount}
+															{pricingGroupLabel('COLIVING', true)}
 														</p>
 														{#if request.requestedRentalTypes}
 															<p class="mt-1 text-[10px] font-black text-blue-700">
@@ -1144,7 +1159,14 @@
 													<div
 														class="flex items-center justify-between gap-3 border-t border-zinc-200 py-2 text-xs font-bold first:border-t-0"
 													>
-														<span class="truncate">{property.name}</span>
+														<div class="min-w-0">
+															<span class="block truncate">{property.name}</span>
+															<span class="mt-0.5 block text-[10px] font-bold text-zinc-500">
+																{rentalTypeShortLabel(property.rentalType)} · {operatingModelLabel(
+																	property.operatingModel
+																)}
+															</span>
+														</div>
 														<span class="shrink-0 text-zinc-500">{property._count.rooms} phòng</span
 														>
 													</div>
@@ -1347,7 +1369,7 @@
 						<div class="grid grid-cols-2 gap-2">
 							{#if editRentalTypes.some((type) => !isColivingPricingType(type))}
 								<label class="text-[10px] font-bold text-zinc-500">
-									Nhóm chuẩn / nguyên căn
+									{pricingGroupLabel('STANDARD', true)}
 									<input
 										type="number"
 										min="0"
@@ -1359,7 +1381,7 @@
 							{/if}
 							{#if editRentalTypes.some(isColivingPricingType)}
 								<label class="text-[10px] font-bold text-zinc-500">
-									Share phòng chung cư / co-living
+									{rentalTypeLabel('APARTMENT')}
 									<input
 										type="number"
 										min="0"
@@ -1562,7 +1584,7 @@
 						<div class="grid grid-cols-2 gap-2">
 							{#if createForm.enabledRentalTypes.some((type) => !isColivingPricingType(type))}
 								<label class="text-[10px] font-bold text-zinc-500">
-									Nhóm chuẩn / nguyên căn
+									{pricingGroupLabel('STANDARD', true)}
 									<input
 										type="number"
 										min="0"
@@ -1575,7 +1597,7 @@
 							{/if}
 							{#if createForm.enabledRentalTypes.some(isColivingPricingType)}
 								<label class="text-[10px] font-bold text-zinc-500">
-									Share phòng chung cư / co-living
+									{rentalTypeLabel('APARTMENT')}
 									<input
 										type="number"
 										min="0"
