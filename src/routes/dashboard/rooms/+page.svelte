@@ -338,7 +338,11 @@
 			}
 			if (!submittedRoomNumber) {
 				toast.error(
-					isApartmentRoomForm ? 'Vui lòng nhập mã phòng trong căn' : 'Vui lòng điền số phòng'
+					isApartmentRoomForm
+						? 'Vui lòng nhập mã phòng trong căn'
+						: isWholeUnit()
+							? 'Vui lòng nhập tên căn/nhà'
+							: 'Vui lòng điền số phòng'
 				);
 				return;
 			}
@@ -355,7 +359,7 @@
 					roomNumber: submittedRoomNumber,
 					roomCode: submittedRoomCode,
 					unitNumber: isApartmentRoomForm ? normalizeUnitNumber(newUnitNumber) : undefined,
-					roomType: newRoomType,
+					roomType: isWholeUnit() ? 'standard' : newRoomType,
 					floor: submitFloor,
 					monthlyRent: Number(newMonthlyRent),
 					area: newArea ? Number(newArea) : null,
@@ -366,7 +370,11 @@
 
 			if (!res.ok) throw new Error(data.error || 'Lỗi tạo phòng');
 
-			toast.success(`Đã thêm phòng ${submittedRoomNumber} thành công`);
+			toast.success(
+				isWholeUnit()
+					? `Đã thêm căn/nhà ${submittedRoomNumber} thành công`
+					: `Đã thêm phòng ${submittedRoomNumber} thành công`
+			);
 			isAddDialogOpen = false;
 			// Clear forms
 			newRoomNumber = '';
@@ -389,11 +397,12 @@
 	}
 
 	async function handleCheckout(roomId: string) {
+		const checkoutNoun = isWholeUnit() ? 'căn/nhà' : 'phòng';
 		if (
 			!(await confirmPopup({
-				title: 'Trả phòng',
-				message: 'Bạn có chắc chắn muốn trả phòng cho khách này? Các khoản nợ sẽ được xóa về 0.',
-				confirmLabel: 'Trả phòng',
+				title: isWholeUnit() ? 'Trả căn/nhà' : 'Trả phòng',
+				message: `Bạn có chắc chắn muốn trả ${checkoutNoun} cho khách này? Các khoản nợ sẽ được xóa về 0.`,
+				confirmLabel: isWholeUnit() ? 'Trả căn/nhà' : 'Trả phòng',
 				tone: 'warning'
 			}))
 		)
@@ -409,7 +418,7 @@
 
 			if (!res.ok) throw new Error(data.error || 'Lỗi khi trả phòng');
 
-			toast.success('Đã trả phòng thành công');
+			toast.success(isWholeUnit() ? 'Đã trả căn/nhà thành công' : 'Đã trả phòng thành công');
 			isDetailOpen = false;
 			selectedRoom = null;
 			fetchRooms(selectedPropertyId);
@@ -649,6 +658,39 @@
 		return getActiveProperty()?.rentalType ?? 'APARTMENT';
 	}
 
+	function isWholeUnit() {
+		return activeRentalType() === 'WHOLE_UNIT';
+	}
+
+	function addRoomButtonLabel() {
+		return isWholeUnit() ? 'Thêm căn / nhà' : 'Thêm phòng';
+	}
+
+	function addRoomModalTitle() {
+		return isWholeUnit() ? 'Thêm căn / nhà mới' : 'Tạo phòng trọ mới';
+	}
+
+	function addRoomSubmitLabel() {
+		return isWholeUnit() ? 'Thêm căn / nhà' : 'Thêm phòng';
+	}
+
+	function emptyRoomsMessage() {
+		const type = activeRentalType();
+		if (type === 'APARTMENT') {
+			return 'Chưa có phòng nào trong căn hộ này. Thêm căn trước, rồi thêm phòng share trong căn.';
+		}
+		if (type === 'MOTEL') {
+			return 'Chưa có phòng nào. Thêm phòng đầu tiên cho khu trọ/CHDV.';
+		}
+		if (type === 'DORM') {
+			return 'Chưa có phòng/box nào.';
+		}
+		if (type === 'WHOLE_UNIT') {
+			return 'Chưa có căn/nhà nào trong danh mục. Thêm căn/nhà đầu tiên.';
+		}
+		return 'Bắt đầu bằng cách tạo các phòng trọ để thêm thông tin khách thuê.';
+	}
+
 	function propertyLabel() {
 		return propertyHeadingLabel(activeRentalType());
 	}
@@ -870,7 +912,7 @@
 			onclick={(e) => tapBounce(e, openAddRoomDialog)}
 			class="toolbar-action flex w-full cursor-pointer items-center justify-center rounded-[6px] border-2 border-black bg-blue-300 px-4 py-2.5 text-sm font-bold text-black shadow-secondary transition-[transform,box-shadow] sm:w-auto"
 		>
-			<span class="toolbar-action-label">Thêm phòng</span>
+			<span class="toolbar-action-label">{addRoomButtonLabel()}</span>
 		</button>
 	</div>
 
@@ -1006,9 +1048,11 @@
 	{:else if rooms.length === 0}
 		<div class="flex min-h-[44vh] items-center justify-center text-center">
 			<div class="max-w-sm">
-				<h3 class="text-base font-black text-zinc-400">{propertyLabel()} này chưa có phòng</h3>
+				<h3 class="text-base font-black text-zinc-400">
+					{isWholeUnit() ? 'Chưa có căn/nhà nào' : `${propertyLabel()} này chưa có phòng`}
+				</h3>
 				<p class="mt-2 text-sm font-semibold text-zinc-400">
-					Bắt đầu bằng cách tạo các phòng trọ để thêm thông tin khách thuê.
+					{emptyRoomsMessage()}
 				</p>
 			</div>
 		</div>
@@ -1181,7 +1225,7 @@
 				tabindex="-1"
 			>
 				<div class="flex shrink-0 items-center px-6 pt-5 select-none">
-					<span class="text-base font-black text-black">Tạo phòng trọ mới</span>
+					<span class="text-base font-black text-black">{addRoomModalTitle()}</span>
 					<button
 						onclick={(e) => tapBounce(e, () => (isAddDialogOpen = false))}
 						class="ml-auto rounded-[6px] p-1 text-black hover:bg-zinc-100"
@@ -1218,7 +1262,7 @@
 					</div>
 				{:else}
 					<form onsubmit={handleAddRoom} class="space-y-4 p-6">
-						{#if existingUnits().length > 0}
+						{#if existingUnits().length > 0 && !isWholeUnit()}
 							<div class="space-y-1">
 								<label for="r-unit-sel" class="block text-xs font-bold text-zinc-600">Căn hộ</label>
 								<RoomioSelect
@@ -1322,13 +1366,17 @@
 						{:else}
 							<div class="grid grid-cols-2 gap-4">
 								<div class="space-y-1">
-									<label for="r-num" class="block text-xs font-bold text-zinc-600">Số phòng</label>
+									<label for="r-num" class="block text-xs font-bold text-zinc-600"
+										>{isWholeUnit() ? 'Tên căn/nhà' : 'Số phòng'}</label
+									>
 									<input
 										id="r-num"
 										type="text"
 										bind:value={newRoomNumber}
 										required
-										placeholder="Ví dụ: 101, A2"
+										placeholder={isWholeUnit()
+											? 'Ví dụ: Căn A1205, Nhà Bình Thạnh'
+											: 'Ví dụ: 101, A2'}
 										class="w-full rounded-lg border-2 border-black bg-white px-3 py-2 text-sm font-bold focus:outline-none"
 									/>
 								</div>
@@ -1348,18 +1396,22 @@
 						{/if}
 
 						<div class="grid grid-cols-2 gap-4">
-							<div class="space-y-1">
-								<label for="r-type" class="block text-xs font-bold text-zinc-600">Loại phòng</label>
-								<RoomioSelect
-									id="r-type"
-									bind:value={newRoomType}
-									options={[
-										{ value: 'standard', label: 'Phòng thường' },
-										{ value: 'master', label: 'Phòng master' },
-										{ value: 'balcony', label: 'Phòng ban công' }
-									]}
-								/>
-							</div>
+							{#if !isWholeUnit()}
+								<div class="space-y-1">
+									<label for="r-type" class="block text-xs font-bold text-zinc-600"
+										>Loại phòng</label
+									>
+									<RoomioSelect
+										id="r-type"
+										bind:value={newRoomType}
+										options={[
+											{ value: 'standard', label: 'Phòng thường' },
+											{ value: 'master', label: 'Phòng master' },
+											{ value: 'balcony', label: 'Phòng ban công' }
+										]}
+									/>
+								</div>
+							{/if}
 							{#if activeRentalType() !== 'APARTMENT'}
 								<div class="space-y-1">
 									<label for="r-floor" class="block text-xs font-bold text-zinc-600">Tầng</label>
@@ -1448,7 +1500,7 @@
 								disabled={isCreatingRoom}
 								class="modal-action flex cursor-pointer items-center gap-1.5 rounded-[6px] border-2 border-black bg-blue-300 px-4 py-2 text-xs font-bold text-black shadow-secondary transition-all disabled:opacity-50"
 							>
-								<span class="modal-action-label">Thêm phòng</span>
+								<span class="modal-action-label">{addRoomSubmitLabel()}</span>
 								{#if isCreatingRoom}
 									<Loader2 class="h-4 w-4 animate-spin" />
 								{/if}

@@ -11,7 +11,8 @@
 		propertyLabel as rentalPropertyLabel,
 		blockLabel as rentalBlockLabel,
 		propertyNamePlaceholder,
-		blockPlaceholder
+		blockPlaceholder,
+		roomCodeLabel
 	} from '$lib/rental-types';
 
 	interface Room {
@@ -278,6 +279,18 @@
 		return selectedQuickProperty()?.rentalType === 'APARTMENT';
 	}
 
+	function quickPropertyIsWholeUnit() {
+		return selectedQuickProperty()?.rentalType === 'WHOLE_UNIT';
+	}
+
+	function quickRoomModalTitle() {
+		return quickPropertyIsWholeUnit() ? 'Tạo căn / nhà mới' : 'Tạo phòng mới';
+	}
+
+	function quickRoomSubmitLabel() {
+		return quickPropertyIsWholeUnit() ? 'Tạo căn / nhà' : 'Tạo phòng';
+	}
+
 	function normalizeUnitNumber(value: string) {
 		const raw = value.trim().toUpperCase().replace(/\s+/g, '');
 		if (!raw) return '';
@@ -480,7 +493,11 @@
 		e.preventDefault();
 		if (!landlordId || isCreatingRoom) return;
 		if (!quickPropertyId || !quickRoomNumber || !quickMonthlyRent) {
-			toast.error('Vui lòng nhập đủ tòa nhà, mã phòng và giá thuê để tạo phòng');
+			toast.error(
+				quickPropertyIsWholeUnit()
+					? 'Vui lòng nhập đủ tòa nhà, tên căn/nhà và giá thuê'
+					: 'Vui lòng nhập đủ tòa nhà, mã phòng và giá thuê để tạo phòng'
+			);
 			return;
 		}
 		if (
@@ -503,7 +520,7 @@
 					roomNumber: quickRoomNumber,
 					roomCode: apartmentUnit || quickRoomCode || null,
 					unitNumber: quickPropertyIsApartment() ? normalizeUnitNumber(quickUnitNumber) : undefined,
-					roomType: quickRoomType,
+					roomType: quickPropertyIsWholeUnit() ? 'standard' : quickRoomType,
 					floor: quickFloor ? Number(quickFloor) : null,
 					monthlyRent: Number(quickMonthlyRent),
 					area: quickArea ? Number(quickArea) : null,
@@ -522,7 +539,11 @@
 			returnToTenantAfterRoom = false;
 			returnToRoomAfterProperty = false;
 			isAddDialogOpen = true;
-			toast.success('Đã tạo phòng, giờ đăng ký khách thuê tiếp được rồi');
+			toast.success(
+				quickPropertyIsWholeUnit()
+					? 'Đã tạo căn/nhà, giờ đăng ký khách thuê tiếp được rồi'
+					: 'Đã tạo phòng, giờ đăng ký khách thuê tiếp được rồi'
+			);
 		} catch (err: any) {
 			toast.error(err.message);
 		} finally {
@@ -1243,7 +1264,7 @@
 				tabindex="-1"
 			>
 				<div class="flex shrink-0 items-center px-6 pt-5 select-none">
-					<span class="text-base font-black text-black">Tạo phòng mới</span>
+					<span class="text-base font-black text-black">{quickRoomModalTitle()}</span>
 					<button
 						onclick={closeRoomDialog}
 						class="ml-auto cursor-pointer rounded-[6px] p-1 text-black hover:bg-zinc-100"
@@ -1370,26 +1391,31 @@
 							<div class="grid grid-cols-2 gap-4">
 								<div class="space-y-1">
 									<label for="quick-room-name" class="block text-xs font-bold text-zinc-600"
-										>Số phòng</label
+										>{quickPropertyIsWholeUnit() ? 'Tên căn/nhà' : 'Số phòng'}</label
 									>
 									<input
 										id="quick-room-name"
 										type="text"
 										bind:value={quickRoomNumber}
 										required
-										placeholder="Ví dụ: 101, A2"
+										placeholder={quickPropertyIsWholeUnit()
+											? 'Ví dụ: Căn A1205, Nhà Bình Thạnh'
+											: 'Ví dụ: 101, A2'}
 										class="w-full rounded-lg border-2 border-black bg-white px-3 py-2 text-sm font-bold focus:ring-2 focus:ring-blue-300 focus:outline-none"
 									/>
 								</div>
 								<div class="space-y-1">
 									<label for="quick-room-code" class="block text-xs font-bold text-zinc-600"
-										>Mã phòng (tùy chọn)</label
+										>{roomCodeLabel(selectedQuickProperty()?.rentalType ?? 'APARTMENT')}
+										(tùy chọn)</label
 									>
 									<input
 										id="quick-room-code"
 										type="text"
 										bind:value={quickRoomCode}
-										placeholder="Ví dụ: CH-101"
+										placeholder={quickPropertyIsWholeUnit()
+											? 'Ví dụ: A1205-MT'
+											: 'Ví dụ: CH-101'}
 										class="w-full rounded-lg border-2 border-black bg-white px-3 py-2 text-sm font-bold focus:ring-2 focus:ring-blue-300 focus:outline-none"
 									/>
 								</div>
@@ -1435,20 +1461,22 @@
 						{/if}
 
 						<div class="grid grid-cols-2 gap-4">
-							<div class="space-y-1">
-								<label for="quick-room-type" class="block text-xs font-bold text-zinc-600"
-									>Loại phòng</label
-								>
-								<RoomioSelect
-									id="quick-room-type"
-									bind:value={quickRoomType}
-									options={[
-										{ value: 'standard', label: 'Phòng thường' },
-										{ value: 'master', label: 'Phòng master' },
-										{ value: 'balcony', label: 'Phòng ban công' }
-									]}
-								/>
-							</div>
+							{#if !quickPropertyIsWholeUnit()}
+								<div class="space-y-1">
+									<label for="quick-room-type" class="block text-xs font-bold text-zinc-600"
+										>Loại phòng</label
+									>
+									<RoomioSelect
+										id="quick-room-type"
+										bind:value={quickRoomType}
+										options={[
+											{ value: 'standard', label: 'Phòng thường' },
+											{ value: 'master', label: 'Phòng master' },
+											{ value: 'balcony', label: 'Phòng ban công' }
+										]}
+									/>
+								</div>
+							{/if}
 							<div class="space-y-1">
 								<label for="quick-room-area" class="block text-xs font-bold text-zinc-600"
 									>Diện tích (m²)</label
@@ -1505,7 +1533,7 @@
 								disabled={isCreatingRoom}
 								class="modal-action flex cursor-pointer items-center justify-center gap-1.5 rounded-[6px] border-2 border-black bg-blue-300 px-4 py-2 text-xs font-black text-black shadow-secondary transition-all disabled:opacity-50"
 							>
-								<span class="modal-action-label">Tạo phòng</span>
+								<span class="modal-action-label">{quickRoomSubmitLabel()}</span>
 								{#if isCreatingRoom}
 									<Loader2 class="h-4 w-4 animate-spin" />
 								{/if}
