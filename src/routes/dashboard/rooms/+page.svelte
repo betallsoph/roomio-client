@@ -4,6 +4,16 @@
 	import { toast } from 'svelte-sonner';
 	import { confirmPopup } from '$lib/confirm-popup';
 	import RoomioSelect from '$lib/RoomioSelect.svelte';
+	import {
+		RENTAL_TYPE_OPTIONS,
+		parseRentalTypes,
+		propertyLabel as rentalPropertyLabel,
+		blockLabel as rentalBlockLabel,
+		propertyNamePlaceholder,
+		propertyHeadingLabel,
+		blockPlaceholder,
+		roomCodeLabel as rentalRoomCodeLabel
+	} from '$lib/rental-types';
 	import { X, Trash2, Loader2, LayoutGrid, List, Search } from '@lucide/svelte';
 
 	interface Service {
@@ -144,24 +154,6 @@
 	let editingAssetId = $state<string | null>(null);
 	let isAddingAsset = $state(false);
 	const TAP_ACTION_DELAY = 200;
-	const RENTAL_TYPE_OPTIONS = [
-		{
-			value: 'APARTMENT',
-			label: 'Share phòng chung cư / Co-living / Share phòng',
-			lines: ['Share phòng chung cư', 'Co-living', 'Share phòng']
-		},
-		{
-			value: 'MOTEL',
-			label: 'Phòng trọ truyền thống / Căn hộ dịch vụ',
-			lines: ['Phòng trọ truyền thống', 'Căn hộ dịch vụ']
-		},
-		{ value: 'DORM', label: 'KTX / Sleepbox', lines: ['KTX', 'Sleepbox'] },
-		{
-			value: 'WHOLE_UNIT',
-			label: 'Căn hộ chung cư nguyên căn / Nhà nguyên căn',
-			lines: ['Căn hộ chung cư nguyên căn', 'Nhà nguyên căn']
-		}
-	];
 
 	onMount(() => {
 		const sessionStr = localStorage.getItem('roomio_user');
@@ -182,14 +174,6 @@
 		fetchSettings();
 		loadInitialData(session.landlordProfileId);
 	});
-
-	function parseRentalTypes(value: string | null | undefined) {
-		const parsed = (value || 'APARTMENT')
-			.split(',')
-			.map((type) => type.trim())
-			.filter(Boolean);
-		return parsed.length > 0 ? parsed : ['APARTMENT'];
-	}
 
 	async function fetchSettings() {
 		try {
@@ -666,49 +650,23 @@
 	}
 
 	function propertyLabel() {
-		const type = activeRentalType();
-		if (type === 'COLIVING') return 'Chung cư / Co-living';
-		if (type === 'MOTEL') return 'Khu trọ';
-		if (type === 'SERVICED_APARTMENT') return 'Căn hộ dịch vụ';
-		if (type === 'DORM') return 'KTX / Sleepbox';
-		if (type === 'WHOLE_UNIT') return 'Nguyên căn';
-		return 'Tòa nhà';
+		return propertyHeadingLabel(activeRentalType());
 	}
 
 	function quickPropertyLabel(type = quickPropertyRentalType) {
-		if (type === 'COLIVING') return 'căn co-living';
-		if (type === 'MOTEL') return 'khu trọ';
-		if (type === 'SERVICED_APARTMENT') return 'tòa nhà căn hộ dịch vụ';
-		if (type === 'DORM') return 'khu KTX / sleepbox';
-		if (type === 'WHOLE_UNIT') return 'bất động sản nguyên căn';
-		return 'tòa nhà';
+		return rentalPropertyLabel(type);
 	}
 
 	function quickBlockLabel(type = quickPropertyRentalType) {
-		if (type === 'COLIVING') return 'Phòng share';
-		if (type === 'MOTEL') return 'Dãy';
-		if (type === 'SERVICED_APARTMENT') return 'Tầng / khu';
-		if (type === 'DORM') return 'Phòng / khu';
-		if (type === 'WHOLE_UNIT') return 'Cụm / dự án';
-		return 'Block';
+		return rentalBlockLabel(type);
 	}
 
 	function quickPropertyNamePlaceholder(type = quickPropertyRentalType) {
-		if (type === 'COLIVING') return 'Ví dụ: Co-living Thảo Điền';
-		if (type === 'MOTEL') return 'Ví dụ: Khu trọ An Bình';
-		if (type === 'SERVICED_APARTMENT') return 'Ví dụ: CHDV Nguyễn Trãi';
-		if (type === 'DORM') return 'Ví dụ: Sleepbox Cầu Giấy';
-		if (type === 'WHOLE_UNIT') return 'Ví dụ: Căn A1205 Masteri / Nhà nguyên căn Bình Thạnh';
-		return 'Ví dụ: Hoàng Anh Gia Lai 3';
+		return propertyNamePlaceholder(type);
 	}
 
 	function quickBlockPlaceholder(type = quickPropertyRentalType) {
-		if (type === 'COLIVING') return 'Ví dụ: Phòng 1, Phòng 2';
-		if (type === 'MOTEL') return 'Ví dụ: Dãy A, Dãy B';
-		if (type === 'SERVICED_APARTMENT') return 'Ví dụ: Tầng 1, Tầng 2';
-		if (type === 'DORM') return 'Ví dụ: Phòng nam, Phòng nữ';
-		if (type === 'WHOLE_UNIT') return 'Ví dụ: Masteri Thảo Điền, Nhà phố Quận 7';
-		return 'Ví dụ: A1, A2, B1, B2';
+		return blockPlaceholder(type);
 	}
 
 	function resetQuickPropertyForm() {
@@ -769,20 +727,11 @@
 	}
 
 	function blockLabel() {
-		const type = activeRentalType();
-		if (type === 'MOTEL') return 'Dãy';
-		if (type === 'SERVICED_APARTMENT') return 'Tầng / khu';
-		if (type === 'DORM') return 'Phòng / khu';
-		if (type === 'WHOLE_UNIT') return 'Cụm / dự án';
-		return 'Block';
+		return rentalBlockLabel(activeRentalType());
 	}
 
 	function roomCodeLabel() {
-		const type = activeRentalType();
-		if (type === 'MOTEL') return 'Mã phòng';
-		if (type === 'DORM') return 'Mã giường / box';
-		if (type === 'WHOLE_UNIT') return 'Mã căn/nhà';
-		return 'Mã căn hộ';
+		return rentalRoomCodeLabel(activeRentalType());
 	}
 
 	// Gom các phòng trong property hiện tại theo MÃ CĂN (một mã căn có thể chứa nhiều phòng)
