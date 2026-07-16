@@ -3,6 +3,12 @@
 	import { Check, Loader2, X } from '@lucide/svelte';
 	import { toast } from 'svelte-sonner';
 	import { confirmPopup } from '$lib/confirm-popup';
+	import {
+		RENTAL_TYPE_OPTIONS,
+		isColivingPricingType,
+		pricingGroupLabel,
+		rentalTypeLabel
+	} from '$lib/rental-types';
 
 	type Period = 'MONTHLY' | 'YEARLY';
 
@@ -56,28 +62,6 @@
 		{ value: 'ROOMS_101_150', label: '101–150 phòng', minRooms: 101, maxRooms: 150 },
 		{ value: 'ROOMS_151_PLUS', label: 'Trên 150 phòng', minRooms: 151, maxRooms: null }
 	];
-	const RENTAL_TYPE_OPTIONS = [
-		{
-			value: 'APARTMENT',
-			label: 'Share phòng chung cư / Co-living / Share phòng',
-			lines: ['Share phòng chung cư', 'Co-living', 'Share phòng']
-		},
-		{
-			value: 'MOTEL',
-			label: 'Phòng trọ truyền thống / Căn hộ dịch vụ',
-			lines: ['Phòng trọ truyền thống', 'Căn hộ dịch vụ']
-		},
-		{ value: 'DORM', label: 'KTX / Sleepbox', lines: ['KTX', 'Sleepbox'] },
-		{
-			value: 'WHOLE_UNIT',
-			label: 'Căn hộ chung cư nguyên căn / Nhà nguyên căn',
-			lines: ['Căn hộ chung cư nguyên căn', 'Nhà nguyên căn']
-		}
-	];
-
-	function isColivingPricingType(type: string) {
-		return type === 'APARTMENT' || type === 'COLIVING';
-	}
 
 	let isLoading = $state(true);
 	let isQuoteLoading = $state(false);
@@ -265,12 +249,6 @@
 		return TIER_OPTIONS.find((option) => option.value === tier)?.label ?? tier;
 	}
 
-	function rentalTypeLabel(type: string) {
-		if (type === 'COLIVING') return 'Share phòng chung cư / Co-living / Share phòng';
-		if (type === 'SERVICED_APARTMENT') return 'Phòng trọ truyền thống / Căn hộ dịch vụ';
-		return RENTAL_TYPE_OPTIONS.find((option) => option.value === type)?.label ?? type;
-	}
-
 	function roomAdditionEntries(value: string | null) {
 		if (!value) return [];
 		try {
@@ -345,13 +323,16 @@
 						{quote.actualRoomCounts.standard + quote.actualRoomCounts.coliving} đơn vị
 					</p>
 					<p class="text-[10px] font-bold text-zinc-500">
-						{quote.actualRoomCounts.standard} trọ/CHDV/KTX/Sleepbox/nguyên căn + {quote.actualRoomCounts
-							.coliving} share phòng/co-living
+						{quote.actualRoomCounts.standard}
+						<span title={pricingGroupLabel('STANDARD')}>{pricingGroupLabel('STANDARD', true)}</span>
+						+ {quote.actualRoomCounts.coliving}
+						<span title={pricingGroupLabel('COLIVING')}>{pricingGroupLabel('COLIVING', true)}</span>
 					</p>
 					{#if quote.activeSubscription.standardRoomLimit !== null || quote.activeSubscription.colivingRoomLimit !== null}
 						<p class="mt-1 text-[10px] font-black text-blue-800">
-							Hạn mức {quote.activeSubscription.standardRoomLimit ?? 0} + {quote.activeSubscription
-								.colivingRoomLimit ?? 0}
+							Hạn mức {pricingGroupLabel('STANDARD', true)}: {quote.activeSubscription
+								.standardRoomLimit ?? 'Chưa đặt'} · {pricingGroupLabel('COLIVING', true)}: {quote
+								.activeSubscription.colivingRoomLimit ?? 'Chưa đặt'}
 						</p>
 					{/if}
 				</div>
@@ -413,8 +394,10 @@
 					</div>
 				{/if}
 				<p class="text-[10px] font-bold text-zinc-500">
-					Sau điều chỉnh: {plannedStandardRooms} trọ/CHDV/KTX/Sleepbox/nguyên căn + {plannedColivingRooms}
-					share phòng/co-living.
+					Sau điều chỉnh: {plannedStandardRooms}
+					<span title={pricingGroupLabel('STANDARD')}>{pricingGroupLabel('STANDARD', true)}</span>
+					+ {plannedColivingRooms}
+					<span title={pricingGroupLabel('COLIVING')}>{pricingGroupLabel('COLIVING', true)}</span>.
 					Hệ thống cộng phần mở rộng vào hạn mức hiện tại để tính giá.
 				</p>
 			</div>
@@ -465,9 +448,9 @@
 					</p>
 				{:else}
 					<p class="mt-2 text-xs font-bold text-zinc-600">
-						{quote.colivingRoomCount > 0
-							? 'Áp dụng bảng giá Co-living.'
-							: 'Áp dụng bảng giá trọ / CHDV / Sleepbox / nguyên căn.'}
+						Áp dụng {quote.colivingRoomCount > 0
+							? pricingGroupLabel('COLIVING')
+							: pricingGroupLabel('STANDARD')}.
 					</p>
 				{/if}
 			</div>
@@ -521,8 +504,10 @@
 									).toLocaleDateString('vi-VN')}
 								</p>
 								<p class="mt-1 text-xs font-bold text-zinc-500">
-									Dự kiến {request.standardRoomCount} trọ/CHDV/KTX/Sleepbox/nguyên căn + {request
-										.colivingRoomCount} share phòng/co-living
+									Dự kiến {request.standardRoomCount}
+									<span title={pricingGroupLabel('STANDARD')}>{pricingGroupLabel('STANDARD', true)}</span>
+									+ {request.colivingRoomCount}
+									<span title={pricingGroupLabel('COLIVING')}>{pricingGroupLabel('COLIVING', true)}</span>
 								</p>
 								{#if request.requestedRentalTypes}
 									<p class="mt-1 text-xs font-bold text-blue-700">
