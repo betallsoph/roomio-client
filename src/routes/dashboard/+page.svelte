@@ -3,6 +3,7 @@
 	import { goto } from '$app/navigation';
 	import { toast } from 'svelte-sonner';
 	import { Check, Loader2, Play, ArrowRight } from '@lucide/svelte';
+	import { rentalTypeShortLabel, RENTAL_TYPES } from '$lib/rental-types';
 
 	interface DashboardStats {
 		totalRevenue: number;
@@ -11,6 +12,9 @@
 		expiringContracts: number;
 		totalRooms: number;
 		occupiedRooms: number;
+		roomBreakdownByRentalType?: Partial<
+			Record<'APARTMENT' | 'MOTEL' | 'DORM' | 'WHOLE_UNIT', number>
+		>;
 	}
 
 	interface Invoice {
@@ -76,6 +80,15 @@
 	let unpaidInvoices = $state<Invoice[]>([]);
 	let pendingRequests = $state<MaintenanceRequest[]>([]);
 	let inbox = $state<InboxData>({ counts: {}, items: [] });
+
+	const roomBreakdownChips = $derived.by(() => {
+		const breakdown = stats.roomBreakdownByRentalType;
+		if (!breakdown || Object.keys(breakdown).length === 0) return [];
+		const chips = RENTAL_TYPES.filter((type) => (breakdown[type] ?? 0) > 0).map(
+			(type) => [type, breakdown[type]!] as const
+		);
+		return chips.length >= 2 ? chips : [];
+	});
 
 	onMount(() => {
 		today = new Date().toLocaleDateString('vi-VN', {
@@ -208,6 +221,17 @@
 				<p class="mt-0.5 text-xs font-black text-black">
 					{stats.totalRooms > 0 ? Math.round((stats.occupiedRooms / stats.totalRooms) * 100) : 0}%
 				</p>
+				{#if roomBreakdownChips.length >= 2}
+					<div class="mt-1 flex flex-wrap justify-center gap-0.5">
+						{#each roomBreakdownChips as [type, count] (type)}
+							<span
+								class="rounded-full border border-black bg-zinc-100 px-1.5 py-px text-[8px] font-bold text-zinc-700"
+							>
+								{rentalTypeShortLabel(type)}: {count}
+							</span>
+						{/each}
+					</div>
+				{/if}
 			</div>
 			<div class="flex-1 px-2 py-3">
 				<p class="text-[9px] font-bold text-zinc-400">Chưa đóng</p>
@@ -242,6 +266,17 @@
 								: 0}%
 						</span>
 					</h3>
+					{#if roomBreakdownChips.length >= 2}
+						<div class="mt-2 flex flex-wrap gap-1">
+							{#each roomBreakdownChips as [type, count] (type)}
+								<span
+									class="rounded-full border border-black bg-zinc-100 px-2 py-0.5 text-[9px] font-bold text-zinc-700"
+								>
+									{rentalTypeShortLabel(type)}: {count}
+								</span>
+							{/each}
+						</div>
+					{/if}
 				</div>
 
 				<!-- Card 3: Unpaid Bills -->
