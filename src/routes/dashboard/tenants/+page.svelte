@@ -2048,9 +2048,9 @@
 					{#if selectedTenant.rooms[0]}
 						<button
 							onclick={() => handleCheckout(selectedTenant!.rooms[0].id)}
-							class="flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-[6px] border-2 border-black bg-red-200 py-2.5 text-center text-xs font-black text-red-800 shadow-secondary transition-all hover:bg-red-300"
+							class="flex flex-1 cursor-pointer items-center justify-center rounded-[6px] border-2 border-black bg-red-200 py-2.5 text-center text-xs font-black text-red-800 shadow-secondary transition-all hover:bg-red-300"
 						>
-							Trả phòng (Checkout)
+							Trả phòng
 						</button>
 					{/if}
 					<button

@@ -4,27 +4,7 @@
 	import { toast } from 'svelte-sonner';
 	import { confirmPopup } from '$lib/confirm-popup';
 	import RoomioSelect from '$lib/RoomioSelect.svelte';
-	import {
-		Home,
-		Building2,
-		X,
-		User,
-		Receipt,
-		Zap,
-		Droplet,
-		Wifi,
-		Trash2,
-		Wrench,
-		FileText,
-		Check,
-		Loader2,
-		LogOut,
-		CheckCircle2,
-		ArrowRight,
-		LayoutGrid,
-		List,
-		Search
-	} from '@lucide/svelte';
+	import { X, Trash2, Loader2, LayoutGrid, List, Search } from '@lucide/svelte';
 
 	interface Service {
 		id: string;
@@ -125,7 +105,6 @@
 	// Detail Modal / Drawer states
 	let selectedRoom = $state<Room | null>(null);
 	let isDetailOpen = $state(false);
-	let activeTab = $state<'general' | 'services' | 'meters' | 'assets'>('general');
 	let detailPaymentAccountId = $state('');
 
 	// Add Room Dialog states
@@ -264,7 +243,6 @@
 	function openRoomDetail(room: Room) {
 		selectedRoom = room;
 		detailPaymentAccountId = room.paymentAccountId ?? defaultPaymentAccountId();
-		activeTab = 'general';
 		isDetailOpen = true;
 	}
 
@@ -1692,542 +1670,462 @@
 
 				<div class="flex min-h-0 flex-1 flex-col p-6">
 					<div class="flex min-h-0 flex-1 flex-col">
-						<!-- Header Title Info -->
-						<div class="flex shrink-0 items-center gap-3">
-							<Home class="h-6 w-6 text-blue-500" />
-							<div>
-								<h3 class="text-lg leading-none font-black text-black">
-									Phòng {selectedRoom.roomNumber}
-								</h3>
-								<p class="mt-1.5 text-xs font-bold text-zinc-600">
-									{getRoomCardMeta(selectedRoom) ? `${getRoomCardMeta(selectedRoom)} | ` : ''}Loại:
-									{getRoomTypeLabel(selectedRoom.roomType)} | Diện tích: {selectedRoom.area ||
-										'--'}m² | Tầng: {selectedRoom.floor || '--'}
-								</p>
-							</div>
+						<div class="shrink-0">
+							<h3 class="text-xl leading-tight font-black text-blue-600">
+								Phòng {selectedRoom.roomNumber}
+							</h3>
+							<p class="mt-1.5 text-xs leading-relaxed font-bold text-zinc-600">
+								{getRoomCardMeta(selectedRoom)
+									? `${getRoomCardMeta(selectedRoom)} · `
+									: ''}{getRoomTypeLabel(selectedRoom.roomType)}
+								· {selectedRoom.area || '--'}m² · Tầng {selectedRoom.floor || '--'}
+							</p>
 						</div>
 
-						<!-- Tab Selector inside Drawer -->
-						<div
-							class="mt-4 flex shrink-0 gap-1 rounded-lg border-2 border-b border-black border-black/15 bg-white/50 p-1 select-none"
-						>
-							<button
-								onclick={(e) => tapBounce(e, () => (activeTab = 'general'))}
-								class="flex-1 cursor-pointer rounded-[6px] py-1.5 text-xs font-black transition-all {activeTab ===
-								'general'
-									? 'border border-black bg-blue-300 text-black'
-									: 'border border-transparent text-zinc-500 hover:text-black'}"
+						<div class="min-h-0 flex-1 space-y-6 overflow-y-auto py-5">
+							<section
+								class="rounded-lg border-2 border-black px-4 py-3 {selectedRoom.status === 'empty'
+									? 'bg-white'
+									: selectedRoom.status === 'paid'
+										? 'bg-green-50'
+										: 'bg-red-50'}"
 							>
-								Chung
-							</button>
-							<button
-								onclick={(e) => tapBounce(e, () => (activeTab = 'services'))}
-								class="flex-1 cursor-pointer rounded-[6px] py-1.5 text-xs font-black transition-all {activeTab ===
-								'services'
-									? 'border border-black bg-blue-300 text-black'
-									: 'border border-transparent text-zinc-500 hover:text-black'}"
-							>
-								Dịch vụ
-							</button>
-							<button
-								onclick={(e) => tapBounce(e, () => (activeTab = 'meters'))}
-								class="flex-1 cursor-pointer rounded-[6px] py-1.5 text-xs font-black transition-all {activeTab ===
-								'meters'
-									? 'border border-black bg-blue-300 text-black'
-									: 'border border-transparent text-zinc-500 hover:text-black'}"
-							>
-								Ghi số
-							</button>
-							<button
-								onclick={(e) => tapBounce(e, () => (activeTab = 'assets'))}
-								class="flex-1 cursor-pointer rounded-[6px] py-1.5 text-xs font-black transition-all {activeTab ===
-								'assets'
-									? 'border border-black bg-blue-300 text-black'
-									: 'border border-transparent text-zinc-500 hover:text-black'}"
-							>
-								Tài sản
-							</button>
-						</div>
-
-						<!-- Tab Content Scrollable -->
-						<div class="min-h-0 flex-1 space-y-4 overflow-y-auto py-4">
-							<!-- GENERAL TAB -->
-							{#if activeTab === 'general'}
-								<div class="space-y-4">
-									<!-- Status Card -->
-									<div
-										class="flex items-center justify-between rounded-lg border-2 border-black p-4 shadow-secondary {selectedRoom.status ===
-										'empty'
-											? 'bg-white'
-											: selectedRoom.status === 'paid'
-												? 'bg-green-200'
-												: 'bg-red-200'}"
-									>
-										<div>
-											<span class="text-xs font-black text-zinc-600">Trạng thái phòng</span>
-											<h4
-												class="mt-1 text-sm font-black {selectedRoom.status === 'empty'
-													? 'text-zinc-700'
-													: selectedRoom.status === 'paid'
-														? 'text-green-850'
-														: 'text-red-850'}"
-											>
-												{selectedRoom.status === 'empty'
-													? 'Đang trống'
-													: selectedRoom.status === 'paid'
-														? 'Đã đóng tiền'
-														: 'Còn nợ tiền nhà'}
-											</h4>
-										</div>
-										{#if selectedRoom.status !== 'empty'}
-											<div class="text-right">
-												<span class="text-xs font-black text-zinc-600">Số tiền đang nợ</span>
-												<p class="text-red-650 mt-1 text-lg font-black">
-													{formatCurrency(selectedRoom.debtAmount)}
-												</p>
-											</div>
-										{/if}
+								<div class="flex items-start justify-between gap-4">
+									<div>
+										<p class="text-xs font-bold text-zinc-500">Trạng thái phòng</p>
+										<p
+											class="mt-1 text-lg font-black {selectedRoom.status === 'empty'
+												? 'text-zinc-800'
+												: selectedRoom.status === 'paid'
+													? 'text-green-700'
+													: 'text-red-700'}"
+										>
+											{selectedRoom.status === 'empty'
+												? 'Đang trống'
+												: selectedRoom.status === 'paid'
+													? 'Đã đóng tiền'
+													: 'Còn nợ tiền nhà'}
+										</p>
 									</div>
-
-									{#if paymentAccounts.length > 0}
-										<div class="space-y-2">
-											<h4 class="text-sm font-black text-blue-600">Tài khoản nhận tiền</h4>
-											<div class="flex gap-2">
-												<div class="min-w-0 flex-1">
-													<RoomioSelect
-														id="room-detail-payment-account"
-														bind:value={detailPaymentAccountId}
-														options={paymentAccountOptions()}
-														compact
-													/>
-												</div>
-												<button
-													type="button"
-													onclick={(e) => tapBounce(e, () => void updateRoomPaymentAccount())}
-													class="modal-action shrink-0 cursor-pointer rounded-[6px] border-2 border-black bg-blue-300 px-3 py-2 text-xs font-black text-black shadow-secondary transition-all"
-												>
-													<span class="modal-action-label">Lưu</span>
-												</button>
-											</div>
-											<p class="text-[11px] font-bold text-zinc-500">
-												Hóa đơn mới của phòng này sẽ dùng tài khoản đang chọn.
+									{#if selectedRoom.status !== 'empty'}
+										<div class="text-right">
+											<p class="text-xs font-bold text-zinc-500">Số tiền đang nợ</p>
+											<p
+												class="mt-1 text-lg font-black {selectedRoom.debtAmount > 0
+													? 'text-red-650'
+													: 'text-black'}"
+											>
+												{formatCurrency(selectedRoom.debtAmount)}
 											</p>
 										</div>
 									{/if}
+								</div>
+							</section>
 
-									<!-- Tenant Details -->
-									<div
-										class="space-y-3 rounded-lg border-2 border-black bg-white p-4 shadow-secondary"
-									>
-										<h4 class="text-sm font-black text-blue-600">Thông tin khách thuê</h4>
-										{#if selectedRoom.tenant}
-											<div class="grid grid-cols-2 gap-3 text-sm font-semibold">
-												<div>
-													<p class="text-xs font-bold text-zinc-400">Họ và tên</p>
-													<p class="font-bold text-black">{selectedRoom.tenant.user.name}</p>
-												</div>
-												<div>
-													<p class="text-xs font-bold text-zinc-400">Số điện thoại</p>
-													<p class="font-bold text-black">{selectedRoom.tenant.user.phone}</p>
-												</div>
-												<div>
-													<p class="text-xs font-bold text-zinc-400">Ngày dọn vào</p>
-													<p class="font-bold text-black">
-														{new Date(selectedRoom.tenant.moveInDate).toLocaleDateString('vi-VN')}
-													</p>
-												</div>
-												<div>
-													<p class="text-xs font-bold text-zinc-400">Tiền đặt cọc</p>
-													<p class="text-green-650 font-black">
-														{formatCurrency(selectedRoom.tenant.deposit)}
-													</p>
-												</div>
-											</div>
-										{:else}
-											<div class="space-y-3 py-4 text-center">
-												<p class="text-sm font-semibold text-zinc-500">
-													Chưa có thông tin khách thuê phòng này.
-												</p>
-												<a
-													href="/dashboard/tenants"
-													class="modal-action inline-flex rounded-[6px] border-2 border-black bg-blue-300 px-4 py-2 text-xs font-black text-black shadow-secondary transition-all"
-												>
-													<span class="modal-action-label">Đến trang Thêm khách thuê</span>
-													<ArrowRight class="h-3.5 w-3.5" />
-												</a>
-											</div>
-										{/if}
+							<section class="space-y-3">
+								<h4 class="text-sm font-black text-blue-600">Khách đang ở</h4>
+								{#if selectedRoom.tenant}
+									<div class="grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
+										<div>
+											<p class="text-xs font-bold text-zinc-500">Họ và tên</p>
+											<p class="mt-0.5 font-black text-black">{selectedRoom.tenant.user.name}</p>
+										</div>
+										<div>
+											<p class="text-xs font-bold text-zinc-500">Số điện thoại</p>
+											<p class="mt-0.5 font-black text-black">{selectedRoom.tenant.user.phone}</p>
+										</div>
+										<div>
+											<p class="text-xs font-bold text-zinc-500">Ngày dọn vào</p>
+											<p class="mt-0.5 font-black text-black">
+												{new Date(selectedRoom.tenant.moveInDate).toLocaleDateString('vi-VN')}
+											</p>
+										</div>
+										<div>
+											<p class="text-xs font-bold text-zinc-500">Tiền đặt cọc</p>
+											<p class="text-green-650 mt-0.5 font-black">
+												{formatCurrency(selectedRoom.tenant.deposit)}
+											</p>
+										</div>
 									</div>
+								{:else}
+									<div class="rounded-lg bg-blue-50 px-4 py-5 text-center">
+										<p class="text-sm font-bold text-zinc-500">Phòng này đang trống.</p>
+										<a
+											href="/dashboard/tenants"
+											class="modal-action mt-3 inline-flex rounded-[6px] border-2 border-black bg-blue-300 px-4 py-2 text-xs font-black text-black shadow-secondary transition-all"
+										>
+											<span class="modal-action-label">Thêm khách thuê</span>
+										</a>
+									</div>
+								{/if}
+							</section>
+
+							{#if paymentAccounts.length > 0}
+								<section class="space-y-3">
+									<h4 class="text-sm font-black text-blue-600">Tài khoản nhận tiền</h4>
+									<div class="flex gap-2">
+										<div class="min-w-0 flex-1">
+											<RoomioSelect
+												id="room-detail-payment-account"
+												bind:value={detailPaymentAccountId}
+												options={paymentAccountOptions()}
+												compact
+											/>
+										</div>
+										<button
+											type="button"
+											onclick={(e) => tapBounce(e, () => void updateRoomPaymentAccount())}
+											class="modal-action shrink-0 cursor-pointer rounded-[6px] border-2 border-black bg-blue-300 px-3 py-2 text-xs font-black text-black shadow-secondary transition-all"
+										>
+											<span class="modal-action-label">Lưu</span>
+										</button>
+									</div>
+									<p class="text-[11px] font-bold text-zinc-500">
+										Hóa đơn mới của phòng này sẽ dùng tài khoản đang chọn.
+									</p>
+								</section>
+							{/if}
+
+							<section class="space-y-3 border-t border-zinc-200 pt-5">
+								<div class="flex items-end justify-between gap-3">
+									<div>
+										<h4 class="text-sm font-black text-blue-600">Dịch vụ tính tiền</h4>
+										<p class="mt-1 text-[11px] font-bold text-zinc-500">
+											Giá riêng chỉ áp dụng cho phòng này.
+										</p>
+									</div>
+									{#if selectedRoom.services.length > 0}
+										<button
+											onclick={(e) =>
+												tapBounce(e, () =>
+													saveServiceConfig(
+														selectedRoom!.id,
+														selectedRoom!.services.map((s) => ({
+															serviceId: s.serviceId,
+															customRate: s.customRate === null ? null : s.customRate.toString(),
+															quantity: s.quantity
+														}))
+													)
+												)}
+											class="modal-action cursor-pointer rounded-[6px] border-2 border-black bg-blue-300 px-3 py-2 text-xs font-black text-black shadow-secondary transition-all"
+										>
+											<span class="modal-action-label">Lưu dịch vụ</span>
+										</button>
+									{/if}
 								</div>
 
-								<!-- SERVICES TAB -->
-							{:else if activeTab === 'services'}
-								<div class="space-y-4">
-									<div
-										class="space-y-3 rounded-lg border-2 border-black bg-white p-4 shadow-secondary"
+								{#if selectedRoom.services.length === 0}
+									<p
+										class="rounded-lg bg-zinc-50 px-4 py-4 text-center text-xs font-bold text-zinc-400"
 									>
-										<div class="flex items-center justify-between border-b pb-2">
-											<h4 class="text-xs font-black text-zinc-500">Dịch vụ phòng trọ sử dụng</h4>
-											<span class="text-[10px] font-bold text-zinc-400"
-												>Nhấn Lưu để đổi biểu phí riêng</span
+										Phòng này chưa gắn dịch vụ tính tiền.
+									</p>
+								{:else}
+									<div class="divide-y divide-zinc-200">
+										{#each selectedRoom.services as config}
+											<div
+												class="flex flex-col gap-3 py-3 sm:flex-row sm:items-center sm:justify-between"
 											>
-										</div>
+												<div>
+													<p class="text-sm font-black text-black">{config.service.name}</p>
+													<p class="mt-0.5 text-xs font-bold text-zinc-500">
+														Giá chuẩn {formatCurrency(config.service.defaultRate)} · {serviceTypeLabel(
+															config.service.type
+														)}
+													</p>
+												</div>
+												<div class="flex items-end gap-2">
+													<label class="block text-[10px] font-black text-zinc-500">
+														Giá riêng
+														<input
+															type="number"
+															placeholder="Kế thừa"
+															value={config.customRate}
+															oninput={(e) => {
+																const val = (e.target as HTMLInputElement).value;
+																config.customRate = val === '' ? null : Number(val);
+															}}
+															class="mt-1 w-24 rounded-lg border-2 border-black bg-white px-2 py-1.5 text-xs font-bold text-black focus:outline-none"
+														/>
+													</label>
 
-										<div class="divide-y divide-zinc-200">
-											{#each selectedRoom.services as config}
-												<div
-													class="flex flex-col items-start justify-between gap-3 py-3 sm:flex-row sm:items-center"
-												>
-													<div>
-														<p class="text-sm font-bold text-black">{config.service.name}</p>
-														<p class="mt-0.5 text-xs font-semibold text-zinc-500">
-															Giá chuẩn: {formatCurrency(config.service.defaultRate)} | Loại: {serviceTypeLabel(
-																config.service.type
-															)}
-														</p>
-													</div>
-													<div class="flex items-center gap-2">
-														<div class="space-y-1">
-															<span class="block text-[9px] font-black text-zinc-400"
-																>Giá riêng (đ)</span
-															>
+													{#if config.service.type.startsWith('FLAT_')}
+														<label class="block text-[10px] font-black text-zinc-500">
+															Số lượng
 															<input
 																type="number"
-																placeholder="Kế thừa"
-																value={config.customRate}
-																oninput={(e) => {
-																	const val = (e.target as HTMLInputElement).value;
-																	config.customRate = val === '' ? null : Number(val);
-																}}
-																class="w-24 rounded-lg border-2 border-black bg-white px-2 py-1 text-xs font-bold focus:outline-none"
+																bind:value={config.quantity}
+																min="1"
+																class="mt-1 w-16 rounded-lg border-2 border-black bg-white px-2 py-1.5 text-xs font-bold text-black focus:outline-none"
 															/>
-														</div>
+														</label>
+													{/if}
+												</div>
+											</div>
+										{/each}
+									</div>
+								{/if}
+							</section>
 
-														{#if config.service.type.startsWith('FLAT_')}
-															<div class="space-y-1">
-																<span class="block text-[9px] font-black text-zinc-400"
-																	>Số lượng</span
-																>
-																<input
-																	type="number"
-																	bind:value={config.quantity}
-																	min="1"
-																	class="w-16 rounded-lg border-2 border-black bg-white px-2 py-1 text-xs font-bold focus:outline-none"
-																/>
-															</div>
-														{/if}
+							<section class="space-y-3 border-t border-zinc-200 pt-5">
+								<h4 class="text-sm font-black text-blue-600">Ghi chỉ số</h4>
+								{#if selectedRoom.services.filter((service) => service.service.type === 'METERED').length === 0}
+									<p
+										class="rounded-lg bg-zinc-50 px-4 py-4 text-center text-xs font-bold text-zinc-400"
+									>
+										Phòng này chưa có dịch vụ điện/nước dạng nhập chỉ số.
+									</p>
+								{:else}
+									<form onsubmit={handleLogMeter} class="space-y-3">
+										<div class="grid grid-cols-2 gap-3">
+											<div class="space-y-1">
+												<label for="m-serv" class="block text-[10px] font-black text-zinc-500"
+													>Dịch vụ</label
+												>
+												<RoomioSelect
+													id="m-serv"
+													bind:value={meterServiceId}
+													required
+													options={[
+														{ value: '', label: 'Chọn dịch vụ' },
+														...selectedRoom.services
+															.filter((service) => service.service.type === 'METERED')
+															.map((service) => ({
+																value: service.serviceId,
+																label: service.service.name
+															}))
+													]}
+													compact
+												/>
+											</div>
+											<div class="space-y-1">
+												<label for="m-month" class="block text-[10px] font-black text-zinc-500"
+													>Tháng ghi</label
+												>
+												<input
+													id="m-month"
+													type="month"
+													bind:value={meterMonth}
+													required
+													class="w-full rounded-lg border-2 border-black bg-white px-2.5 py-1.5 text-xs font-semibold text-black focus:outline-none"
+												/>
+											</div>
+										</div>
+
+										<div class="grid grid-cols-2 gap-3">
+											<div class="space-y-1">
+												<label for="m-prev" class="block text-[10px] font-black text-zinc-500"
+													>Chỉ số cũ</label
+												>
+												<input
+													id="m-prev"
+													type="number"
+													bind:value={meterPrev}
+													required
+													placeholder="Số cũ"
+													class="w-full rounded-lg border-2 border-black bg-white px-2.5 py-1.5 text-xs font-black text-black focus:outline-none"
+												/>
+											</div>
+											<div class="space-y-1">
+												<label for="m-curr" class="block text-[10px] font-black text-zinc-500"
+													>Chỉ số mới</label
+												>
+												<input
+													id="m-curr"
+													type="number"
+													bind:value={meterCurr}
+													required
+													placeholder="Số mới"
+													class="w-full rounded-lg border-2 border-black bg-white px-2.5 py-1.5 text-xs font-black text-black focus:outline-none"
+												/>
+											</div>
+										</div>
+
+										<div class="flex justify-end">
+											<button
+												type="submit"
+												disabled={isLoggingMeter}
+												class="modal-action flex cursor-pointer items-center gap-1.5 rounded-[6px] border-2 border-black bg-blue-300 px-4 py-2 text-xs font-black text-black shadow-secondary transition-all"
+											>
+												<span class="modal-action-label">Ghi chỉ số</span>
+												{#if isLoggingMeter}
+													<Loader2 class="h-3 w-3 animate-spin" />
+												{/if}
+											</button>
+										</div>
+									</form>
+								{/if}
+
+								<div>
+									<p class="mb-1.5 text-xs font-black text-zinc-500">Lịch sử gần đây</p>
+									{#if selectedRoom.meterReadings.length === 0}
+										<p class="py-2 text-xs font-bold text-zinc-400">Chưa có lịch sử ghi số.</p>
+									{:else}
+										<div class="divide-y divide-zinc-200">
+											{#each selectedRoom.meterReadings.slice(0, 4) as read}
+												{@const sName =
+													selectedRoom.services.find((s) => s.serviceId === read.serviceId)?.service
+														.name || 'Dịch vụ'}
+												<div class="flex items-center justify-between gap-3 py-2 text-xs font-bold">
+													<div>
+														<p class="font-black text-black">{sName} · {read.month}</p>
+														<p class="mt-0.5 text-zinc-500">
+															{read.prevValue} → {read.currValue} · tiêu thụ {read.currValue -
+																read.prevValue}
+														</p>
 													</div>
+													<p class="shrink-0 text-zinc-400">
+														{new Date(read.recordedAt).toLocaleDateString('vi-VN')}
+													</p>
 												</div>
 											{/each}
 										</div>
+									{/if}
+								</div>
+							</section>
 
-										<div class="flex justify-end border-t pt-3">
-											<button
-												onclick={(e) =>
-													tapBounce(e, () =>
-														saveServiceConfig(
-															selectedRoom!.id,
-															selectedRoom!.services.map((s) => ({
-																serviceId: s.serviceId,
-																customRate: s.customRate === null ? null : s.customRate.toString(),
-																quantity: s.quantity
-															}))
-														)
-													)}
-												class="modal-action cursor-pointer rounded-[6px] border-2 border-black bg-blue-300 px-4 py-2 text-xs font-black text-black shadow-secondary transition-all"
+							<section class="space-y-3 border-t border-zinc-200 pt-5">
+								<div class="flex items-end justify-between gap-3">
+									<div>
+										<h4 class="text-sm font-black text-blue-600">Tài sản bàn giao</h4>
+										<p class="mt-1 text-[11px] font-bold text-zinc-500">
+											Ghi nhanh đồ đạc để tiện bàn giao và checkout.
+										</p>
+									</div>
+								</div>
+
+								<form onsubmit={handleAddAsset} class="space-y-3">
+									<div class="grid grid-cols-2 gap-3">
+										<div class="space-y-1">
+											<label for="a-name" class="block text-[10px] font-black text-zinc-500"
+												>Tên thiết bị</label
 											>
-												<span class="modal-action-label">Lưu cấu hình dịch vụ</span>
-											</button>
+											<input
+												id="a-name"
+												type="text"
+												bind:value={assetName}
+												required
+												placeholder="Ví dụ: Máy điều hòa LG"
+												class="w-full rounded-lg border-2 border-black bg-white px-2.5 py-1.5 text-xs font-bold focus:outline-none"
+											/>
+										</div>
+										<div class="space-y-1">
+											<label for="a-code" class="block text-[10px] font-black text-zinc-500"
+												>Mã kiểm kê</label
+											>
+											<input
+												id="a-code"
+												type="text"
+												bind:value={assetCode}
+												placeholder="Ví dụ: ML-01"
+												class="w-full rounded-lg border-2 border-black bg-white px-2.5 py-1.5 text-xs font-bold focus:outline-none"
+											/>
 										</div>
 									</div>
-								</div>
 
-								<!-- METERS TAB -->
-							{:else if activeTab === 'meters'}
-								<div class="space-y-4">
-									<!-- Log Meter Reading Form -->
-									<div
-										class="space-y-3 rounded-lg border-2 border-black bg-white p-4 shadow-secondary"
-									>
-										<h4 class="text-sm font-black text-blue-600">Nhập chỉ số điện/nước mới</h4>
-										<form onsubmit={handleLogMeter} class="space-y-3">
-											<div class="grid grid-cols-2 gap-3">
-												<div class="space-y-1">
-													<label for="m-serv" class="block text-[10px] font-black text-zinc-500"
-														>Dịch vụ</label
-													>
-													<RoomioSelect
-														id="m-serv"
-														bind:value={meterServiceId}
-														required
-														options={[
-															{ value: '', label: 'Chọn dịch vụ' },
-															...selectedRoom.services
-																.filter((service) => service.service.type === 'METERED')
-																.map((service) => ({
-																	value: service.serviceId,
-																	label: service.service.name
-																}))
-														]}
-														compact
-													/>
-												</div>
-												<div class="space-y-1">
-													<label for="m-month" class="block text-[10px] font-black text-zinc-500"
-														>Tháng ghi</label
-													>
-													<input
-														id="m-month"
-														type="month"
-														bind:value={meterMonth}
-														required
-														class="w-full rounded-lg border-2 border-black bg-white px-2.5 py-1.5 text-xs font-semibold text-black focus:outline-none"
-													/>
-												</div>
-											</div>
-
-											<div class="grid grid-cols-2 gap-3">
-												<div class="space-y-1">
-													<label for="m-prev" class="block text-[10px] font-black text-zinc-500"
-														>Chỉ số cũ</label
-													>
-													<input
-														id="m-prev"
-														type="number"
-														bind:value={meterPrev}
-														required
-														placeholder="Số cũ"
-														class="w-full rounded-lg border-2 border-black bg-white px-2.5 py-1.5 text-xs font-black text-black focus:outline-none"
-													/>
-												</div>
-												<div class="space-y-1">
-													<label for="m-curr" class="block text-[10px] font-black text-zinc-500"
-														>Chỉ số mới</label
-													>
-													<input
-														id="m-curr"
-														type="number"
-														bind:value={meterCurr}
-														required
-														placeholder="Số mới"
-														class="w-full rounded-lg border-2 border-black bg-white px-2.5 py-1.5 text-xs font-black text-black focus:outline-none"
-													/>
-												</div>
-											</div>
-
-											<div class="flex justify-end pt-2">
-												<button
-													type="submit"
-													disabled={isLoggingMeter}
-													class="modal-action flex cursor-pointer items-center gap-1.5 rounded-[6px] border-2 border-black bg-blue-300 px-4 py-2 text-xs font-black text-black shadow-secondary transition-all"
-												>
-													<span class="modal-action-label">Ghi chỉ số</span>
-													{#if isLoggingMeter}
-														<Loader2 class="h-3 w-3 animate-spin" />
-													{/if}
-												</button>
-											</div>
-										</form>
+									<div class="grid grid-cols-2 gap-3">
+										<div class="space-y-1">
+											<label for="a-status" class="block text-[10px] font-black text-zinc-500"
+												>Tình trạng</label
+											>
+											<RoomioSelect
+												id="a-status"
+												bind:value={assetStatus}
+												options={[
+													{ value: 'good', label: 'Hoạt động tốt' },
+													{ value: 'broken', label: 'Đã hỏng' },
+													{ value: 'need_maintenance', label: 'Cần bảo trì' }
+												]}
+												compact
+											/>
+										</div>
+										<div class="space-y-1">
+											<label for="a-notes" class="block text-[10px] font-black text-zinc-500"
+												>Ghi chú</label
+											>
+											<input
+												id="a-notes"
+												type="text"
+												bind:value={assetNotes}
+												placeholder="Hao mòn nhẹ, mới mua..."
+												class="w-full rounded-lg border-2 border-black bg-white px-2.5 py-1.5 text-xs font-bold focus:outline-none"
+											/>
+										</div>
 									</div>
 
-									<!-- Readings History -->
-									<div
-										class="space-y-3 rounded-lg border-2 border-black bg-white p-4 shadow-secondary"
-									>
-										<h4 class="text-sm font-black text-blue-600">Lịch sử ghi số</h4>
-										{#if selectedRoom.meterReadings.length === 0}
-											<p class="py-2 text-center text-xs font-semibold text-zinc-400">
-												Chưa có lịch sử đo lường nào.
-											</p>
-										{:else}
-											<div class="overflow-x-auto">
-												<table class="w-full border-collapse text-left text-xs">
-													<thead>
-														<tr class="border-b-2 border-black bg-zinc-50 font-black text-zinc-500">
-															<th class="px-3 py-2">Tháng</th>
-															<th class="px-3 py-2">Dịch vụ</th>
-															<th class="px-3 py-2">Chỉ số Cũ - Mới</th>
-															<th class="px-3 py-2">Tiêu thụ</th>
-															<th class="px-3 py-2 text-right">Ngày ghi</th>
-														</tr>
-													</thead>
-													<tbody>
-														{#each selectedRoom.meterReadings as read}
-															{@const sName =
-																selectedRoom.services.find((s) => s.serviceId === read.serviceId)
-																	?.service.name || 'Dịch vụ'}
-															<tr class="border-zinc-150 border-b font-semibold text-zinc-600">
-																<td class="px-3 py-2 font-black text-black">{read.month}</td>
-																<td class="px-3 py-2 text-zinc-800">{sName}</td>
-																<td class="px-3 py-2">{read.prevValue} → {read.currValue}</td>
-																<td class="px-3 py-2 font-black text-black"
-																	>{read.currValue - read.prevValue}</td
-																>
-																<td class="px-3 py-2 text-right text-zinc-400"
-																	>{new Date(read.recordedAt).toLocaleDateString('vi-VN')}</td
-																>
-															</tr>
-														{/each}
-													</tbody>
-												</table>
-											</div>
+									<div class="flex justify-end gap-2">
+										{#if editingAssetId}
+											<button
+												type="button"
+												onclick={(e) => tapBounce(e, resetAssetForm)}
+												class="cursor-pointer rounded-[6px] border-2 border-black bg-white px-4 py-2 text-xs font-black text-black"
+											>
+												Hủy sửa
+											</button>
 										{/if}
+										<button
+											type="submit"
+											disabled={isAddingAsset}
+											class="modal-action flex cursor-pointer items-center gap-1.5 rounded-[6px] border-2 border-black bg-blue-300 px-4 py-2 text-xs font-black text-black shadow-secondary transition-all"
+										>
+											<span class="modal-action-label">
+												{editingAssetId ? 'Lưu thiết bị' : 'Thêm tài sản'}
+											</span>
+											{#if isAddingAsset}
+												<Loader2 class="h-3 w-3 animate-spin" />
+											{/if}
+										</button>
 									</div>
-								</div>
+								</form>
 
-								<!-- ASSETS TAB -->
-							{:else if activeTab === 'assets'}
-								<div class="space-y-4">
-									<!-- Add Asset Form -->
-									<div
-										class="space-y-3 rounded-lg border-2 border-black bg-white p-4 shadow-secondary"
+								{#if selectedRoom.assets.length === 0}
+									<p
+										class="rounded-lg bg-zinc-50 px-4 py-4 text-center text-xs font-bold text-zinc-400"
 									>
-										<h4 class="text-sm font-black text-blue-600">
-											{editingAssetId ? 'Sửa thiết bị bàn giao' : 'Thêm thiết bị bàn giao mới'}
-										</h4>
-										<form onsubmit={handleAddAsset} class="space-y-3">
-											<div class="grid grid-cols-2 gap-3">
-												<div class="space-y-1">
-													<label for="a-name" class="block text-[10px] font-black text-zinc-500"
-														>Tên thiết bị</label
-													>
-													<input
-														id="a-name"
-														type="text"
-														bind:value={assetName}
-														required
-														placeholder="Ví dụ: Máy điều hòa LG"
-														class="w-full rounded-lg border-2 border-black bg-white px-2.5 py-1.5 text-xs font-bold focus:outline-none"
-													/>
+										Phòng này chưa bàn giao tài sản nào.
+									</p>
+								{:else}
+									<div class="divide-y divide-zinc-200">
+										{#each selectedRoom.assets as asset}
+											<div class="flex items-center justify-between gap-3 py-2.5 text-xs font-bold">
+												<div>
+													<p class="font-black text-black">{asset.name}</p>
+													<p class="mt-0.5 text-zinc-500">
+														{asset.code || 'Không mã'} · {asset.notes || 'Không ghi chú'}
+													</p>
 												</div>
-												<div class="space-y-1">
-													<label for="a-code" class="block text-[10px] font-black text-zinc-500"
-														>Mã kiểm kê (Tùy chọn)</label
+												<div class="flex items-center gap-3">
+													<span
+														class="text-[10px] font-black {asset.status === 'good'
+															? 'text-green-700'
+															: asset.status === 'broken'
+																? 'text-red-700'
+																: 'text-amber-700'}"
 													>
-													<input
-														id="a-code"
-														type="text"
-														bind:value={assetCode}
-														placeholder="Ví dụ: ML-01"
-														class="w-full rounded-lg border-2 border-black bg-white px-2.5 py-1.5 text-xs font-bold focus:outline-none"
-													/>
-												</div>
-											</div>
-
-											<div class="grid grid-cols-2 gap-3">
-												<div class="space-y-1">
-													<label for="a-status" class="block text-[10px] font-black text-zinc-500"
-														>Tình trạng</label
-													>
-													<RoomioSelect
-														id="a-status"
-														bind:value={assetStatus}
-														options={[
-															{ value: 'good', label: 'Hoạt động tốt' },
-															{ value: 'broken', label: 'Đã hỏng' },
-															{ value: 'need_maintenance', label: 'Cần bảo trì' }
-														]}
-														compact
-													/>
-												</div>
-												<div class="space-y-1">
-													<label for="a-notes" class="block text-[10px] font-black text-zinc-500"
-														>Ghi chú thêm</label
-													>
-													<input
-														id="a-notes"
-														type="text"
-														bind:value={assetNotes}
-														placeholder="Hao mòn nhẹ, mới mua..."
-														class="w-full rounded-lg border-2 border-black bg-white px-2.5 py-1.5 text-xs font-bold focus:outline-none"
-													/>
-												</div>
-											</div>
-
-											<div class="flex justify-end gap-2 pt-2">
-												{#if editingAssetId}
-													<button
-														type="button"
-														onclick={(e) => tapBounce(e, resetAssetForm)}
-														class="cursor-pointer rounded-[6px] border-2 border-black bg-white px-4 py-2 text-xs font-black text-black"
-													>
-														Hủy sửa
-													</button>
-												{/if}
-												<button
-													type="submit"
-													disabled={isAddingAsset}
-													class="modal-action flex cursor-pointer items-center gap-1.5 rounded-[6px] border-2 border-black bg-blue-300 px-4 py-2 text-xs font-black text-black shadow-secondary transition-all"
-												>
-													<span class="modal-action-label">
-														{editingAssetId ? 'Lưu thiết bị' : 'Bàn giao thiết bị'}
+														{asset.status === 'good'
+															? 'Tốt'
+															: asset.status === 'broken'
+																? 'Hỏng'
+																: 'Bảo trì'}
 													</span>
-													{#if isAddingAsset}
-														<Loader2 class="h-3 w-3 animate-spin" />
-													{/if}
-												</button>
-											</div>
-										</form>
-									</div>
-
-									<!-- Assets List -->
-									<div
-										class="space-y-3 rounded-lg border-2 border-black bg-white p-4 shadow-secondary"
-									>
-										<h4 class="text-sm font-black text-blue-600">
-											Danh sách thiết bị ({selectedRoom.assets.length})
-										</h4>
-										{#if selectedRoom.assets.length === 0}
-											<p class="py-2 text-center text-xs font-semibold text-zinc-400">
-												Phòng này chưa bàn giao thiết bị nào.
-											</p>
-										{:else}
-											<div class="divide-y divide-zinc-200">
-												{#each selectedRoom.assets as asset}
-													<div
-														class="flex items-center justify-between py-2.5 text-xs font-semibold"
+													<button
+														onclick={(e) => tapBounce(e, () => editAsset(asset))}
+														class="cursor-pointer text-[10px] font-black text-blue-600"
 													>
-														<div>
-															<p class="font-black text-black">{asset.name}</p>
-															<p class="mt-0.5 text-[10px] text-zinc-400">
-																Mã: {asset.code || 'không có'} | Ghi chú: {asset.notes || '--'}
-															</p>
-														</div>
-														<div class="flex items-center gap-3">
-															<span
-																class="rounded-full border border-black px-2 py-0.5 text-[9px] font-black {asset.status ===
-																'good'
-																	? 'bg-green-200 text-green-800'
-																	: asset.status === 'broken'
-																		? 'bg-red-200 text-red-800'
-																		: 'bg-amber-200 text-amber-800'}"
-															>
-																{asset.status === 'good'
-																	? 'Tốt'
-																	: asset.status === 'broken'
-																		? 'Hỏng'
-																		: 'Bảo trì'}
-															</span>
-															<button
-																onclick={(e) => tapBounce(e, () => editAsset(asset))}
-																class="cursor-pointer rounded-[6px] border border-black bg-white px-2 py-1 text-[10px] font-black text-black transition-colors"
-															>
-																Sửa
-															</button>
-															<button
-																onclick={(e) => tapBounce(e, () => handleDeleteAsset(asset.id))}
-																class="cursor-pointer rounded-lg border border-transparent p-1.5 text-red-500 transition-colors hover:bg-red-50"
-															>
-																<Trash2 class="h-4 w-4" />
-															</button>
-														</div>
-													</div>
-												{/each}
+														Sửa
+													</button>
+													<button
+														onclick={(e) => tapBounce(e, () => handleDeleteAsset(asset.id))}
+														class="cursor-pointer text-red-500"
+													>
+														<Trash2 class="h-4 w-4" />
+													</button>
+												</div>
 											</div>
-										{/if}
+										{/each}
 									</div>
-								</div>
-							{/if}
+								{/if}
+							</section>
 						</div>
 					</div>
 
@@ -2236,10 +2134,9 @@
 						{#if selectedRoom.tenantId}
 							<button
 								onclick={(e) => tapBounce(e, () => handleCheckout(selectedRoom!.id))}
-								class="flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-[6px] border-2 border-black bg-red-200 py-2.5 text-center text-xs font-black text-red-800 shadow-secondary transition-all hover:bg-red-300"
+								class="flex flex-1 cursor-pointer items-center justify-center rounded-[6px] border-2 border-black bg-red-200 py-2.5 text-center text-xs font-black text-red-800 shadow-secondary transition-all hover:bg-red-300"
 							>
-								Khách trả phòng (Checkout)
-								<LogOut class="h-4 w-4" />
+								Khách trả phòng
 							</button>
 						{/if}
 						<button
