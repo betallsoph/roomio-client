@@ -2,6 +2,18 @@
 	import { onMount } from 'svelte';
 	import { toast } from 'svelte-sonner';
 	import { confirmPopup } from '$lib/confirm-popup';
+	import {
+		RENTAL_TYPE_OPTIONS,
+		OPERATING_MODEL_OPTIONS,
+		rentalTypeShortLabel,
+		operatingModelLabel,
+		propertyLabel,
+		blockLabel,
+		propertyNamePlaceholder,
+		blockPlaceholder,
+		parseRentalTypes
+	} from '$lib/rental-types';
+	import RoomioSelect from '$lib/RoomioSelect.svelte';
 	import { Building2, X, Home, Trash2, Loader2 } from '@lucide/svelte';
 
 	interface Block {
@@ -23,9 +35,37 @@
 		shortName: string;
 		address: string;
 		rentalType: string;
+		operatingModel?: string;
 		blocks: Block[];
 		rooms: RoomSummary[];
 	}
+
+	const operatingModelSelectOptions = OPERATING_MODEL_OPTIONS.map((option) => ({
+		value: option.value,
+		label: option.label
+	}));
+
+	function sortPropertiesByName(items: Property[]) {
+		return [...items].sort((a, b) => a.name.localeCompare(b.name, 'vi'));
+	}
+
+	function showOperatingModelBadge(model: string | undefined) {
+		const value = model || 'UNSPECIFIED';
+		return value === 'OWNED' || value === 'RENT_TO_RENT' || value === 'MANAGED';
+	}
+
+	function resolveOperatingModel(model: string | undefined) {
+		return model || 'UNSPECIFIED';
+	}
+
+	const propertiesByType = $derived(
+		RENTAL_TYPE_OPTIONS.map((option) => ({
+			...option,
+			items: sortPropertiesByName(properties.filter((property) => property.rentalType === option.value))
+		})).filter((group) => group.items.length > 0)
+	);
+
+	const showRentalTypeSections = $derived(propertiesByType.length >= 2);
 
 	let landlordId = $state<string | null>(null);
 	let isLoading = $state(true);
@@ -43,26 +83,16 @@
 	let address = $state('');
 	let blocksText = $state(''); // e.g. "A1, A2, B1, B2"
 	let rentalType = $state('APARTMENT');
+	let operatingModel = $state('UNSPECIFIED');
+	let editOperatingModel = $state('UNSPECIFIED');
 	let isSubmitting = $state(false);
-	const TAP_ACTION_DELAY = 200;
-	const RENTAL_TYPE_OPTIONS = [
-		{
-			value: 'APARTMENT',
-			label: 'Share phòng chung cư / Co-living / Share phòng',
-			lines: ['Share phòng chung cư', 'Co-living', 'Share phòng']
-		},
-		{
-			value: 'MOTEL',
-			label: 'Phòng trọ truyền thống / Căn hộ dịch vụ',
-			lines: ['Phòng trọ truyền thống', 'Căn hộ dịch vụ']
-		},
-		{ value: 'DORM', label: 'KTX / Sleepbox', lines: ['KTX', 'Sleepbox'] },
-		{
-			value: 'WHOLE_UNIT',
-			label: 'Căn hộ chung cư nguyên căn / Nhà nguyên căn',
-			lines: ['Căn hộ chung cư nguyên căn', 'Nhà nguyên căn']
+
+	$effect(() => {
+		if (selectedProperty) {
+			editOperatingModel = resolveOperatingModel(selectedProperty.operatingModel);
 		}
-	];
+	});
+	const TAP_ACTION_DELAY = 200;
 
 	onMount(() => {
 		const sessionStr = localStorage.getItem('roomio_user');
@@ -76,54 +106,6 @@
 		fetchSettings();
 		fetchProperties(session.landlordProfileId);
 	});
-
-	function parseRentalTypes(value: string | null | undefined) {
-		const parsed = (value || 'APARTMENT')
-			.split(',')
-			.map((type) => type.trim())
-			.filter(Boolean);
-		return parsed.length > 0 ? parsed : ['APARTMENT'];
-	}
-
-	function rentalTypeLabel(type: string) {
-		return RENTAL_TYPE_OPTIONS.find((option) => option.value === type)?.label ?? type;
-	}
-
-	function propertyLabel(type = rentalType) {
-		if (type === 'COLIVING') return 'căn co-living';
-		if (type === 'MOTEL') return 'khu trọ';
-		if (type === 'SERVICED_APARTMENT') return 'tòa nhà căn hộ dịch vụ';
-		if (type === 'DORM') return 'khu KTX / sleepbox';
-		if (type === 'WHOLE_UNIT') return 'bất động sản nguyên căn';
-		return 'tòa nhà';
-	}
-
-	function blockLabel(type = rentalType) {
-		if (type === 'COLIVING') return 'Phòng share';
-		if (type === 'MOTEL') return 'Dãy';
-		if (type === 'SERVICED_APARTMENT') return 'Tầng / khu';
-		if (type === 'DORM') return 'Phòng / khu';
-		if (type === 'WHOLE_UNIT') return 'Cụm / dự án';
-		return 'Block';
-	}
-
-	function propertyNamePlaceholder(type = rentalType) {
-		if (type === 'COLIVING') return 'Ví dụ: Co-living Thảo Điền';
-		if (type === 'MOTEL') return 'Ví dụ: Khu trọ An Bình';
-		if (type === 'SERVICED_APARTMENT') return 'Ví dụ: CHDV Nguyễn Trãi';
-		if (type === 'DORM') return 'Ví dụ: Sleepbox Cầu Giấy';
-		if (type === 'WHOLE_UNIT') return 'Ví dụ: Căn A1205 Masteri / Nhà nguyên căn Bình Thạnh';
-		return 'Ví dụ: Hoàng Anh Gia Lai';
-	}
-
-	function blockPlaceholder(type = rentalType) {
-		if (type === 'COLIVING') return 'Ví dụ: Phòng 1, Phòng 2';
-		if (type === 'MOTEL') return 'Ví dụ: Dãy A, Dãy B, Dãy sau';
-		if (type === 'SERVICED_APARTMENT') return 'Ví dụ: Tầng 1, Tầng 2, Khu sau';
-		if (type === 'DORM') return 'Ví dụ: Phòng nam, Phòng nữ, Khu yên tĩnh';
-		if (type === 'WHOLE_UNIT') return 'Ví dụ: Masteri Thảo Điền, Nhà phố Quận 7';
-		return 'Ví dụ: A1, A2, B1, B2';
-	}
 
 	async function fetchSettings() {
 		try {
@@ -179,6 +161,7 @@
 				body: JSON.stringify({
 					landlordId,
 					rentalType,
+					operatingModel,
 					name,
 					shortName,
 					address,
@@ -197,9 +180,44 @@
 			address = '';
 			blocksText = '';
 			rentalType = enabledRentalTypes[0] ?? 'APARTMENT';
+			operatingModel = 'UNSPECIFIED';
 			// Refresh
 			fetchProperties(landlordId);
 		} catch (err: any) {
+			toast.error(err.message);
+		} finally {
+			isSubmitting = false;
+		}
+	}
+
+	async function handleUpdateOperatingModel(model: string) {
+		if (!selectedProperty || isSubmitting) return;
+
+		const previous = resolveOperatingModel(selectedProperty.operatingModel);
+		if (model === previous) return;
+
+		isSubmitting = true;
+		try {
+			const res = await fetch('/api/properties', {
+				method: 'PUT',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					id: selectedProperty.id,
+					operatingModel: model === 'UNSPECIFIED' ? null : model
+				})
+			});
+			const data = await res.json();
+
+			if (!res.ok) throw new Error(data.error || 'Lỗi khi cập nhật mô hình vận hành');
+
+			const nextModel = model === 'UNSPECIFIED' ? undefined : model;
+			selectedProperty = { ...selectedProperty, operatingModel: nextModel };
+			properties = properties.map((property) =>
+				property.id === selectedProperty!.id ? { ...property, operatingModel: nextModel } : property
+			);
+			toast.success('Đã cập nhật mô hình vận hành');
+		} catch (err: any) {
+			editOperatingModel = previous;
 			toast.error(err.message);
 		} finally {
 			isSubmitting = false;
@@ -302,117 +320,167 @@
 			</div>
 		</div>
 	{:else}
-		<!-- Mobile card list (hidden on sm+) -->
-		<div class="divide-y-2 divide-black overflow-hidden rounded-lg border-2 border-black sm:hidden">
-			{#each properties as prop}
-				{@const stats = calculatePropertyStats(prop.rooms)}
-				<!-- Inline stat strip -->
-				<div class="space-y-2 p-4">
-					<div class="flex items-start justify-between gap-2">
-						<div class="min-w-0">
-							<h3 class="truncate text-base leading-tight font-black text-black">{prop.name}</h3>
-							<p class="mt-0.5 truncate text-xs font-semibold text-zinc-500">
-								{rentalTypeLabel(prop.rentalType)} · {prop.shortName} · {prop.address}
+		<div class="space-y-6">
+			{#each propertiesByType as group}
+				<div class="space-y-3">
+					{#if showRentalTypeSections}
+						<div class="flex items-baseline justify-between gap-3">
+							<h2 class="text-sm font-black text-black">
+								{rentalTypeShortLabel(group.value)}
+							</h2>
+							<p class="text-xs font-bold text-zinc-500">
+								{group.items.length} tòa nhà
 							</p>
 						</div>
-					</div>
-					<!-- Compact inline strip -->
-					<div
-						class="flex items-center divide-x-2 divide-black overflow-hidden rounded-lg border-2 border-black text-center"
-					>
-						<div class="flex-1 px-2 py-3">
-							<p class="text-base font-black text-black">{stats.total}</p>
-							<p class="text-[9px] font-bold text-zinc-500">Tổng</p>
-						</div>
-						<div class="flex-1 px-2 py-3">
-							<p class="text-base font-black text-zinc-500">{stats.empty}</p>
-							<p class="text-[9px] font-bold text-zinc-500">Trống</p>
-						</div>
-						<div class="flex-1 px-2 py-3">
-							<p class="text-base font-black text-green-600">{stats.paid}</p>
-							<p class="text-[9px] font-bold text-zinc-500">Đã đóng</p>
-						</div>
-						<div class="flex-1 px-2 py-3">
-							<p class="text-base font-black text-red-600">{stats.debt}</p>
-							<p class="text-[9px] font-bold text-zinc-500">Còn nợ</p>
-						</div>
-					</div>
-					<div class="flex items-center justify-between">
-						<span class="text-xs font-bold text-zinc-500"
-							>Lấp đầy: {stats.total > 0
-								? Math.round(((stats.total - stats.empty) / stats.total) * 100)
-								: 0}%</span
-						>
-						<button
-							onclick={(e) =>
-								tapBounce(e, () => {
-									selectedProperty = prop;
-									isDetailDrawerOpen = true;
-								})}
-							class="cursor-pointer rounded-[6px] border-2 border-black bg-blue-300 px-3 py-1.5 text-xs font-black text-black shadow-secondary transition-all"
-						>
-							Chi tiết
-						</button>
-					</div>
-				</div>
-			{/each}
-		</div>
+					{/if}
 
-		<!-- Desktop grid (hidden on mobile) -->
-		<div class="hidden gap-6 sm:grid md:grid-cols-2">
-			{#each properties as prop}
-				{@const stats = calculatePropertyStats(prop.rooms)}
-				<div
-					onclick={(e) =>
-						tapBounce(e, () => {
-							selectedProperty = prop;
-							isDetailDrawerOpen = true;
-						})}
-					onkeydown={(e) =>
-						e.key === 'Enter' && ((selectedProperty = prop), (isDetailDrawerOpen = true))}
-					role="button"
-					tabindex="0"
-					class="property-card cursor-pointer rounded-lg border-2 border-black bg-white p-5 text-left shadow-secondary transition-all focus:ring-2 focus:ring-blue-300 focus:outline-none"
-				>
-					<div class="mb-4 flex items-start justify-between">
-						<div class="flex min-w-0 items-center gap-3">
-							<Building2 class="h-6 w-6 text-blue-500" />
-							<div class="min-w-0">
-								<h3 class="truncate text-lg leading-tight font-black text-black">{prop.name}</h3>
-								<p class="mt-1 truncate text-xs font-semibold text-zinc-600">
-									{rentalTypeLabel(prop.rentalType)} · {prop.address}
-								</p>
+					<!-- Mobile card list (hidden on sm+) -->
+					<div
+						class="divide-y-2 divide-black overflow-hidden rounded-lg border-2 border-black sm:hidden"
+					>
+						{#each group.items as prop}
+							{@const stats = calculatePropertyStats(prop.rooms)}
+							<div class="space-y-2 p-4">
+								<div class="flex items-start justify-between gap-2">
+									<div class="min-w-0">
+										<h3 class="truncate text-base leading-tight font-black text-black">
+											{prop.name}
+										</h3>
+										<div class="mt-1.5 flex flex-wrap gap-1.5">
+											<span
+												class="rounded border-2 border-black bg-zinc-100 px-1.5 py-0.5 text-[10px] font-black text-black"
+											>
+												{rentalTypeShortLabel(prop.rentalType)}
+											</span>
+											{#if showOperatingModelBadge(prop.operatingModel)}
+												<span
+													class="rounded border-2 border-black bg-amber-100 px-1.5 py-0.5 text-[10px] font-black text-amber-900"
+												>
+													{operatingModelLabel(prop.operatingModel, true)}
+												</span>
+											{/if}
+										</div>
+										<p class="mt-1 truncate text-xs font-semibold text-zinc-500">
+											{prop.shortName} · {prop.address}
+										</p>
+									</div>
+								</div>
+								<div
+									class="flex items-center divide-x-2 divide-black overflow-hidden rounded-lg border-2 border-black text-center"
+								>
+									<div class="flex-1 px-2 py-3">
+										<p class="text-base font-black text-black">{stats.total}</p>
+										<p class="text-[9px] font-bold text-zinc-500">Tổng</p>
+									</div>
+									<div class="flex-1 px-2 py-3">
+										<p class="text-base font-black text-zinc-500">{stats.empty}</p>
+										<p class="text-[9px] font-bold text-zinc-500">Trống</p>
+									</div>
+									<div class="flex-1 px-2 py-3">
+										<p class="text-base font-black text-green-600">{stats.paid}</p>
+										<p class="text-[9px] font-bold text-zinc-500">Đã đóng</p>
+									</div>
+									<div class="flex-1 px-2 py-3">
+										<p class="text-base font-black text-red-600">{stats.debt}</p>
+										<p class="text-[9px] font-bold text-zinc-500">Còn nợ</p>
+									</div>
+								</div>
+								<div class="flex items-center justify-between">
+									<span class="text-xs font-bold text-zinc-500"
+										>Lấp đầy: {stats.total > 0
+											? Math.round(((stats.total - stats.empty) / stats.total) * 100)
+											: 0}%</span
+									>
+									<button
+										onclick={(e) =>
+											tapBounce(e, () => {
+												selectedProperty = prop;
+												isDetailDrawerOpen = true;
+											})}
+										class="cursor-pointer rounded-[6px] border-2 border-black bg-blue-300 px-3 py-1.5 text-xs font-black text-black shadow-secondary transition-all"
+									>
+										Chi tiết
+									</button>
+								</div>
 							</div>
-						</div>
+						{/each}
 					</div>
 
-					<!-- Stats mini-table -->
-					<div
-						class="-mx-5 grid grid-cols-4 gap-2 border-y-2 border-black bg-white px-5 py-3 text-center font-semibold"
-					>
-						<div>
-							<p class="text-xl font-black text-black">{stats.total}</p>
-							<p class="mt-0.5 text-[9px] font-bold text-zinc-500">Tổng phòng</p>
-						</div>
-						<div>
-							<p class="text-xl font-black text-zinc-500">{stats.empty}</p>
-							<p class="mt-0.5 text-[9px] font-bold text-zinc-500">Còn trống</p>
-						</div>
-						<div>
-							<p class="text-xl font-black text-green-600">{stats.paid}</p>
-							<p class="mt-0.5 text-[9px] font-bold text-zinc-500">Đã đóng</p>
-						</div>
-						<div>
-							<p class="text-xl font-black text-red-600">{stats.debt}</p>
-							<p class="mt-0.5 text-[9px] font-bold text-zinc-500">Còn nợ</p>
-						</div>
-					</div>
+					<!-- Desktop grid (hidden on mobile) -->
+					<div class="hidden gap-6 sm:grid md:grid-cols-2">
+						{#each group.items as prop}
+							{@const stats = calculatePropertyStats(prop.rooms)}
+							<div
+								onclick={(e) =>
+									tapBounce(e, () => {
+										selectedProperty = prop;
+										isDetailDrawerOpen = true;
+									})}
+								onkeydown={(e) =>
+									e.key === 'Enter' && ((selectedProperty = prop), (isDetailDrawerOpen = true))}
+								role="button"
+								tabindex="0"
+								class="property-card cursor-pointer rounded-lg border-2 border-black bg-white p-5 text-left shadow-secondary transition-all focus:ring-2 focus:ring-blue-300 focus:outline-none"
+							>
+								<div class="mb-4 flex items-start justify-between">
+									<div class="flex min-w-0 items-center gap-3">
+										<Building2 class="h-6 w-6 shrink-0 text-blue-500" />
+										<div class="min-w-0">
+											<h3 class="truncate text-lg leading-tight font-black text-black">
+												{prop.name}
+											</h3>
+											<div class="mt-1.5 flex flex-wrap gap-1.5">
+												<span
+													class="rounded border-2 border-black bg-zinc-100 px-1.5 py-0.5 text-[10px] font-black text-black"
+												>
+													{rentalTypeShortLabel(prop.rentalType)}
+												</span>
+												{#if showOperatingModelBadge(prop.operatingModel)}
+													<span
+														class="rounded border-2 border-black bg-amber-100 px-1.5 py-0.5 text-[10px] font-black text-amber-900"
+													>
+														{operatingModelLabel(prop.operatingModel, true)}
+													</span>
+												{/if}
+											</div>
+											<p class="mt-1 truncate text-xs font-semibold text-zinc-600">
+												{prop.address}
+											</p>
+										</div>
+									</div>
+								</div>
 
-					<div class="mt-4 flex items-center justify-between font-bold">
-						<span class="text-xs text-zinc-600">Tỷ lệ lấp đầy</span>
-						<span class="text-sm font-black text-black">
-							{stats.total > 0 ? Math.round(((stats.total - stats.empty) / stats.total) * 100) : 0}%
-						</span>
+								<div
+									class="-mx-5 grid grid-cols-4 gap-2 border-y-2 border-black bg-white px-5 py-3 text-center font-semibold"
+								>
+									<div>
+										<p class="text-xl font-black text-black">{stats.total}</p>
+										<p class="mt-0.5 text-[9px] font-bold text-zinc-500">Tổng phòng</p>
+									</div>
+									<div>
+										<p class="text-xl font-black text-zinc-500">{stats.empty}</p>
+										<p class="mt-0.5 text-[9px] font-bold text-zinc-500">Còn trống</p>
+									</div>
+									<div>
+										<p class="text-xl font-black text-green-600">{stats.paid}</p>
+										<p class="mt-0.5 text-[9px] font-bold text-zinc-500">Đã đóng</p>
+									</div>
+									<div>
+										<p class="text-xl font-black text-red-600">{stats.debt}</p>
+										<p class="mt-0.5 text-[9px] font-bold text-zinc-500">Còn nợ</p>
+									</div>
+								</div>
+
+								<div class="mt-4 flex items-center justify-between font-bold">
+									<span class="text-xs text-zinc-600">Tỷ lệ lấp đầy</span>
+									<span class="text-sm font-black text-black">
+										{stats.total > 0
+											? Math.round(((stats.total - stats.empty) / stats.total) * 100)
+											: 0}%
+									</span>
+								</div>
+							</div>
+						{/each}
 					</div>
 				</div>
 			{/each}
@@ -522,6 +590,22 @@
 						/>
 					</div>
 
+					<div class="space-y-1">
+						<label for="p-operating-model" class="block text-xs font-bold text-zinc-600"
+							>Mô hình vận hành</label
+						>
+						<RoomioSelect
+							id="p-operating-model"
+							bind:value={operatingModel}
+							options={operatingModelSelectOptions}
+							placeholder="Chưa phân loại"
+						/>
+						<p class="text-xs font-semibold text-zinc-500">
+							{OPERATING_MODEL_OPTIONS.find((option) => option.value === operatingModel)
+								?.description ?? ''}
+						</p>
+					</div>
+
 					<div class="flex justify-end gap-3 pt-3">
 						<button
 							type="button"
@@ -581,13 +665,49 @@
 					<!-- Main property information -->
 					<div class="rounded-lg border-2 border-black bg-white p-4 shadow-secondary">
 						<h3 class="text-xl leading-tight font-black text-black">{selectedProperty.name}</h3>
-						<p class="mt-1 text-xs font-bold text-zinc-500">
-							{rentalTypeLabel(selectedProperty.rentalType)} · {selectedProperty.shortName}
-						</p>
+						<div class="mt-2 flex flex-wrap gap-1.5">
+							<span
+								class="rounded border-2 border-black bg-zinc-100 px-1.5 py-0.5 text-[10px] font-black text-black"
+							>
+								{rentalTypeShortLabel(selectedProperty.rentalType)}
+							</span>
+							{#if showOperatingModelBadge(selectedProperty.operatingModel)}
+								<span
+									class="rounded border-2 border-black bg-amber-100 px-1.5 py-0.5 text-[10px] font-black text-amber-900"
+								>
+									{operatingModelLabel(selectedProperty.operatingModel, true)}
+								</span>
+							{/if}
+						</div>
+						<p class="mt-2 text-xs font-bold text-zinc-500">{selectedProperty.shortName}</p>
 						<div class="mt-4">
 							<p class="text-[10px] font-black text-blue-600">Địa chỉ</p>
 							<p class="mt-1 text-sm font-bold text-black">{selectedProperty.address}</p>
 						</div>
+					</div>
+
+					<div class="space-y-2">
+						<label for="drawer-operating-model" class="block text-xs font-black text-blue-600"
+							>Mô hình vận hành</label
+						>
+						<RoomioSelect
+							id="drawer-operating-model"
+							bind:value={editOperatingModel}
+							disabled={isSubmitting}
+							onchange={handleUpdateOperatingModel}
+							options={operatingModelSelectOptions}
+							placeholder="Chưa phân loại"
+						/>
+						{#if editOperatingModel === 'UNSPECIFIED'}
+							<p class="text-xs font-semibold text-zinc-500">
+								Chọn mô hình vận hành để nhận báo cáo phù hợp sau này
+							</p>
+						{:else}
+							<p class="text-xs font-semibold text-zinc-500">
+								{OPERATING_MODEL_OPTIONS.find((option) => option.value === editOperatingModel)
+									?.description ?? ''}
+							</p>
+						{/if}
 					</div>
 
 					<!-- Stats breakdown -->
