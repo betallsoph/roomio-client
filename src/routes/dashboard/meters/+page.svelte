@@ -21,6 +21,7 @@
 		prevValue: number;
 		submittedValue: number | null;
 		currValue: number;
+		ocrParsedValue: number | null;
 		recordedAt: string;
 		photoUrl: string | null;
 		status: string;
@@ -76,6 +77,14 @@
 		if (service.includes('điện')) return 'kWh';
 		if (service.includes('nước')) return 'm³';
 		return 'đơn vị';
+	}
+
+	function formatMeterValue(value: number) {
+		return new Intl.NumberFormat('vi-VN').format(value);
+	}
+
+	function ocrMismatch(reading: ReadingRow, tenantValue: number) {
+		return reading.ocrParsedValue !== null && reading.ocrParsedValue !== tenantValue;
 	}
 
 	// Trung bình tiêu thụ 3 kỳ đã duyệt gần nhất (cùng phòng + dịch vụ), tính từ dữ liệu đã tải
@@ -210,6 +219,7 @@
 				{@const sentValue = submittedValue(reading)}
 				{@const usage = reading.currValue - reading.prevValue}
 				{@const corrected = reading.status === 'approved' && reading.currValue !== sentValue}
+				{@const mismatch = ocrMismatch(reading, sentValue)}
 				{@const avg = avgUsageFor(reading)}
 				{@const dev = deviationPct(usage, avg)}
 				<div
@@ -259,22 +269,39 @@
 							{reading.submittedBy === 'TENANT' ? 'Khách tự báo số' : 'Chủ nhà ghi'}
 						</p>
 
-						<div class="grid grid-cols-3 gap-2">
+						<div class="grid grid-cols-2 gap-2 sm:grid-cols-4">
 							<div class="border-l-2 border-zinc-200 pl-3">
 								<p class="text-[10px] font-black text-zinc-400 uppercase">Đầu kỳ</p>
 								<p class="text-base font-black">{reading.prevValue}</p>
 							</div>
 							<div class="border-l-2 border-blue-300 pl-3">
-								<p class="text-[10px] font-black text-zinc-400 uppercase">
-									{corrected ? 'Khách nhập' : 'Cuối kỳ'}
+								<p class="text-[10px] font-black text-zinc-400 uppercase">Khách nhập</p>
+								<p class="text-base font-black">{sentValue}</p>
+							</div>
+							<div
+								class="border-l-2 pl-3 {mismatch
+									? 'border-amber-400 bg-amber-50 -mx-1 rounded px-1'
+									: 'border-violet-300'}"
+							>
+								<p class="text-[10px] font-black text-zinc-400 uppercase">OCR</p>
+								<p class="text-base font-black">
+									{reading.ocrParsedValue !== null
+										? formatMeterValue(reading.ocrParsedValue)
+										: '—'}
 								</p>
-								<p class="text-base font-black">{corrected ? sentValue : reading.currValue}</p>
 							</div>
 							<div class="border-l-2 border-green-300 pl-3">
 								<p class="text-[10px] font-black text-zinc-400 uppercase">Tiêu thụ</p>
 								<p class="text-base font-black">{usage} {unitFor(reading)}</p>
 							</div>
 						</div>
+						{#if mismatch}
+							<p class="text-xs font-bold text-amber-700">
+								Khách nhập khác OCR ({formatMeterValue(sentValue)} vs {formatMeterValue(
+									reading.ocrParsedValue!
+								)})
+							</p>
+						{/if}
 						{#if corrected}
 							<p class="text-xs font-bold text-blue-600">
 								Chủ nhà đã điều chỉnh và chốt: {reading.currValue}
@@ -307,6 +334,7 @@
 	{@const sentValue = submittedValue(reading)}
 	{@const currentReviewValue = Number(reviewValue)}
 	{@const reviewUsage = currentReviewValue - reading.prevValue}
+	{@const mismatch = ocrMismatch(reading, sentValue)}
 	{@const avg = avgUsageFor(reading)}
 	{@const dev = deviationPct(reviewUsage, avg)}
 	<div
@@ -397,6 +425,23 @@
 								<span class="font-bold text-zinc-500">Khách nhập</span>
 								<span class="text-xl font-black text-blue-600">{sentValue}</span>
 							</div>
+							<div
+								class="flex items-center justify-between border-b border-zinc-200 pb-2 text-sm {mismatch
+									? 'rounded border-2 border-amber-400 bg-amber-50 px-2 -mx-2'
+									: ''}"
+							>
+								<span class="font-bold text-zinc-500">OCR</span>
+								<span class="text-xl font-black">
+									{reading.ocrParsedValue !== null
+										? formatMeterValue(reading.ocrParsedValue)
+										: '—'}
+								</span>
+							</div>
+							{#if mismatch}
+								<p class="text-xs font-bold text-amber-700">
+									Khách nhập khác OCR — kiểm tra ảnh trước khi duyệt
+								</p>
+							{/if}
 							{#if reading.status === 'approved' && reading.currValue !== sentValue}
 								<div
 									class="flex items-center justify-between border-b border-zinc-200 pb-2 text-sm"
